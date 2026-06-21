@@ -1,0 +1,71 @@
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows Installer logs
+*.cab
+*.log
+
+# Windows app package directory
+AppPackages/
+
+# Windows Personalization Cache
+Desktop.ini
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# User-specific files for Visual Studio for Mac
+.vscode/
+.idea/
+
+# User-specific build files
+bin/
+obj/
+packages/
+
+# Uncomment if you have a project that uses NuGet
+#*.nupkg
+
+# Windows Installer files
+*.dll
+*.exe
+*.pdb
+
+# Windows Performance files
+*.vspscc
+*.vssscc
+
+# User-specific files for Rider
+.idea/
+
+# Microsoft Visual Studio for Mac (VS for Mac) files
+.vscode/
+
+# ASP.NET Core build directory
+wwwroot/
+
+# Windows Debugging files
+*.pdb
+*.idb
+
+# Rider settings
+.idea/
+
+# Project-specific file for Visual Studio
+.vs/
+
+# Visual Studio for Mac workspace files
+.idea/
+
+# JetBrains Rider IDE files
+.idea/

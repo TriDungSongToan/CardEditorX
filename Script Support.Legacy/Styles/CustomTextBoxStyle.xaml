@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ViewModels="clr-namespace:ScriptSupport.Legacy.ViewModels"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <Style TargetType="TextBox" x:Key="CustomMaterialDesignFilledTextBox" BasedOn="{StaticResource CustomMaterialDesignFilledTextBox}" >
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding HintAlignment, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" Value="Left" >
+                <Setter Property="materialDesign:HintAssist.HintHorizontalAlignment" Value="Left"/>
+                <Setter Property="materialDesign:HintAssist.FloatingHintHorizontalAlignment" Value="Left"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HintAlignment, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" Value="Right" >
+                <Setter Property="materialDesign:HintAssist.HintHorizontalAlignment" Value="Right"/>
+                <Setter Property="materialDesign:HintAssist.FloatingHintHorizontalAlignment" Value="Right"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

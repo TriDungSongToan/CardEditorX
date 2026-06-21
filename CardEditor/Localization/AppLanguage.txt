@@ -1,0 +1,599 @@
+﻿0x01	File
+0x02	New
+0x03	Open
+0x04	Save
+0x05	Save as
+0x0e	Recently Opened
+0x0f	Clear History
+0x11	Exit
+
+0x15	Window
+0x16	Home
+0x17	Image Editor
+0x18	Data Editor
+0x19	Code Editor
+0x1a	Deck Editor
+0x1b	BanList Editor
+0x1c	Items Editor
+0x1d	Script Support
+
+0x25	Setting
+0x26	Configuration
+
+0x31	Card
+0x32	Copy Card
+0x33	Paste Card
+0x34	Save Card
+0x3a	Filter With CDB File
+0x3b	Filter With YDK File
+
+0x45	Data
+0x46	Export as zip
+0x47	Export CardEditorSet
+0x48	Export Excel
+0x49	Import CardEditorSet
+0x4a	Import Excel
+
+0x60	Manager
+0x7a	Help
+0x7b	Linter Script
+0x7c	Check Update
+
+0x81	About
+0x82	Version:
+0x83	Created by:
+
+------------------------------
+0x91	Card Database
+0x92	Card Script
+0x93	Deck
+0x94	BanList
+0x95	Card Image
+0x96	CardEditSet
+0x97	Excel
+
+------------------------------
+0x101	Load
+0x102	Yes
+0x103	No
+0x104	OK
+0x105	Cancel
+0x106	Don't Save
+0x107	ADD IT, I Don't Care
+
+0x111	Add
+0x112	Modify
+0x113	Undo
+0x114	Undo the last action to restore the previous state. Right click to redo.
+0x115	Filter
+0x116	Search/Filter Card in the list using data on the interface. Right click to open menu.
+0x117	Clear Filter
+
+0x11c	Script
+0x11d	Insert
+0x11e	Browse
+0x11f	UpLoad
+0x120	ReLoad
+0x121	ReName
+0x122	Refresh
+0x123	Reset
+0x124	Clear
+0x125	Delete
+0x126	Shuffle
+0x127	YDKE
+0x128	Import
+0x129	Export
+0x12a	Replace
+------------------------------
+0x151	Create a new Archive.
+0x152	Save all cards in the list to the original Card Database file.
+0x153	Save all cards in the list to the original CardEditorSet file.
+0x154	Save all cards in the list to the original Excel file.
+0x155	Save all cards to a new Card Database file.
+
+0x15a	Open the Script Support Window.
+
+0x161	Copy cards to the clipboard.
+0x162	Paste cards from the clipboard into the list.
+
+0x16a	Filter and display cards on the list using a Card Database file.
+0x16b	Filter and display cards on the list that APPEAR in the selected Card Database.
+0x16c	Filter and display cards on the list that DO NOT APPEAR in the selected Card Database.
+0x16d	Filter and display cards on the list using a Deck file.
+0x16e	Filter and display cards on the list that APPEAR in the selected Deck.
+0x16f	Filter and display cards on the list that DO NOT APPEAR in the selected Deck.
+
+0x175	Export Database (and all Images, Scripts of each card in Database) as ZIP file.
+
+0x17a	Export cards as CardEditorSet file.
+0x17b	Import cards from the CardEditorSet file into the list.
+
+0x17c	Export cards as Excel file.
+0x17d	Import cards from the Excel file into the list.
+
+0x181	Analyze code for formatting issues and fix any detected inconsistencies.
+0x182	Export Windows Registry Key file.
+0x183	Source code on Github.
+
+0x18a	Default Image
+0x18b	View Image
+0x18c	Open Image File Location
+0x18d	Open Card In Database
+0x18e	Open Card Script
+0x18f	Open Card in Konami Database Website
+0x190	Open Card in Yugipedia Website
+0x191	Open Card in YGO Resources Website
+
+0x19a	The card must satisfy all filter conditions.
+0x19b	The card only needs to satisfy any one of the filter conditions.
+0x19c	Applies AND between groups and OR within each group.
+0x19d	Applies OR between groups and AND within each group.
+
+0x1a1	Replaces the effect descriptions of the Cards.
+0x1a2	Replace only the selected fields in the current list with data from the imported database file, matched by ID. New cards will be added only if “Add New Card” is turned on.
+0x1a3	Import cards from the imported database file. Existing cards will only replace the selected fields, skip them if no fields are selected.
+
+------------------------------
+0x201	Selected Cards
+0x202	Found Cards
+0x203	All Cards
+0x204	The currently selected cards in the list.
+0x205	The currently displayed cards (after applying filters) in the List.
+0x206	All cards in the list.
+0x207	Duplicate Cards
+0x208	Different Cards
+
+------------------------------
+0x211	Create Image
+0x212	Create a Card Image, using data from the Card list. Right click to open settings dialog.
+0x213	Select Image
+0x214	Select an available card image. Right click to set card image size.
+0x215	Select Artwork
+0x216	Select an available card Artwork.
+
+0x217	Original Image Folder
+0x218	ArtWork Image Folder
+0x219	Output Image Folder
+0x21a	Series
+0x21b	Common
+0x21c	Gold
+0x21d	Platium
+0x21e	Secret
+0x21f	Includes Rarity
+0x220	Format Name
+0x221	Format Effect
+0x222	Background ArtWork
+0x223	Card Foild
+
+0x225	ArtWork FullArt Location
+0x226	Opaque
+0x227	Transparent
+
+0x22a	{0} Images Failed to Generate.
+0x22b	List of Failed IDs:
+0x22c	List of Duplicate IDs:
+
+------------------------------
+0x231	Advanced
+0x232	Match Case
+0x233	Match Prefix
+0x234	Match Suffix
+0x235	Use Wildcards
+0x236	Whole Words
+0x237	Ignore Punctuation
+0x238	Ignore White-Space
+
+0x241	Replace Text
+0x242	Find
+0x243	Find What
+0x244	Find Next
+0X245	Find Previous
+0X246	Find All
+0X247	Replace With
+0X248	Replace Next
+0X249	Replace All
+
+0x251	Replace Field
+0x252	Replace File Path
+0x253	Add New Card
+
+0x25a	Import Data
+0x25b	Import File Path
+0x25c	Select Fields to Overwrite
+
+------------------------------
+0x261	Rarity
+0x262	Rarity Manager
+0x263	Open the Rarity Manager Window.
+0x264	Rarity List Manager
+0x265	Rarity Card Manager
+0x266	Index
+0x267	Rarity Name
+0x268	Code
+0x269	Image Path
+
+------------------------------
+0x271	Genesys
+0x272	Genesys Manager
+0x273	Open the Genesys Manager Window.
+0x274	Genesys Point
+
+------------------------------
+0x301	User Settings
+0x302	User Name
+0x303	Language
+0x304	Data Source
+0x305	Game
+0x306	Browser Path
+
+0x311	Display Settings
+0x312	Background
+0x313	Foreground
+0x314	Theme
+0x315	FontFamily
+0x316	FontSize
+0x317	Highlight
+0x318	Flow Direction
+0x319	Left To Right
+0x31a	Right To Left
+0x31b	Text Alignment
+0x31c	Left
+0x31d	Right
+0x31e	Justify
+0x31f	Center
+0x320	Word Wrap
+0x321	Code Folding
+
+0x32a	Sort
+0x32b	Sort Setting
+0x32c	Sort By
+0x32d	Order By
+0x32e	Ascending
+0x32f	Descending
+
+0x335	Data Handling
+0x336	Write Mode
+0x337	Ask Me
+0x338	OverWrite
+0x339	Append Write
+0x33a	Create New
+
+0x33e	Filter Mode
+0x33f	Pure AND
+0x340	Pure OR
+0x341	Mixed AND-OR
+0x342	Mixed OR-AND
+
+0x343	Confirm Clear
+0x344	Confirm Delete
+0x345	Confirm ReSet
+0x346	Confirm ReLoad
+
+0x349	Image Settings
+0x34a	Downloads Folder
+0x34b	Card Maker
+0x34c	Image Size
+0x34d	Stamp Size
+0x34e	Stamp Position
+0x34f	Stamp Margin
+
+0x351	Top-Left
+0x352	Top-Right
+0x353	Bottom-Left
+0x354	Bottom-Right
+0x355	Center
+0x356	Unknown
+
+0x358	CodeEditor Setting
+
+0x35a	Deck Settings
+0x35b	Max Main Deck Size
+0x35c	Max Extra Deck Size
+0x35d	Max Side Deck Size
+
+0x365	Alternate Formats
+0x366	List Card Mode
+0x367	Grid Card Mode
+0x368	Display ID/Scope
+0x369	Display Archetype
+0x36a	Display Genesys Point
+0x36b	Display Scope Image
+0x36c	Ritual Place Extra
+0x36d	Save Card Name
+0x36e	Ignore Deck Size
+0x36f	Ignore Deck Content
+
+0x375	Max Item
+0x376	List Header
+0x377	Auto Search
+0x378	Allow Save
+0x379	Allow New
+
+---------------------------
+0x391	Archetype: 
+0x392	Card Type: 
+0x393	Race: 
+0x394	Character: 
+0x395	Attribute: 
+0x396	Card Information
+0x397	 Search Card
+0x398	 Search Script
+0x399	 Search Scrapi Name
+0x39a	 Search Scrapi Desc
+
+---------------------------
+0x401	ID
+0x402	Identification
+0x403	Alias
+0x404	Card Name
+0x405	Card Desc
+0x406	String
+0x407	Scope
+0x408	Card Type
+0x409	Monster Race
+0x40a	Character
+0x40b	Attribute
+0x40c	Archetype
+0x40d	Category
+0x40e	Flag
+
+0x421	Level
+0x422	Minus Level
+0x423	Rank
+0x424	Link Rating
+0x425	Link Arrows
+0x426	Pendulum Scale
+0x427	Maximum
+0x428	Support
+
+0x431	ATK
+0x432	DEF
+0x433	Width
+0x434	Height
+0x435	Rarity
+
+0x436	Left
+0x437	Right
+
+--0x2aa	ID Ascending
+--0x2ab	ID Descending
+--0x2ac	Name Ascending
+--0x2ad	Name Descending
+--0x2ae	Sort cards in the list in order:
+--0x2af	Right click to sort by default.
+----------------------------
+0x501	Error
+0x502	Warning
+0x503	Information
+0x504	Notification
+0x505	Question
+
+0x50a	Data Source Error.
+0x50b	Data source is missing or does not exist, Check Update and restart application.
+
+0x511	An error occurred:
+0x512	Error creating Card Database file:
+0x513	Error creating Card Rare Database file:
+0x514	Error creating List Rare Database file:
+0x515	Error creating Genesys Card Database file:
+0x516	Error creating Script file:
+0x517	Error creating Image file:
+0x518	Error creating Ceds file:
+0x519	Error creating Deck file:
+0x51a	Error reading file:
+0x51b	Error reading configuration:
+0x51c	Error saving configuration:
+0x51d	Error writing file:
+0x51e	Error copying card:
+0x51f	Error pasting card:
+0x520	Error Saving:
+0x521	Error saving cards:
+0x522	Error saving script:
+
+0x531	Error adding card:
+0x532	Error adding/modifying rarity:
+0x533	Error deleting card:
+0x534	Error deleting rarity:
+0x535	Error deleting file:
+0x536	Error modifying card:
+0x537	Error create Image card:
+0x538	Error filtering cards:
+0x539	Error exporting data:
+0x53a	Error importing data:
+0x53b	Error downloading data:
+0x53c	Error updating data:
+0x53d	Error fetching data:
+0x53e	Error Connecting Database:
+0x53f	Error Clone Repository:
+0x540	You may need to delete the "data\CardData" folder and try again.
+0x541	Error loading Card Database:
+0x542	Error Load Image Cache:
+
+0x54a	Invalid File Path.
+0x54b	Invalid File Format.
+0x54c	Invalid File Handle.
+0x54d	Invalid File Operation.
+0x54e	Invalid Folder Path
+
+0x555	Invalid Data Path.
+0x556	Invalid Data Format.
+0x557	Invalid Data Selection.
+
+0x561	Invalid Card ID.
+0x562	Invalid Card Alias.
+0x563	Invalid Rarity name.
+0x56a	Invalid Setting. Please select a Setting before saving.
+0x571	Invalid Scope.
+
+0x581	Invalid Permissions.
+0x582	Invalid Encoding.
+0x583	out of allowed range.
+0x584	cannot be empty.
+
+0x58a	Invalid Background Color Code.
+0x58b	Invalid Foreground Color Code.
+
+0x591	No Cards found.
+0x592	No Cards selected.
+0x593	No Cards for copy.
+0x594	No Cards for export.
+0x595	No Cards for filter.
+0x596	No Cards for save.
+0x597	No Cards for Replaced.
+0x598	No Raritys selected.
+0x599	No files found.
+0x59a	No Decks found.
+0x59b	No selected Window.
+0x59c	No selected Card Database.
+0x59d	No valid Cards found.
+0x59e	No valid Datas found.
+0x59f	No valid Data in Clipboard.
+0x5a0	Not intended for regular users.
+0x5a1	Konami ID not found.
+0x5a2	Unable to search Yugipedia for this Card.
+
+0x5b1	Folder does not exist.
+0x5b2	File does not exist.
+0x5b3	File already exist.
+0x5b4	Card does not exist in database.
+0x5b5	Card ID already exists.
+0x5b6	Card ID does not exist.
+0x5b7	Card ID does not exist in the List.
+0x5b8	Not a Folder.
+0x5b9	Not a Database File.
+0x5ba	Not an Image File.
+0x5bb	Width or Height value is not a valid number.
+0x5bc	Lua file
+0x5bd	Description for this ID
+0x5be	for ID
+0x5bf	not found
+0x5c0	is empty
+
+0x5c6	{0} {1} created successfully!
+0x5c7	{0} {1} added successfully!
+0x5c8	{0} {1} updated successfully!
+0x5c9	{0} {1} saved successfully!
+0x5ca	{0] {1} copied successfully!
+0x5cb	{0} {1} pasted successfully!
+0x5cc	{0} {1} Replaced successfully!
+0x5cd	{0} {1} deleted successfully!
+0x5ce	{0} {1} refresh successfully!
+0x5cf	{0} {1} renamed to {2} successfully!
+0x5d0	Save Settings successfully!
+
+0x5df	Data exported successfully!
+0x5e0	Data imported successfully!
+0x5e1	Zip file exported successfully at:
+0x5e2	Excel file exported successfully at:
+0x5e3	Registry Key created successfully at:
+0x5e4	Double Click this file to set Registry Key.
+
+0x5e5	Extract functions data successfully!
+0x5e6	Extract constants data successfully!
+0x5e7	Repository has been cloned successfully!
+0x5e8	Data has been updated successfully!
+0x5e9	Settings have been reset to default. Restart application to apply.
+0x5ea	Filter successful. Found {0} cards out of {1} total cards.
+0x5eb	API Endpoint or API Key is not configured.
+
+0x5f1	The process has been canceled upon request.
+0x5f2	Select {0}
+0x5f3	Select Folder
+0x5f4	Save Database File
+0x5f5	Save File
+0x5f6	Save Deck File
+0x5f7	All Files
+0x5f8	Text Documents Files
+0x5f9	Markdown Files
+0x5fa	Log Files
+0x5fb	Deck Files
+0x5fc	YAML Files
+0x5fd	Configuration Files
+0x5fe	Zip file
+0x5ff	Excel file
+0x600	Image File
+0x601	Video File
+
+0x60a	Confirm Reset?
+0x60b	Confirm Clear?
+0x60c	Confirm Delete?
+
+0x611	Card ID has been changed.
+0x612	Delete the selected card or the card with newly entered ID?
+0x613	Create the Card Script of the selected card or the card with newly entered ID?
+0x614	Create the Image of the selected card or the card with newly entered ID?
+0x615	Selected Card
+0x616	Selected Deck
+0x617	Selected Rarity
+0x618	Selected BanList
+0x619	Newly entered ID
+0x61a	Original Data
+0x61b	UnSaved Data
+
+0x631	You are closing {0} tabs.
+0x632	There is unsaved data.
+0x633	There are {0} duplicate IDs in the Card List.
+0x634	Do you want to continue?
+0x635	Do you want to open it?
+0x636	Do you want to overwrite it?
+0x637	Do you want to save your changes for this file?
+0x638	Are you sure? Cards with 4 digit IDs or lower will be the game ignore.
+0x639	Are you sure you want to Clear all {0}?
+0x63a	Are you sure you want to PERMANENTLY DELETE {0}?
+0x63b	Are you sure you want to Reload {0}?
+0x63c	Are you sure you want to Reset {0}?
+0x63d	Are you sure you want to reset settings to default? All changes will be lost.
+0x63e	Are you sure you want to clear the recently opened {0} history?
+0x63f	Are you sure you want to save a blank file?
+0x640	Update Available, dowload it now?
+0x641	Data source is missing or invalid, download now?
+0x642	How would you like to handle the selected data?
+0x643	No updates found.
+0x644	Update Complete!
+
+0x645	Unable to delete existing file after multiple attempts.
+0x646	git.exe path not found, make sure Git is installed and using correct path in application configuration
+0x647	Git Path is missing or empty in configuration. Using default Git path.
+0x648	The syntax highlighting file does not exist.
+0x649	Using default path.
+
+0x651	Chat List
+0x652	New Chat
+0x653	Delete Chat
+0x654	Ask ChatBot anything.
+0x655	Attach File
+0x656	Attach Image
+0x657	Attach Video
+
+0x658	Api Endpoint
+0x659	Api Key
+
+0x661	BanList: 
+0x662	Name:
+0x663	White List
+0x664	Limit: 
+0x665	Banned
+0x666	Limited
+0x667	Semi-Limited
+0x668	Unlimited
+
+0x681	Deck: 
+0x682	Allowed Card
+0x683	All Cards
+0x68a	Search Card
+0x68b	New Name
+
+0x691	Main Deck
+0x692	Extra Deck
+0x693	Side Deck
+
+0x6a1	Monster:
+0x6a2	Spell:
+0x6a3	Trap:
+0x6a4	Skill:
+
+0x6a5	Ritual:	
+0x6a6	Fusion:
+0x6a7	Synchro:
+0x6a8	eXceed:
+0x6a9	Link:

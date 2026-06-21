@@ -1,0 +1,79 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:CardEditor.Controls">
+    <Style TargetType="{x:Type local:CircularTriStateToggle}" >
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:CircularTriStateToggle}">
+                    <Grid>
+                        <!--Nền bên trong-->
+                        <Ellipse x:Name="CircleBackground" Panel.ZIndex="0" Margin="0"
+                                 Fill="{TemplateBinding CircleBackgroundBrush}"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Stretch"/>
+                        
+                        <!--Viền ngoài-->
+                        <Ellipse x:Name="CircleBorder" Panel.ZIndex="1"
+                                 Fill="{TemplateBinding CircleBorderBrush}"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Stretch" >
+                            <Ellipse.OpacityMask>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="Transparent" Offset="0"/>
+                                    <GradientStop Color="Transparent" Offset="0.85"/>
+                                    <GradientStop Color="White" Offset="0.95"/>
+                                    <GradientStop Color="White" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.OpacityMask>
+                        </Ellipse>
+
+                        <ContentPresenter x:Name="MainPresenter"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RenderTransformOrigin="0.5,0.5">
+                            <ContentPresenter.RenderTransform>
+                                <RotateTransform x:Name="ContentRotation" Angle="0"/>
+                            </ContentPresenter.RenderTransform>
+                        </ContentPresenter>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter TargetName="CircleBackground" Property="Fill" 
+                                    Value="{Binding FalseBackgroundBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="MainPresenter" Property="Content" 
+                                    Value="{Binding FalseContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CircleBackground" Property="Fill" 
+                                    Value="{Binding TrueBackgroundBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="MainPresenter" Property="Content" 
+                                    Value="{Binding TrueContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+
+                        <Trigger Property="IsChecked" Value="{x:Null}">
+                            <Setter TargetName="CircleBackground" Property="Fill" 
+                                    Value="{Binding NullBackgroundBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                            <Setter TargetName="MainPresenter" Property="Content" 
+                                    Value="{Binding NullContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="CircleBorder" Property="Fill"
+                                    Value="{Binding CircleBorderHoverBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="CircleBorder" Property="Opacity" Value="0.5"/>
+                            <Setter TargetName="CircleBackground" Property="Opacity" Value="0.5"/>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

@@ -1,0 +1,84 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:CardEditor.Controls" >
+    <Style TargetType="{x:Type local:TriStateToggle}">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:TriStateToggle}">
+                    <Grid>
+                        <Border x:Name="Track" 
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                CornerRadius="{TemplateBinding TrackCornerRadius}"
+                                BorderBrush="{TemplateBinding TrackBorderBrush}" 
+                                BorderThickness="{TemplateBinding TrackBorderThickness}"
+                                Padding="{TemplateBinding TrackPadding}" >
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Background="{TemplateBinding LeftBackgroundBrush}"
+                                        CornerRadius="{TemplateBinding TrackLeftCornerRadius}"/>
+                                <Border Grid.Column="1" Background="{TemplateBinding MiddleBackgroundBrush}"
+                                        CornerRadius="{TemplateBinding TrackMiddleCornerRadius}"/>
+                                <Border Grid.Column="2" Background="{TemplateBinding RightBackgroundBrush}"
+                                        CornerRadius="{TemplateBinding TrackRightCornerRadius}"/>
+
+                                <ContentPresenter Grid.Column="0" Content="{TemplateBinding LeftCellContent}"
+                                                  Panel.ZIndex="{TemplateBinding LeftCellContentZIndex}" />
+                                <ContentPresenter Grid.Column="1" Content="{TemplateBinding MiddleCellContent}"
+                                                  Panel.ZIndex="{TemplateBinding MiddleCellContentZIndex}" />
+                                <ContentPresenter Grid.Column="2" Content="{TemplateBinding RightCellContent}"
+                                                  Panel.ZIndex="{TemplateBinding RightCellContentZIndex}" />
+
+                                <Grid x:Name="ThumbContainer"
+                                      Grid.Column="0" Margin="3"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      Panel.ZIndex="{TemplateBinding ThumbZIndex}" >
+                                    <Ellipse x:Name="Thumb" Stretch="Fill"
+                                             Stroke="{TemplateBinding ThumbBorderBrush}"
+                                             StrokeThickness="{TemplateBinding ThumbBorderThickness}"
+                                             Fill="{TemplateBinding ThumbBackgroundBrush}" >
+                                        <Ellipse.Effect>
+                                            <DropShadowEffect BlurRadius="3" ShadowDepth="2" Opacity="0.3"/>
+                                        </Ellipse.Effect>
+                                    </Ellipse>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <!-- Trái: IsChecked = False -->
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter TargetName="ThumbContainer" Property="Grid.Column" Value="0"/>
+                        </Trigger>
+                        <!-- Giữa: IsChecked = null -->
+                        <Trigger Property="IsChecked" Value="{x:Null}">
+                            <Setter TargetName="ThumbContainer" Property="Grid.Column" Value="1"/>
+                        </Trigger>
+                        <!-- Phải: IsChecked = True -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="ThumbContainer" Property="Grid.Column" Value="2"/>
+                        </Trigger>
+                        <!-- Hover effect -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Thumb" Property="Fill"
+                                    Value="{Binding ThumbBackgroundHoverBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        </Trigger>
+                        <!-- Disabled state -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Track" Property="Opacity" Value="0.5"/>
+                            <Setter TargetName="Thumb" Property="Opacity" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

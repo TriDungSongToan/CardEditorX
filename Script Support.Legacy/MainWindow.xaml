@@ -1,0 +1,553 @@
+﻿<Window x:Class="ScriptSupport.Legacy.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+        xmlns:avalonEdit="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesign.Brush.Background}"
+        TextElement.FontWeight="Medium"
+        Style="{StaticResource MaterialDesignWindow}"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        xmlns:Lag="clr-namespace:ScriptSupport.Legacy.Localization"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing"
+        PreviewMouseWheel="Window_PreviewMouseWheel"
+        Title="Script Support" Height="600" Width="650">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.New" Executed="CommandNew_Executed" CanExecute="Command_CanExecute" />
+        <CommandBinding Command="ApplicationCommands.Open" Executed="CommandOpen_Executed" CanExecute="Command_CanExecute" />
+        <CommandBinding Command="ApplicationCommands.Save" Executed="CommandSave_Executed" CanExecute="Command_CanExecute" />
+        <CommandBinding Command="ApplicationCommands.SaveAs" Executed="CommandSaveAs_Executed" CanExecute="Command_CanExecute" />
+    </Window.CommandBindings>
+
+    <Grid x:Name="mainGrid" Margin="1" >
+        <materialDesign:Card>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="210" Name="grleft" />
+                    <ColumnDefinition Width="2" />
+                    <ColumnDefinition Width="*" Name="grright" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" Name="grmenu" />
+                        <RowDefinition Height="*" Name="grdatasearch" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <Menu x:Name="menumain" Grid.Column="0" materialDesign:MenuAssist.TopLevelMenuItemHeight="25" Margin="0,0,0,0"
+                              HorizontalAlignment="Stretch" Background="Transparent" Style="{DynamicResource MaterialDesignMenu}" >
+                            <ToggleButton x:Name="tbtncardinfo" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Transparent" Width="25" Height="25" Margin="-16,0,0,0"
+                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Checked="tbtncardinfo_Checked" Unchecked="tbtncardinfo_Unchecked"
+                                          Style="{StaticResource MaterialDesignActionDarkToggleButton}" >
+                                <materialDesign:PackIcon Kind="ChevronDoubleRight" />
+                                <materialDesign:ToggleButtonAssist.OnContent>
+                                    <materialDesign:PackIcon Kind="ChevronDoubleLeft" />
+                                </materialDesign:ToggleButtonAssist.OnContent>
+                            </ToggleButton>
+                            <MenuItem Header="{Lag:Localize File}" Style="{DynamicResource MaterialDesignMenuItem}" Margin="-15,0,0,0" Padding="6,0,6,0" >
+                                <MenuItem Header="New" x:Name="menuitemnew" InputGestureText="Ctrl + N" Command="ApplicationCommands.New" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/New.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{Lag:Localize Open}" InputGestureText="Ctrl + O" Command="ApplicationCommands.Open" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/Open.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{Lag:Localize Save}" InputGestureText="Ctrl + S" Command="ApplicationCommands.Save" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/Save.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{Lag:Localize SaveAs}" x:Name="menuitemsaveas" InputGestureText="Ctr|Shi + S" Command="ApplicationCommands.SaveAs" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/SaveAs.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{Lag:Localize Exit}" InputGestureText="Alt + F4" Click="menuitemExit_Click" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/Exit.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </MenuItem>
+                            <MenuItem Header="{Lag:Localize Setting}" Style="{DynamicResource MaterialDesignMenuItem}" Padding="6,0,6,0" Margin="0" >
+                                <MenuItem Header="{Lag:Localize Config}" Click="menuitemConfiguration_Click" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Setting/Setting.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </MenuItem>
+                            <MenuItem Header="{Lag:Localize Help}" Style="{DynamicResource MaterialDesignMenuItem}" Padding="6,0,8,0" Margin="0" >
+                                <MenuItem Header="Scrapi Book" Click="menuItemScrapiBook_Click" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/Book.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{Lag:Localize ChkUpdate}" x:Name="chkupdate" Click="chkupdate_Click" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/Update.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="{Lag:Localize About}" Click="MenuItemAbout_Click" >
+                                    <MenuItem.Icon>
+                                        <Image Source="pack://application:,,,/Images/Menu/About.ico" Width="auto" Height="auto" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </MenuItem>
+                        </Menu>
+                    </Grid>
+
+                    <Grid Grid.Row="1">
+                        <materialDesign:DrawerHost x:Name="drhcardinfo" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                   BorderBrush="{DynamicResource MaterialDesignDivider}" LeftDrawerCornerRadius="0,20,0,0" >
+                            <materialDesign:DrawerHost.Style>
+                                <Style TargetType="materialDesign:DrawerHost" BasedOn="{StaticResource {x:Type materialDesign:DrawerHost}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsChecked, ElementName=BackgroundToggle}" Value="True">
+                                            <Setter Property="OverlayBackground" Value="{DynamicResource PrimaryHueMidBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:DrawerHost.Style>
+
+                            <materialDesign:DrawerHost.LeftDrawerContent >
+                                <materialDesign:Card x:Name="cardinfo" Width="210" >
+                                    <Grid >
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="auto" />
+                                            <RowDefinition Height="auto" />
+                                            <RowDefinition Height="auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <Grid Grid.Row="0" >
+                                            <TextBlock Margin="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                                       Text="{Lag:Localize CardInfo}" />
+                                        </Grid>
+                                        <Grid Grid.Row="1" >
+                                            <Image x:Name="imagecard" HorizontalAlignment="Stretch" Height="auto" Stretch="UniformToFill" Margin="7,3,7,0" />
+                                        </Grid>
+
+                                        <Grid Grid.Row="2" Margin="10,7,0,0" >
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <WrapPanel Grid.Row="0" x:Name="grsetcode" >
+                                                <TextBlock Text="{Lag:Localize Archetype}" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <TextBlock x:Name="tblsetcode" TextWrapping="Wrap" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                            </WrapPanel>
+
+                                            <WrapPanel Grid.Row="1" >
+                                                <TextBlock Text="{Lag:Localize CardType}" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <TextBlock x:Name="tblcardtype" TextWrapping="Wrap" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                            </WrapPanel>
+
+                                            <StackPanel Grid.Row="2" x:Name="grmonstype" Orientation="Vertical" >
+                                                <StackPanel Orientation="Horizontal"> <!--Race-->
+                                                    <TextBlock x:Name="tblRace" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <TextBlock x:Name="tblmonsrace" TextWrapping="Wrap" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <Image x:Name="imgrace" Width="15" Height="15" Visibility="Collapsed" />
+                                                </StackPanel>
+
+                                                <StackPanel Orientation="Horizontal" > <!--Attribute-->
+                                                    <TextBlock Text="{Lag:Localize Attribute}" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <TextBlock x:Name="tblmonsattri" TextWrapping="Wrap" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <Image x:Name="imgattri" Width="15" Height="15" Visibility="Collapsed" />
+                                                </StackPanel>
+
+                                                <StackPanel x:Name="grLvRk" Orientation="Horizontal" > <!--Level Rank-->
+                                                    <TextBlock x:Name="tblLvRk" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <TextBlock x:Name="tblLvRkValue" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <Image x:Name="imgLvRk" Width="15" Height="15" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            
+                                            <StackPanel Grid.Row="3" x:Name="grLiRating" Orientation="Horizontal" > <!--Link-->
+                                                <TextBlock x:Name="tblLiRating" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <TextBlock x:Name="tblLiRatingValue" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <Image x:Name="imgLi" Source="pack://application:,,,/Images/DataEditor/linkIcon.ico"
+                                                           Width="15" Height="15" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Row="4" x:Name="grpendulum" Orientation="Horizontal">
+                                                <TextBlock x:Name="tllPenlabel" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <Image x:Name="imgpenleft" Source="pack://application:,,,/Images/DataEditor/leftscale.ico" Width="15" Height="15" />
+                                                <TextBlock x:Name="tblpenscale" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <Image x:Name="imgpenright" Source="pack://application:,,,/Images/DataEditor/rightscale.ico" Width="15" Height="15" />
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Row="5" x:Name="grmonspow" Orientation="Vertical" >
+                                                <!--{Lag:Localize cardatk}-->
+                                                <StackPanel x:Name="gratk" Orientation="Horizontal" > <!--ATK-->
+                                                    <TextBlock x:Name="tblatk" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <TextBlock x:Name="tblatkvalue" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                </StackPanel>
+
+                                                <!--{Lag:Localize carddef}-->
+                                                <StackPanel x:Name="grdef" Orientation="Horizontal" > <!--DEF-->
+                                                    <TextBlock x:Name="tbldef" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <TextBlock x:Name="tbldefvalue" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                </StackPanel>
+
+                                                <StackPanel x:Name="grmaxatk" Orientation="Horizontal" Visibility="Collapsed" >
+                                                    <TextBlock Text="Maximum ATK: " Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                    <TextBlock x:Name="tblmaxatk" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Row="6" x:Name="grLinkArrow" Orientation="Horizontal" > <!--Link Arrrow-->
+                                                <TextBlock x:Name="tblLinkArr" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <TextBlock x:Name="tblLinkArrValue" TextWrapping="Wrap" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                            </StackPanel>
+
+                                            <WrapPanel Grid.Row="7" >
+                                                <TextBlock x:Name="tblID" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                                <TextBlock x:Name="tblkoID" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                            </WrapPanel>
+
+                                            <WrapPanel Grid.Row="8">
+                                                <TextBlock x:Name="tblrule" Style="{StaticResource MaterialDesignHelperTextBlock}" />
+                                            </WrapPanel>
+                                        </Grid>
+                                    </Grid>
+                                </materialDesign:Card>
+                            </materialDesign:DrawerHost.LeftDrawerContent>
+
+                            <Grid Panel.ZIndex="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="300" Name="grcard" />
+                                    <RowDefinition Height="2" />
+                                    <RowDefinition Height="*" Name="grscrapi" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <RichTextBox Grid.Row="0" x:Name="tbsearchdesc" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                 materialDesign:HintAssist.Hint="{Lag:Localize SearchCard}" Style="{StaticResource MaterialDesignFilledRichTextBox}"
+                                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                                 MinHeight="35" MaxHeight="80" Height="auto" Padding="3,10,0,5" Visibility="Visible"
+                                                 PreviewKeyDown="tbsearchdesc_PreviewKeyDown"
+                                                 TextChanged="tbsearchdesc_TextChanged"
+                                                 LostFocus="tbsearchdesc_LostFocus" />
+
+                                    <ListBox Grid.Row="1" Name="suggestionDescList" HorizontalAlignment="Stretch" Visibility="Collapsed"
+                                             Height="150" Panel.ZIndex="1" VerticalAlignment="Top" Margin="0,5,0,0"
+                                             MouseLeftButtonUp="suggestionDescList_MouseLeftButtonUp" />
+
+                                    <RichTextBox Grid.Row="1" x:Name="tbsearchlua" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                 materialDesign:HintAssist.Hint="{Lag:Localize SearchScript}" Style="{StaticResource MaterialDesignFilledRichTextBox}"
+                                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                                 MinHeight="35" MaxHeight="80" Height="auto" Padding="3,13,0,5"
+                                                 PreviewKeyDown="tbsearchlua_PreviewKeyDown"
+                                                 TextChanged="tbsearchlua_TextChanged" 
+                                                 LostFocus="tbsearchlua_LostFocus" />
+
+                                    <ListBox Grid.Row="2" Name="suggestionScriptList" HorizontalAlignment="Stretch" Visibility="Collapsed"
+                                             Height="150" Panel.ZIndex="1" VerticalAlignment="Top" Margin="0,5,0,0"
+                                             MouseLeftButtonUp="suggestionScriptList_MouseLeftButtonUp"/>
+
+                                    <TabControl Grid.Row="2" x:Name="tablist"
+                                                materialDesign:ColorZoneAssist.Mode="Standard" SelectionChanged="TabControl_SelectionChanged"
+                                                materialDesign:NavigationRailAssist.SelectionCornerRadius="2 2 15 15"
+                                                materialDesign:NavigationRailAssist.ShowSelectionBackground="True"
+                                                Style="{StaticResource MaterialDesignNavigationRailTabControl}"
+                                                TabStripPlacement="Bottom" Background="Transparent"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                                        <TabItem x:Name="tabdesc" Height="30" >
+                                            <TabItem.Header>
+                                                <TextBlock HorizontalAlignment="Center" Text="Desc" />
+                                            </TabItem.Header>
+                                            <ListBox x:Name="libnamedesc" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                     ItemsSource="{Binding DescItem}" SelectionChanged="libnamedesc_SelectionChanged"
+                                                     MouseMove="libname_MouseMove"
+                                                     PreviewMouseWheel="libname_PreviewMouseWheel"
+                                                     PreviewMouseDown="libname_PreviewMouseDown" >
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Name}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                                <ListBox.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <VirtualizingStackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ListBox.ItemsPanel>
+                                                <ListBox.Template>
+                                                    <ControlTemplate TargetType="ListBox">
+                                                        <ScrollViewer ScrollChanged="ScrollViewerDesc_ScrollChanged">
+                                                            <ItemsPresenter />
+                                                        </ScrollViewer>
+                                                    </ControlTemplate>
+                                                </ListBox.Template>
+                                            </ListBox>
+                                        </TabItem>
+                                        <TabItem x:Name="tablua" Height="30" >
+                                            <TabItem.Header>
+                                                <TextBlock HorizontalAlignment="Center" Text="Lua" />
+                                            </TabItem.Header>
+                                            <ListBox x:Name="libnamelua" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                     ItemsSource="{Binding LuaItems}" SelectionChanged="libnamelua_SelectionChanged" MouseMove="libname_MouseMove"
+                                                     PreviewMouseWheel="libname_PreviewMouseWheel" PreviewMouseDown="libname_PreviewMouseDown" >
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding FileName}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                                <ListBox.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <VirtualizingStackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ListBox.ItemsPanel>
+                                                <ListBox.Template>
+                                                    <ControlTemplate TargetType="ListBox">
+                                                        <ScrollViewer ScrollChanged="ScrollViewerLua_ScrollChanged" >
+                                                            <ItemsPresenter />
+                                                        </ScrollViewer>
+                                                    </ControlTemplate>
+                                                </ListBox.Template>
+                                            </ListBox>
+                                        </TabItem>
+                                        <TabItem x:Name="tabopen" Height="30" >
+                                            <TabItem.Header>
+                                                <TextBlock HorizontalAlignment="Center" Text="Open" />
+                                            </TabItem.Header>
+                                            <ListBox x:Name="libnametext" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                     SelectionChanged="libnametext_SelectionChanged" MouseMove="libname_MouseMove"
+                                                     PreviewMouseWheel="libname_PreviewMouseWheel" PreviewMouseDown="libname_PreviewMouseDown" >
+                                                <ListBox.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <VirtualizingStackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ListBox.ItemsPanel>
+                                            </ListBox>
+                                        </TabItem>
+                                        <TabItem x:Name="tabnew" Height="30" >
+                                            <TabItem.Header>
+                                                <TextBlock HorizontalAlignment="Center" Text="New" />
+                                            </TabItem.Header>
+                                            <ListBox x:Name="libnamenew" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                     SelectionChanged="libnamenew_SelectionChanged" MouseMove="libname_MouseMove"
+                                                     PreviewMouseWheel="libname_PreviewMouseWheel" PreviewMouseDown="libname_PreviewMouseDown" >
+                                                <ListBox.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <VirtualizingStackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ListBox.ItemsPanel>
+                                            </ListBox>
+                                        </TabItem>
+                                    </TabControl>
+                                </Grid>
+
+                                <Border Grid.Row="1" Background="Gray" Cursor="SizeNS" x:Name="separatorGrleft" MouseUp="separator_MouseUp"
+                                        MouseMove="separatorGrleft_MouseMove" MouseDown="separatorGrleft_MouseDown" />
+
+                                <Grid Grid.Row="2" Margin="0,1,0,0" >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <RichTextBox Grid.Row="0" x:Name="tbsearch_scrapiyard_name" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                 materialDesign:HintAssist.Hint="{Lag:Localize SearchScrapiName}" Style="{StaticResource MaterialDesignFilledRichTextBox}"
+                                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                                 MinHeight="35" MaxHeight="80" Height="auto" Padding="3,10,0,5"
+                                                 TextChanged="tbsearch_scrapiyard_name_TextChanged"
+                                                 PreviewKeyDown="tbsearch_scrapiyard_name_PreviewKeyDown"
+                                                 LostFocus="tbsearch_scrapiyard_name_LostFocus" />
+
+                                    <ListBox Grid.Row="1" Name="suggestionscrapiList" HorizontalAlignment="Stretch" Visibility="Collapsed"
+                                             Height="150" Panel.ZIndex="1" VerticalAlignment="Top" Margin="0,10,0,0"
+                                             MouseLeftButtonUp="suggestionscrapiList_MouseLeftButtonUp" />
+
+                                    <RichTextBox Grid.Row="1" x:Name="tbsearch_scrapiyard_desc" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                 materialDesign:HintAssist.Hint="{Lag:Localize SearchScrapiDesc}" Style="{StaticResource MaterialDesignFilledRichTextBox}"
+                                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                                 MinHeight="35" MaxHeight="80" Height="auto" Padding="3,10,0,5"
+                                                 TextChanged="tbsearch_scrapiyard_desc_TextChanged"
+                                                 PreviewKeyDown="tbsearch_scrapiyard_desc_PreviewKeyDown"
+                                                 LostFocus="tbsearch_scrapiyard_desc_LostFocus" />
+
+                                    <ListBox Grid.Row="2" Name="suggestionscrapiListdesc" HorizontalAlignment="Stretch" Visibility="Collapsed"
+                                             Height="150" Panel.ZIndex="1" VerticalAlignment="Top" Margin="0,10,0,0"
+                                             MouseLeftButtonUp="suggestionscrapiListdesc_MouseLeftButtonUp" />
+
+                                    <TabControl Grid.Row="2" x:Name="tablistScrapi" materialDesign:ColorZoneAssist.Mode="Standard" TabStripPlacement="Bottom"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"
+                                                materialDesign:NavigationRailAssist.SelectionCornerRadius="2 2 15 15"
+                                                materialDesign:NavigationRailAssist.ShowSelectionBackground="True"
+                                                Style="{StaticResource MaterialDesignNavigationRailTabControl}"
+                                                SelectionChanged="TabControl_SelectionChanged" >
+
+                                        <TabItem x:Name="tabnameScrapi" Height="30" >
+                                            <TabItem.Header>
+                                                <TextBlock HorizontalAlignment="Center" Text="Scr Name" />
+                                            </TabItem.Header>
+                                            <ListBox x:Name="libscrapiyard_name" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                     ItemsSource="{Binding ScrapiNameItem}" SelectionChanged="libscrapiyard_name_SelectionChanged" MouseMove="libname_MouseMove"
+                                                     PreviewMouseWheel="libname_PreviewMouseWheel"
+                                                     PreviewMouseDown="libname_PreviewMouseDown" >
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding ScrapiFileName}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                                <ListBox.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <VirtualizingStackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ListBox.ItemsPanel>
+                                            </ListBox>
+                                        </TabItem>
+
+                                        <TabItem x:Name="tabdescScrapi" Height="30" >
+                                            <TabItem.Header>
+                                                <TextBlock HorizontalAlignment="Center" Text="Scr Desc" />
+                                            </TabItem.Header>
+                                            <ListBox x:Name="libscrapiyard_desc" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                     SelectionChanged="libscrapiyard_desc_SelectionChanged" MouseMove="libname_MouseMove"
+                                                     ItemsSource="{Binding ScrapiDescItem}" PreviewMouseWheel="libname_PreviewMouseWheel" PreviewMouseDown="libname_PreviewMouseDown" >
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding ScrapiDescName}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                                <ListBox.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <VirtualizingStackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ListBox.ItemsPanel>
+                                            </ListBox>
+                                        </TabItem>
+                                    </TabControl>
+                                </Grid>
+                                
+                            </Grid>
+                        </materialDesign:DrawerHost>
+                    </Grid>
+                </Grid>
+
+                <Border Grid.Column="1" Background="Gray" Cursor="SizeWE" x:Name="separatorCenter"
+                        MouseMove="separatorCenter_MouseMove"
+                        MouseDown="separatorCenter_MouseDown"
+                        MouseUp="separator_MouseUp" />
+
+                <Grid Grid.Column="2" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="150" Name="grdecs" />
+                        <RowDefinition Height="2" />
+                        <RowDefinition Height="*" Name="grtextedit" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Result -->
+                    <TabControl x:Name="tabcresult" Grid.Row="0"
+                                materialDesign:ColorZoneAssist.Mode="Standard" SelectionChanged="TabControl_SelectionChanged"
+                                materialDesign:NavigationRailAssist.SelectionCornerRadius="10 10 10 10"
+                                materialDesign:NavigationRailAssist.ShowSelectionBackground="True"
+                                Style="{StaticResource MaterialDesignNavigationRailTabControl}"
+                                TabStripPlacement="Left" Background="Transparent"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectedIndex="0" >
+                        <TabItem x:Name="tabdescresult" Width="45" >
+                            <TabItem.Header>
+                                <StackPanel Width="auto" Height="auto" >
+                                    <materialDesign:PackIcon Width="24" Height="24" HorizontalAlignment="Center" Kind="CardsOutline" />
+                                    <TextBlock HorizontalAlignment="Center" Text="Card" />
+                                </StackPanel>
+                            </TabItem.Header>
+                            <RichTextBox x:Name="tbdecs" BorderThickness="0" Margin="0" Padding="0"
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                                         VerticalContentAlignment="Top" HorizontalContentAlignment="Left" />
+                        </TabItem>
+                        <TabItem x:Name="tabscrapiresult" Width="45" >
+                            <TabItem.Header>
+                                <StackPanel Width="auto" Height="auto" >
+                                    <materialDesign:PackIcon Width="24" Height="24" HorizontalAlignment="Center" Kind="BookOutline" />
+                                    <TextBlock HorizontalAlignment="Center" Text="Scr" />
+                                </StackPanel>
+                            </TabItem.Header>
+                            <avalonEdit:TextEditor x:Name="tbscrapiyard" BorderThickness="0" Background="Transparent"
+                                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                   VerticalScrollBarVisibility="auto" HorizontalScrollBarVisibility="Auto"
+                                                   ShowLineNumbers="True" />
+                        </TabItem>
+                    </TabControl>
+
+                    <StackPanel x:Name="panelkonami" Width="auto" Height="auto" Orientation="Horizontal" Grid.Row="0" Margin="1,0,0,0"
+                                HorizontalAlignment="Left" VerticalAlignment="Top" >
+
+                        <Image x:Name="imgpopup" Width="25" Height="25" Visibility="Collapsed"
+                               VerticalAlignment="Center" HorizontalAlignment="Left" Cursor="Hand"
+                               MouseLeftButtonUp="imgpopup_MouseLeftButtonUp" Source="pack://application:,,,/image/Menu/Open.ico" />
+                        <materialDesign:PackIcon x:Name="iconpopup" Width="20" Height="20" DockPanel.Dock="Right"
+                                 VerticalAlignment="Center" HorizontalAlignment="Left" Cursor="Hand"
+                                 MouseLeftButtonUp="imgpopup_MouseLeftButtonUp" Kind="Web" />
+
+                        <StackPanel x:Name="panellink" Margin="5,0,0,0" >
+                            <materialDesign:PopupEx x:Name="konamipopup" Placement="Right" IsOpen="False" Visibility="Visible"
+                                    PlacementTarget="{Binding ElementName=panellink}" >
+                                <Border x:Name="borderweb" BorderThickness="1" Height="20">
+                                    <TextBlock Name="txtkonami" VerticalAlignment="Center" >
+                                        <Hyperlink Name="linkkonamidb" Click="linkkonamidb_Click" TextDecorations="None">
+                                            <Run Text=" Konami DB" />
+                                        </Hyperlink>
+                                        <Run Text="|" />
+                                        <Hyperlink Name="linkyugipedia" Click="linkyugipedia_Click" TextDecorations="None" >
+                                            <Run Text="Yugipedia" />
+                                        </Hyperlink>
+                                        <Run Text="|" />
+                                        <!-- RequestNavigate="linkYGOResources_RequestNavigate" -->
+                                        <Hyperlink Name="linkYGOResources" Click="linkYGOResources_Click" TextDecorations="None" >
+                                            <Run Text="YGOResources " />
+                                        </Hyperlink>
+                                    </TextBlock>
+                                </Border>
+                            </materialDesign:PopupEx>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Border Grid.Row="1" Background="Gray" Cursor="SizeNS" x:Name="separatorGrRight"
+                            MouseMove="separatorGrRight_MouseMove"
+                            MouseDown="separatorGrRight_MouseDown"
+                            MouseUp="separator_MouseUp" />
+
+                    <!-- File Content -->
+                    <avalonEdit:TextEditor Name="textEditor" Grid.Row="2" Background="Transparent"
+                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                   VerticalScrollBarVisibility="auto"
+                                   HorizontalScrollBarVisibility="Auto"
+                                   ShowLineNumbers="True" />
+
+                    <StackPanel x:Name="panelnavi" Grid.Row="2" Width="6" Height="6" Panel.ZIndex="3" HorizontalAlignment="Left" VerticalAlignment="Top" >
+                        <Border x:Name="bordernavigate" Width="6" Height="6" MouseLeftButtonDown="bordernavigate_MouseLeftButtonDown" />
+                    </StackPanel>
+
+                </Grid>
+            </Grid>
+        </materialDesign:Card>
+    </Grid>
+
+</Window>

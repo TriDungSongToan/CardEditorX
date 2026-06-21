@@ -1,0 +1,523 @@
+﻿<UserControl x:Class="CardEditor.ChatBotControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:hc="clr-namespace:HandyControl.Controls;assembly=HandyControl"
+             xmlns:sdl="clr-namespace:Sdl.MultiSelectComboBox.Themes.Generic;assembly=Sdl.MultiSelectComboBox"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:local="clr-namespace:CardEditor"
+             xmlns:Models="clr-namespace:CardEditor.Models"
+             xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
+             xmlns:Lag="clr-namespace:CardEditor.Localization" 
+             mc:Ignorable="d"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+             TextElement.FontWeight="Medium"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="Auto"
+             FontFamily="{DynamicResource MaterialDesignFont}"
+             Background="{Binding Background}"
+             Foreground="{Binding Foreground}"
+             d:DesignHeight="750" d:DesignWidth="545"
+             DataContext="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+             >
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="TextMessageTemplate" DataType="{x:Type Models:ChatMessage}">
+            <Border Background="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Background}"
+                    BorderBrush="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                    BorderThickness="0.7" CornerRadius="5" Margin="5" Padding="10">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <!-- Mặc định căn trái -->
+                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                        <Style.Triggers>
+                            <!-- Nếu Sender là "User", căn phải -->
+                            <DataTrigger Binding="{Binding Sender}" Value="AI">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                            </DataTrigger>
+                            
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel>
+                    <TextBlock Text="{Binding Sender}" FontWeight="Bold"
+                               Foreground="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                               FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                               FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Sender}" Value="User">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBox Text="{Binding Message}" TextWrapping="Wrap" IsReadOnly="True" BorderThickness="0"
+                             materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                             Foreground="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                             FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                             FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ImageMessageTemplate" DataType="{x:Type Models:ChatMessage}">
+            <Border Background="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Background}"
+                    BorderBrush="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                    BorderThickness="0.7" CornerRadius="5" Margin="5" Padding="10">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Sender}" Value="AI">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel>
+                    <TextBlock Text="{Binding Sender}" FontWeight="Bold"
+                               Foreground="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                               FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                               FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}" >
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Sender}" Value="User">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Image Source="{Binding Message, FallbackValue='Images/Blank.png'}"
+                           Width="250" MaxHeight="300" Stretch="Uniform"
+                           MouseLeftButtonUp="Image_MouseLeftButtonUp" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="VideoMessageTemplate" DataType="{x:Type Models:ChatMessage}">
+            <Border Background="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Background}"
+                    BorderBrush="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                    BorderThickness="0.7" CornerRadius="5" Margin="5" Padding="10">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Sender}" Value="User">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel>
+                    <TextBlock Text="{Binding Sender}" FontWeight="Bold"
+                               Foreground="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                               FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                               FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}" >
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Sender}" Value="User">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <MediaElement Source="{Binding Message}" Width="200" Height="150" LoadedBehavior="Play" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FileMessageTemplate" DataType="{x:Type Models:ChatMessage}">
+            <Border Background="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Background}"
+                    BorderBrush="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                    BorderThickness="1" CornerRadius="5" Margin="5" Padding="10">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Sender}" Value="User">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel>
+                    <TextBlock Text="{Binding Sender}" FontWeight="Bold"
+                               Foreground="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                               FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                               FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}" >
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Sender}" Value="User">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBox Text="{Binding Message}" IsReadOnly="True" BorderThickness="0"
+                             TextDecorations="Underline" Cursor="Hand" TextWrapping="Wrap"
+                             Foreground="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=ThemeColor}"
+                             FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                             FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}"
+                             MouseDoubleClick="FileMessage_MouseDoubleClick"
+                             />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <local:ChatMessageTemplateSelector x:Key="MessageTemplateSelector"
+                                          TextTemplate="{StaticResource TextMessageTemplate}"
+                                          ImageTemplate="{StaticResource ImageMessageTemplate}"
+                                          VideoTemplate="{StaticResource VideoMessageTemplate}"
+                                          FileTemplate="{StaticResource FileMessageTemplate}"/>
+    </UserControl.Resources>
+
+    <Grid>
+        <materialDesign:DrawerHost>
+            <materialDesign:DrawerHost.LeftDrawerContent >
+                <Grid Background="{Binding Background}" Width="200" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                Background="Gray" Opacity="0.3" />
+                        <materialDesign:ColorZone Grid.Row="0" Background="Transparent"
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Stretch" >
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid Grid.Column="0" >
+                                    <TextBlock Text="{Lag:Localize ChatList}" FontWeight="Bold" Margin="10"
+                                               HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                                               Foreground="{Binding Foreground}"
+                                               FontFamily="{Binding FontFamily}"
+                                               FontSize="{Binding FontSize}"/>
+                                </Grid>
+                                
+                                <!--<Grid Grid.Column="1" >
+                                    <Button HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Margin="0" Padding="0" Width="25" Height="25"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Background="Transparent" Foreground="{Binding Foreground}"
+                                            BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                            Click="NewChat_Click" >
+                                        <materialDesign:PackIcon Kind="NewBox" Width="25" Height="25" />
+                                    </Button>
+                                </Grid>-->
+                                
+                                <Grid Grid.Column="1" >
+                                    <Button HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Margin="0" Padding="0" Width="25" Height="25"
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            ToolTip="{Lag:Localize DeleteChat}"
+                                            Background="Transparent" Foreground="{Binding Foreground}"
+                                            BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                            Click="DeleteChat_Click" >
+                                        <materialDesign:PackIcon Kind="Delete" Width="25" Height="25" />
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </materialDesign:ColorZone>
+                    </Grid>
+
+                    <Grid Grid.Row="1" >
+                        <ListBox x:Name="ChatHistory" Background="{Binding Background}"
+                             ItemsSource="{Binding Source={x:Static ViewModels:ChatBotViewModel.Instance}, Path=ChatSessions}"
+                             SelectionChanged="ChatHistory_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" MaxWidth="200" TextTrimming="CharacterEllipsis"
+                                               HorizontalAlignment="Left" VerticalAlignment="Center"
+                                               Foreground="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Foreground}"
+                                               FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                                               FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Tag" Value="{Binding Id}"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                    <Setter Property="Padding" Value="5"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.Resources>
+                                <Style TargetType="ScrollBar">
+                                    <Setter Property="Background" Value="{Binding Background}" />
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </Style>
+                            </ListBox.Resources>
+                        </ListBox>
+                    </Grid>
+                </Grid>
+            </materialDesign:DrawerHost.LeftDrawerContent>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="Gray" Opacity="0.3" />
+                    <materialDesign:ColorZone Background="Transparent">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0" >
+                                <Button HorizontalAlignment="Left" VerticalAlignment="Top"
+                                        Margin="0" Padding="0"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        BorderThickness="0,0,0.5,0" BorderBrush="{Binding Foreground}"
+                                        Command="{x:Static materialDesign:DrawerHost.OpenDrawerCommand}"
+                                        CommandParameter="{x:Static Dock.Left}" >
+                                    <materialDesign:PackIcon Kind="Menu" Width="50" Height="25" />
+                                </Button>
+                            </Grid>
+
+                            <Grid Grid.Column="1" >
+                                <TextBlock x:Name="blChatHeader"
+                                           Text="{Binding Source={x:Static ViewModels:ChatBotViewModel.Instance}, Path=ChatHeader}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}"
+                                           Foreground="{Binding Foreground}" />
+                            </Grid>
+
+                            <Grid Grid.Column="2" >
+                                <Button x:Name="btnNewChat" Grid.Column="0" Width="30" Height="30"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Lag:Localize NewChat}"
+                                        Margin="0,0,10,0" Padding="0" BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        Click="NewChat_Click" >
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <materialDesign:PackIcon Kind="NewBox" Width="25" Height="25" />
+                                </Button>
+                            </Grid>
+
+                            <Grid Grid.Column="3" >
+                                <Button x:Name="btnChatSetting" Width="30" Height="30"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Lag:Localize Setting}"
+                                        Margin="0,0,10,0" Padding="0" BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        Click="btnChatSetting_Click" >
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <materialDesign:PackIcon Kind="CogOutline" Width="25" Height="25" />
+                                </Button>
+                            </Grid>
+
+                            <Grid Grid.Column="4" >
+                                <Button x:Name="btnClose" Width="30" Height="30"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Margin="0,0,10,0" Padding="0" BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        Click="btnClose_Click" >
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <materialDesign:PackIcon Kind="Close" Width="25" Height="25" />
+                                </Button>
+                            </Grid>
+
+                        </Grid>
+                    </materialDesign:ColorZone>
+                </Grid>
+
+                <Grid Grid.Row="1" >
+                    <ListBox x:Name="ChatListBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                             HorizontalContentAlignment="Stretch" Margin="5"
+                             ItemsSource="{Binding Source={x:Static ViewModels:ChatBotViewModel.Instance}, Path=ChatMessages}"
+                             ItemTemplateSelector="{StaticResource MessageTemplateSelector}"
+                             Background="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Background}"
+                             >
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.Resources>
+                            <Style TargetType="ScrollBar">
+                                <Setter Property="Background" Value="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=Background}" />
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Style>
+                        </ListBox.Resources>
+                    </ListBox>
+                </Grid>
+
+                <Grid Grid.Row="2" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="Gray" Opacity="0.3" CornerRadius="10,10,5,5" />
+
+                    <Border Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="Transparent" CornerRadius="10,10,5,5" Padding="10,10,10,7" >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" >
+                                <TextBox x:Name="MessageTextBox"
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                         HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                                         TextWrapping="Wrap" BorderThickness="0" MaxHeight="300"
+                                         materialDesign:HintAssist.Hint="{Lag:Localize HintChat}"
+                                         materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                         KeyDown="MessageTextBox_KeyDown"
+                                         PreviewKeyDown="MessageTextBox_PreviewKeyDown"
+                                         FontFamily="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontFamily}"
+                                         FontSize="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}, Path=FontSize}"/>
+                            </Grid>
+
+                            <Grid Grid.Row="2" >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="3" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="3" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button x:Name="btnFile" Grid.Column="0" Width="35" Height="35"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Lag:Localize FileChat}"
+                                        Margin="0" Padding="0" BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        Click="SendFile_Click" >
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <materialDesign:PackIcon Kind="Paperclip" Width="25" Height="25" />
+                                </Button>
+                                <Button x:Name="btnImage" Grid.Column="2" Width="35" Height="35"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Lag:Localize ImageChat}"
+                                        Margin="0" Padding="0" BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        Click="SendImage_Click" >
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <materialDesign:PackIcon Kind="ImageOutline" Width="25" Height="25" />
+                                </Button>
+                                <Button x:Name="btnVideo" Grid.Column="4" Width="35" Height="35"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="{Lag:Localize VideoChat}"
+                                        Margin="0" Padding="0" BorderThickness="0.5" BorderBrush="{Binding Foreground}"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        Click="SendVideo_Click" >
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <materialDesign:PackIcon Kind="VideoImage" Width="25" Height="25" />
+                                </Button>
+
+                                <Button x:Name="btnSend" Grid.Column="6" Width="35" Height="35"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Margin="0" Padding="0" BorderThickness="0" BorderBrush="{Binding Foreground}"
+                                        Background="Transparent" Foreground="{Binding Foreground}"
+                                        Click="SendMessage_Click" >
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <materialDesign:PackIcon Kind="Send" Width="25" Height="25" />
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </materialDesign:DrawerHost>
+    </Grid>
+</UserControl>

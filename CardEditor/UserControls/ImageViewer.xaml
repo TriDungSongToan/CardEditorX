@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="CardEditor.UserControls.ImageViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
+             xmlns:controls="clr-namespace:Han.Wpf.ViewportControl;assembly=Han.Wpf.ViewportControl"
+             mc:Ignorable="d"
+             Unloaded="UserControl_Unloaded"
+             d:DesignHeight="800" d:DesignWidth="1200" >
+    <Grid>
+        <Border Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" Margin="0">
+            <controls:Viewport x:Name="ViewportImage" MinZoom="1" MaxZoom="50" ZoomSpeed="1.1" SnapsToDevicePixels="True" UseLayoutRounding="True" >
+                <Image Source="{Binding ImageSource}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       RenderOptions.BitmapScalingMode="HighQuality" RenderOptions.EdgeMode="Aliased" />
+            </controls:Viewport>
+        </Border>
+    </Grid>
+</UserControl>

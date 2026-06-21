@@ -1,0 +1,32 @@
+﻿<Window x:Class="ScriptSupport.Legacy.CustomMessageBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ScriptSupport.Legacy"
+        xmlns:Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        Background="{DynamicResource MaterialDesign.Brush.Background}"
+        TextElement.FontWeight="Medium"
+        Style="{StaticResource MaterialDesignWindow}"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True"
+        Title="Message" Height="150" Width="250" >
+    <Grid>
+        <materialDesign:Card Style="{StaticResource MaterialDesignOutlinedCard}" BorderThickness="1" BorderBrush="Black" >
+            <Grid x:Name="maingrid">
+                <Border x:Name="border" Height="30" VerticalAlignment="Top" MouseLeftButtonDown="Border_MouseLeftButtonDown">
+                    <TextBlock x:Name="tbMessagetitle" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" />
+                </Border>
+                <TextBlock Name="Messageconten" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="16" />
+                <Button x:Name="btnOK" Content="OK" IsDefault="True" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="100" Height="30" Margin="0,0,0,20" Click="OkButton_Click"/>
+            </Grid>
+        </materialDesign:Card>
+    </Grid>
+</Window>

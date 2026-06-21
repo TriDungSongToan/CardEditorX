@@ -1,0 +1,226 @@
+﻿<Window x:Class="CardEditor.ChooseTabWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:hc="clr-namespace:HandyControl.Controls;assembly=HandyControl"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Medium"
+        Style="{StaticResource MaterialDesignWindow}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Background="Transparent"
+        Foreground="{Binding Foreground}"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        mc:Ignorable="d"
+        AllowsTransparency="True"
+        ResizeMode="NoResize" 
+        SizeToContent="WidthAndHeight"
+        WindowStyle="None"
+        xmlns:local="clr-namespace:CardEditor"
+        DataContext="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+        ShowInTaskbar="False"
+        Title="Select Tab" Height="auto" Width="auto">
+
+    <materialDesign:Card UniformCornerRadius="5" BorderThickness="1" Width="auto" d:FlowDirection="LeftToRight"
+                         FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+        <Grid Margin="5" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="btndata" Grid.Column="0" Width="75" Height="25" Margin="0" Padding="0"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        FontSize="{Binding FontSize}" Click="btndata_Click"
+                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FFff8400" Offset="0"/>
+                            <GradientStop Color="#FFff8400" Offset="0.2"/>
+                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
+                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Content>
+                        <Grid Width="75" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="2" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="1" >
+                                <materialDesign:PackIcon Width="15" Height="15" Kind="DatabasePlusOutline"
+                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Grid>
+                            <Grid Grid.Column="2" >
+                                <TextBlock Text="Data" Padding="0" Margin="0"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontFamily="{Binding FontFamily}" FontSize="16" />
+                            </Grid>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                
+                <Button x:Name="btndeck" Grid.Column="2" Width="75" Height="25" Margin="0" Padding="0"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        FontSize="{Binding FontSize}" Click="btndeck_Click"
+                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FFff8400" Offset="0"/>
+                            <GradientStop Color="#FFff8400" Offset="0.2"/>
+                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
+                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Content>
+                        <Grid Width="75" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="2" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="1" >
+                                <materialDesign:PackIcon Width="15" Height="15" Kind="Cards"
+                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Grid>
+                            <Grid Grid.Column="2" >
+                                <TextBlock Text="Deck" Padding="0" Margin="0"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontFamily="{Binding FontFamily}" FontSize="16" />
+                            </Grid>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                
+                <Button x:Name="btncode" Grid.Column="4" Width="75" Height="25" Margin="0" Padding="0"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        FontSize="{Binding FontSize}" Click="btncode_Click"
+                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FFff8400" Offset="0"/>
+                            <GradientStop Color="#FFff8400" Offset="0.2"/>
+                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
+                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Content>
+                        <Grid Width="75" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="2" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="1" >
+                                <materialDesign:PackIcon Width="15" Height="15" Kind="ScriptTextOutline"
+                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Grid>
+                            <Grid Grid.Column="2" >
+                                <TextBlock Text="Code" Padding="0" Margin="0"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontFamily="{Binding FontFamily}" FontSize="16" />
+                            </Grid>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="2" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="btnimage" Grid.Column="0" Width="100" Height="25" Margin="0" Padding="0"
+                        HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                        FontSize="{Binding FontSize}" Click="btnimage_Click"
+                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FFff8400" Offset="0"/>
+                            <GradientStop Color="#FFff8400" Offset="0.2"/>
+                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
+                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Content>
+                        <Grid Width="100" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="2" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="1" >
+                                <materialDesign:PackIcon Width="15" Height="15" Kind="ImagePlusOutline"
+                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Grid>
+                            <Grid Grid.Column="2" >
+                                <TextBlock Text="Image" Padding="0" Margin="0"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontFamily="{Binding FontFamily}" FontSize="16" />
+                            </Grid>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+
+                <Button x:Name="btnbanlist" Grid.Column="2" Width="100" Height="25" Margin="0" Padding="0"
+                        HorizontalAlignment="Left" VerticalAlignment="Stretch"
+                        FontSize="{Binding FontSize}" Click="btnbanlist_Click"
+                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#FFff8400" Offset="0"/>
+                            <GradientStop Color="#FFff8400" Offset="0.2"/>
+                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
+                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <Button.Content>
+                        <Grid Width="100" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="2" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="1" >
+                                <materialDesign:PackIcon Width="15" Height="15" Kind="Cancel"
+                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Grid>
+                            <Grid Grid.Column="2" >
+                                <TextBlock Text="BanList" Padding="0" Margin="0"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontFamily="{Binding FontFamily}" FontSize="16" />
+                            </Grid>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+                
+            </Grid>
+        </Grid>
+    </materialDesign:Card>
+</Window>
