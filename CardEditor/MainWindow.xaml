@@ -160,7 +160,7 @@
                         </MenuItem>
 
                         <!--New BanList-->
-                        <MenuItem Header="{Lag:Localize BanListMn}" InputGestureText="Ctrl + N + B  "
+                        <MenuItem Header="{Lag:Localize BanList}" InputGestureText="Ctrl + N + B  "
                                   Command="{x:Static Commands:CustomCommands.NewBanList}"
                                   Margin="0" Padding="10,0,0,0" >
                             <MenuItem.Icon>
@@ -203,7 +203,7 @@
                         </MenuItem>
 
                         <!--Open BanList-->
-                        <MenuItem Header="{Lag:Localize BanListMn}" InputGestureText="Ctrl + O + B  "
+                        <MenuItem Header="{Lag:Localize BanList}" InputGestureText="Ctrl + O + B  "
                                   Command="{x:Static Commands:CustomCommands.OpenBanList}"
                                   Margin="0" Padding="10,0,0,0" >
                             <MenuItem.Icon>
@@ -233,7 +233,7 @@
                                 <Image Source="pack://application:,,,/Images/Menu/Win/Deckeditor.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem x:Name="menuRecentBanList" Header="{Lag:Localize BanListMn}" Margin="0" Padding="10,0,15,0" >
+                        <MenuItem x:Name="menuRecentBanList" Header="{Lag:Localize BanList}" Margin="0" Padding="10,0,15,0" >
                             <MenuItem.Icon>
                                 <Image Source="pack://application:,,,/Images/Menu/Win/Banlisteditor.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
@@ -405,7 +405,15 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem Header="{Lag:Localize filCDB}" ToolTip="{Lag:Localize toolFilterCDB}" Margin="0" Padding="10,0,15,0" >
+                    <MenuItem x:Name="menuItemFilterCard" Header="{Lag:Localize tlFilter}"
+                              Margin="0" Padding="10,0,15,0" Click="menuItemFilterCard_Click"  >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="FilterMultipleOutline" Width="auto" Height="auto" Margin="0"
+                                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="Filter With CDB File" ToolTip="{Lag:Localize toolFilterCDB}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Card/Filter.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
@@ -423,7 +431,7 @@
                         </MenuItem>
                     </MenuItem>
 
-                    <MenuItem Header="{Lag:Localize filYDK}" ToolTip="{Lag:Localize toolFilterYDK}" Margin="0" Padding="10,0,15,0" >
+                    <MenuItem Header="Filter With YDK File" ToolTip="{Lag:Localize toolFilterYDK}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Card/Filter.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
@@ -532,14 +540,14 @@
                         </MenuItem>
                     </MenuItem>
 
-                    <MenuItem Header="{Lag:Localize Import}" Visibility="{Binding CardVisibility}"
+                    <MenuItem Header="Import" Visibility="{Binding CardVisibility}"
                               Margin="0" Padding="10,0,15,0" Click="menuImport_Click" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Data/Import/Import.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem Header="{Lag:Localize Replace}" Visibility="{Binding DataEditVisibility}"
+                    <MenuItem Header="Replace" Visibility="{Binding DataEditVisibility}"
                               Margin="0" Padding="10,0,15,0" ToolTip="{Lag:Localize toolReplaceText}" Click="menuReplace_Click" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Data/Replace.ico" Width="auto" Height="auto" Margin="0" />

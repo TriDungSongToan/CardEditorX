@@ -147,7 +147,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadType(string LanguageCode)
@@ -195,7 +195,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadTypeImage(string LanguageCode)
@@ -235,7 +235,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadRace(string LanguageCode)
@@ -282,7 +282,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadChar(string LanguageCode)
@@ -329,7 +329,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadAttri(string LanguageCode)
@@ -377,7 +377,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadSetCode(string LanguageCode, string Game)
@@ -425,7 +425,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadCategory(string LanguageCode, string Game)
@@ -470,7 +470,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadLinkArrow(string LanguageCode)
@@ -510,7 +510,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadFlag(string LanguageCode)
@@ -556,7 +556,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadSpecialCharacters(string LanguageCode)
@@ -598,7 +598,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
 

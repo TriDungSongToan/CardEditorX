@@ -288,7 +288,7 @@ namespace CardEditor.Services
             catch (ConfigurationErrorsException ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorReadConf.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Read.ToText(), CMess.Config.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 gitPath = @"C:\Program Files\Git\cmd\git.exe";
             }
             catch (Exception ex)
@@ -457,7 +457,7 @@ namespace CardEditor.Services
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        CMess.errorUpdate.ToText(), new[] { CMess.ok.ToText() });
+                        string.Format(CMess.PlaceholderError.ToText(), CMess.Update.ToText()), new[] { CMess.ok.ToText() });
                     return false;
                 }
             }

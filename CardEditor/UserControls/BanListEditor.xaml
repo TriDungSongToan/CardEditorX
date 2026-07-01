@@ -551,7 +551,7 @@
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             materialDesign:HintAssist.Hint="{Lag:Localize selectFolder}"
+                                             materialDesign:HintAssist.Hint="{Lag:Localize Folder}"
                                              Behaviors:FileDropBehavior.Enable="True"
                                              Behaviors:PasteSanitizerBehavior.Enable="True"
                                              TextOptions.TextFormattingMode="Display"
@@ -754,7 +754,7 @@
                                     </Button.Background>
                                     <Button.Content>
                                         <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
-                                            <TextBlock Text="{Lag:Localize tlSearch}"
+                                            <TextBlock Text="{Lag:Localize tlFilter}"
                                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                        FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                        VerticalAlignment="Center" HorizontalAlignment="Center" />

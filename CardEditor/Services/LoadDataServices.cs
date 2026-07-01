@@ -463,7 +463,7 @@ namespace CardEditor.Services
                 var worksheet = package.Workbook.Worksheets.FirstOrDefault();
                 if (worksheet == null || !CheckDatabase.CheckExcelValidity(worksheet))
                 {
-                    return (null, CMess.invaFileForm.ToText());
+                    return (null, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
                 }
 
                 int lastRow = worksheet.Dimension?.End.Row ?? 1;
@@ -553,7 +553,7 @@ namespace CardEditor.Services
                 var worksheet = package.Workbook.Worksheets.FirstOrDefault();
                 if (worksheet == null || !CheckDatabase.CheckExcelValidity(worksheet))
                 {
-                    return (null, CMess.invaFileForm.ToText());
+                    return (null, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
                 }
 
                 int lastRow = worksheet.Dimension?.End.Row ?? 1;

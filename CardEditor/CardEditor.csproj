@@ -19,6 +19,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <LangVersion>10.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -404,6 +405,7 @@
     <Compile Include="Commands\OptimizedKeySequenceGesture.cs" />
     <Compile Include="Converter\BitToBoolConverter.cs" />
     <Compile Include="Converter\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converter\ColorWithOpacityConverter.cs" />
     <Compile Include="Converter\StringConvert.cs" />
     <Compile Include="Editor\Analysis\DescriptionPresenter.cs" />
     <Compile Include="Editor\Analysis\SymbolGraphBuilder.cs" />
@@ -431,8 +433,14 @@
     <Compile Include="Helpers\FileDiaLogHelper.cs" />
     <Compile Include="Helpers\FilePathHelper.cs" />
     <Compile Include="Helpers\FindNameHelper.cs" />
+    <Compile Include="Helpers\GetPenScaleHelp.cs" />
+    <Compile Include="Helpers\LanguageDetector.cs" />
     <Compile Include="ImageGene\TextLayoutEngine.cs" />
+    <Compile Include="Models\AppContext.cs" />
+    <Compile Include="Models\CreditItem.cs" />
     <Compile Include="Models\FileItem.cs" />
+    <Compile Include="Models\PendulumLanguage.cs" />
+    <Compile Include="Models\ResultItems.cs" />
     <Compile Include="Models\KonamiID.cs" />
     <Compile Include="Models\Settings\FilterSetting.cs" />
     <Compile Include="Services\ImageCacheService.cs" />
@@ -477,8 +485,10 @@
       <DependentUpon>ScriptDescription.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\BanListRawDataViewModel.cs" />
+    <Compile Include="ViewModels\CreditsViewModel.cs" />
     <Compile Include="ViewModels\EnumsViewModel.cs" />
     <Compile Include="ViewModels\KonamiIDViewModel.cs" />
+    <Compile Include="ViewModels\PenLanguageViewModel.cs" />
     <Compile Include="ViewModels\ScriptDescriptionViewModel.cs" />
     <Compile Include="ViewModels\ScriptViewModel.cs" />
     <Compile Include="ViewModels\SettingViewModel.cs" />
@@ -502,6 +512,9 @@
     <Compile Include="UserControls\DeckEditor.xaml.cs">
       <DependentUpon>DeckEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\FilterCard.xaml.cs">
+      <DependentUpon>FilterCard.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GenesysEditor.xaml.cs">
       <DependentUpon>GenesysEditor.xaml</DependentUpon>
     </Compile>
@@ -509,7 +522,6 @@
     <Compile Include="Helpers\JoinStringHelper.cs" />
     <Compile Include="Manager\GenesysID.cs" />
     <Compile Include="Manager\SettingsManager.cs" />
-    <Compile Include="Models\AppContext .cs" />
     <Compile Include="Models\CardGenesys.cs" />
     <Compile Include="Models\Chat.cs" />
     <Compile Include="Models\Constant.cs" />
@@ -672,6 +684,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\DeckEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FilterCard.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

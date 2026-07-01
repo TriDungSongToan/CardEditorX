@@ -82,20 +82,20 @@ namespace CardEditor.ImageGene
                 if (!Regex.IsMatch(ConfigViewModel.Instance.imageSetting.ImageSizeString, _sizePattern) ||
                     !Regex.IsMatch(ConfigViewModel.Instance.imageSetting.StampSizeString, _sizePattern) ||
                     !Regex.IsMatch(ConfigViewModel.Instance.imageSetting.StampMarrginString, _sizePattern))
-                    return (false, CMess.invaSetting.ToText());
+                    return (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
 
                 if (string.IsNullOrWhiteSpace(ConfigViewModel.Instance.imageSetting.OutPutFolder) ||
                     ConfigViewModel.Instance.imageSetting.OutPutFolder.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0 ||
                     !System.IO.Path.IsPathRooted(ConfigViewModel.Instance.imageSetting.OutPutFolder) ||
                     !Directory.Exists(ConfigViewModel.Instance.imageSetting.OutPutFolder) ||
                     !await HasReadWritePermission(ConfigViewModel.Instance.imageSetting.OutPutFolder))
-                    return (false, CMess.invaSetting.ToText());
+                    return (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
 
                 if (ConfigViewModel.Instance.imageSetting.StampPosition < 0 ||
                     string.IsNullOrEmpty(ConfigViewModel.Instance.imageSetting.BackgroundArt) ||
                     string.IsNullOrEmpty(ConfigViewModel.Instance.imageSetting.Foild) ||
                     ConfigViewModel.Instance.imageSetting.Secret < 0 || ConfigViewModel.Instance.imageSetting.Secret > 3)
-                    return (false, CMess.invaSetting.ToText());
+                    return (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
 
                 isValid = true;
                 return (true, string.Empty);
@@ -103,7 +103,7 @@ namespace CardEditor.ImageGene
             catch (Exception ex)
             {
                 isValid = false;
-                return (false, $"{CMess.errorReadConf.ToText()} {ex.Message}");
+                return (false, $"{string.Format(CMess.ThreePlaceholder.ToText(), CMess.error.ToText(), CMess.Read.ToText(), CMess.Config.ToText())} {ex.Message}"); //Error Read Config:
             }
         }
         private static async Task<bool> HasReadWritePermission(string folderPath)

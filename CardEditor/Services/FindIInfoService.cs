@@ -222,7 +222,7 @@ namespace CardEditor.Services
         public static string FindOrCreateLuaFile(string directoryPath, string password, string luaContent)
         {
             if (string.IsNullOrWhiteSpace(directoryPath) || string.IsNullOrWhiteSpace(password))
-                throw new ArgumentException(CMess.invaEnco.ToText());
+                throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Encoding.ToText()));
 
             string targetFileName = $"c{password}.lua";
             try
@@ -257,13 +257,13 @@ namespace CardEditor.Services
             }
             catch (Exception ex)
             {
-                throw new IOException($"{CMess.errorCreaLua.ToText()} {ex.Message}");
+                throw new IOException($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText())} {ex.Message}");
             }
         }
 
         public static string FindScriptFile(string password, string directoryPath = null, bool searchInDataSource = true)
         {
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException(CMess.invaCardID.ToText());
+            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()));
 
             string targetFileName = $"c{password}.lua";
             var roots = new List<string>();
@@ -335,7 +335,7 @@ namespace CardEditor.Services
         public static string CreateScriptFile(string directoryPath, string password, string luaContent)
         {
             if (string.IsNullOrWhiteSpace(directoryPath) || string.IsNullOrWhiteSpace(password))
-                throw new ArgumentException(CMess.invaEnco.ToText());
+                throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Encoding.ToText()));
 
             string targetFileName = $"c{password}.lua";
             try
@@ -361,7 +361,7 @@ namespace CardEditor.Services
             }
             catch (Exception ex)
             {
-                throw new IOException($"{CMess.errorCreaLua.ToText()} {ex.Message}");
+                throw new IOException($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText())} {ex.Message}");
             }
         }
     }

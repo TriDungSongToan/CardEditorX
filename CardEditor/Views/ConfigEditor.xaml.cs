@@ -457,7 +457,7 @@ namespace CardEditor
                 if (string.IsNullOrWhiteSpace(txtUserName.Text))
                     throw new ArgumentNullException($"{CMess.UserName.ToText()} {CMess.cannotEmpty.ToText()}");
                 if (cmblanguage.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Language");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Language");
 
                 #region datasource
                 if (string.IsNullOrWhiteSpace(txtdatasource.Text))
@@ -466,24 +466,24 @@ namespace CardEditor
                 }
                 if (!System.IO.Path.IsPathRooted(txtdatasource.Text))
                 {
-                    throw new ArgumentException(CMess.invaDataPath.ToText());
+                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Path.ToText()));
                 }
                 if(txtdatasource.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0)
                 {
-                    throw new ArgumentException(CMess.invaFolderPath.ToText());
+                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
                 }
                 if (!Directory.Exists(txtdatasource.Text))
                 {
-                    throw new DirectoryNotFoundException(CMess.invaFolderPath.ToText());
+                    throw new DirectoryNotFoundException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
                 }
                 if(!HasReadWritePermission(txtdatasource.Text))
                 {
-                    throw new UnauthorizedAccessException(CMess.invaPermi.ToText());
+                    throw new UnauthorizedAccessException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()));
                 }
                 #endregion
 
                 if (cmbgame.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Game");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Game");
                 #endregion
 
                 #region Display Setting
@@ -497,10 +497,10 @@ namespace CardEditor
                     throw new ArgumentException(CMess.invaForeground.ToText());
 
                 if (cmbtheme.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Theme");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Theme");
 
                 if (cmbfontfamily.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Font Family");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Font Family");
                 if (int.TryParse(txtfontsize.Text, out int fontsizechk))
                 {
                     if (fontsizechk <= 0 || fontsizechk > 50)
@@ -518,15 +518,15 @@ namespace CardEditor
                 }
 
                 if (cmbcodehighlight.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - High Light");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - High Light");
 
                 if (cmbFlowDirection.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - FlowDirection");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - FlowDirection");
                 if (cmbTextAlignment.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - TextAlignment");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - TextAlignment");
 
                 if (cmbArrange.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Arrange");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Arrange");
                 #endregion
 
                 #region Image Setting
@@ -538,19 +538,19 @@ namespace CardEditor
                 }
                 if (!System.IO.Path.IsPathRooted(txtOutPutPath.Text))
                 {
-                    throw new ArgumentException(CMess.invaDataPath.ToText());
+                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Path.ToText()));
                 }
                 if (txtOutPutPath.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0)
                 {
-                    throw new ArgumentException(CMess.invaFolderPath.ToText());
+                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
                 }
                 if (!Directory.Exists(txtOutPutPath.Text))
                 {
-                    throw new DirectoryNotFoundException(CMess.invaFolderPath.ToText());
+                    throw new DirectoryNotFoundException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
                 }
                 if (!HasReadWritePermission(txtOutPutPath.Text))
                 {
-                    throw new UnauthorizedAccessException(CMess.invaPermi.ToText());
+                    throw new UnauthorizedAccessException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()));
                 }
                 #endregion
 
@@ -580,14 +580,14 @@ namespace CardEditor
                 }
 
                 if (cmbstampposition.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Stamp Position");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Stamp Position");
 
                 if (cmbFoild.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Foild Art");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Foild Art");
                 if (cmbSecret.SelectedItem == null)
-                    throw new ArgumentException(CMess.invaSetting.ToText() + " - Secret Art");
+                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Secret Art");
                 if (tbtnIncludeStamp.IsChecked == null)
-                    throw new InvalidOperationException(CMess.invaSetting.ToText());
+                    throw new InvalidOperationException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
                 #endregion
 
                 #region Deck Editor
@@ -601,7 +601,7 @@ namespace CardEditor
                     tbtnConfirmDelete.IsChecked == null ||
                     tbtnIgnoreSize.IsChecked == null ||
                     tbtnIgnoreContent.IsChecked == null)
-                    throw new ArgumentNullException(CMess.invaSetting.ToText());
+                    throw new ArgumentNullException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
                 #endregion
 
                 #region Toggle
@@ -611,7 +611,7 @@ namespace CardEditor
                     tbtnIncludeStamp.IsChecked == null ||
                     tbtndeveloper.IsChecked == null)
                 {
-                    throw new InvalidOperationException(CMess.invaSetting.ToText());
+                    throw new InvalidOperationException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
                 }
                 #endregion
 
@@ -619,13 +619,14 @@ namespace CardEditor
                 if (saveSuccess)
                 {
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        CMess.saveSettingSuc.ToText(), new[] { CMess.ok.ToText() });
+                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()),
+                        new[] { CMess.ok.ToText() });
                     ConfigChanged?.Invoke();
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.invaSetting.ToText()}\n{errorMessage}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText())}\n{errorMessage}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (ArgumentOutOfRangeException ex)

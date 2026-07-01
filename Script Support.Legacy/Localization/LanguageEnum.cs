@@ -79,7 +79,7 @@ namespace ScriptSupport.Legacy.Localization
         tlModify = 0x112,
         tlUndo = 0x113,
         toolUndo = 0x114,
-        tlSearch = 0x115,
+        tlFilter = 0x115,
         toolSearch = 0x116,
         clearFilter = 0x117,
 

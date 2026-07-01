@@ -85,7 +85,7 @@ namespace CardEditor
                 }
                 catch (Exception ex)
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorSaveConf.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Config.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 }
             }
         }

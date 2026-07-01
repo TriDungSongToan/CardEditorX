@@ -733,7 +733,7 @@
                                                       materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
                                                       materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
                                                 <ComboBoxItem Content="{Lag:Localize AskMe}" />
-                                                <ComboBoxItem Content="{Lag:Localize Overwrite}" />
+                                                <ComboBoxItem Content="{Lag:Localize OverwriteDupli}" />
                                                 <ComboBoxItem Content="{Lag:Localize Appendwrite}" />
                                                 <ComboBoxItem Content="{Lag:Localize CreateNew}" />
                                             </ComboBox>

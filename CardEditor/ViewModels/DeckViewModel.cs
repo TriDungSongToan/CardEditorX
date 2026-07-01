@@ -126,7 +126,7 @@ namespace CardEditor.ViewModels
 
         public (List<ulong> MainIDs, List<ulong> ExtraIDs, List<ulong> SideIDs, string) GetListIDFromYDK(string input, string newName = null, string newPath = null)
         {
-            if (string.IsNullOrEmpty(input)) return (null, null, null, CMess.invaDataForm.ToText());
+            if (string.IsNullOrEmpty(input)) return (null, null, null, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
 
             try
             {
@@ -209,14 +209,14 @@ namespace CardEditor.ViewModels
             if (!string.IsNullOrWhiteSpace(filePath)) filePathFinal = filePath;
             else
             {
-                if (string.IsNullOrWhiteSpace(fileName)) return (false, CMess.invaDataForm.ToText());
+                if (string.IsNullOrWhiteSpace(fileName)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
                 if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath)) folderPath = DeckFolderPath;
                 filePathFinal = Path.Combine(folderPath, fileName);
             }
 
             if (string.IsNullOrWhiteSpace(filePathFinal))
             {
-                return (false, CMess.invaDataForm.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
             }
             else
             {
@@ -234,7 +234,7 @@ namespace CardEditor.ViewModels
 
         public (bool, string) SaveDeckMemory(CardEditor.Models.Deck deck)
         {
-            if (deck == null) return (false, CMess.invaDataForm.ToText());
+            if (deck == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
 
             try
             {
@@ -246,7 +246,7 @@ namespace CardEditor.ViewModels
                     if (!success) return (false, actualPath);
 
                     existingDeck = Decks.FirstOrDefault(d => d.Path == actualPath);
-                    if (existingDeck == null) return (false, CMess.errorCreaDeck.ToText());
+                    if (existingDeck == null) return (false, string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Deck.ToText()));
                 }
 
                 existingDeck.MainDeck = new List<CardInstance>(deck.MainDeck);
@@ -263,7 +263,7 @@ namespace CardEditor.ViewModels
         public async Task <(bool, string)> SaveDeckFile(CardEditor.Models.Deck deck,
             bool SaveCardName, string newPath = null)
         {
-            if (deck == null) return (false, CMess.invaDataForm.ToText());
+            if (deck == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
             string filePath = string.Empty;
 
             if (!string.IsNullOrWhiteSpace(newPath)) filePath = newPath;
@@ -337,7 +337,7 @@ namespace CardEditor.ViewModels
         {
             try
             {
-                if (deck == null) return (false, CMess.invaDataForm.ToText());
+                if (deck == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
                 if (!Decks.Contains(deck)) return (false, string.Empty);
                 Decks.Remove(deck);
                 return (true, deck.Name);
@@ -349,21 +349,21 @@ namespace CardEditor.ViewModels
         }
         public (bool, string) DeleteDeckMemory(string path)
         {
-            if (string.IsNullOrWhiteSpace(path)) return (false, CMess.invaDataForm.ToText());
+            if (string.IsNullOrWhiteSpace(path)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
 
             var deck = Decks.FirstOrDefault(d => d.Path == path);
-            if (deck == null) return (false, CMess.invaDataForm.ToText());
+            if (deck == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
             return DeleteDeckMemory(deck);
         }
         public (bool, string) DeleteDeckFile(CardEditor.Models.Deck deck)
         {
-            if (deck == null) return (false, CMess.invaDataForm.ToText());
-            if (string.IsNullOrWhiteSpace(deck.Path)) return (false, CMess.invaDataForm.ToText());
+            if (deck == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
+            if (string.IsNullOrWhiteSpace(deck.Path)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
             return DeleteDeckFile(deck.Path);
         }
         public (bool, string) DeleteDeckFile(string path)
         {
-            if (string.IsNullOrWhiteSpace(path)) return (false, CMess.invaDataForm.ToText());
+            if (string.IsNullOrWhiteSpace(path)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
             try
             {
                 if (File.Exists(path))
@@ -387,7 +387,7 @@ namespace CardEditor.ViewModels
             if (string.IsNullOrWhiteSpace(oldPath) ||
                 string.IsNullOrWhiteSpace(newName) ||
                 string.IsNullOrWhiteSpace(newName))
-                return (false, CMess.invaDataForm.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
 
             var existingDeck = Decks.FirstOrDefault(d => d.Path.Equals(oldPath, StringComparison.OrdinalIgnoreCase));
             if (existingDeck == null) return (false, CMess.fileNotExit.ToText());
@@ -402,7 +402,7 @@ namespace CardEditor.ViewModels
             if (string.IsNullOrWhiteSpace(oldPath) ||
                 !System.IO.File.Exists(oldPath) ||
                 string.IsNullOrWhiteSpace(newName))
-                return (false, CMess.invaDataForm.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
             try
             {
                 string directory = Path.GetDirectoryName(oldPath);

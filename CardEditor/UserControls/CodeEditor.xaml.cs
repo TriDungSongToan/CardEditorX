@@ -212,7 +212,7 @@ namespace CardEditor.UserControls
                 }
                 catch (Exception ex)
                 {
-                    throw new IOException($"{CMess.errorRead.ToText()} {ex.Message}");
+                    throw new IOException($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}");
                 }
                 finally
                 {
@@ -285,7 +285,7 @@ namespace CardEditor.UserControls
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorSaveScript.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Script.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 return false;
             }
         }
@@ -336,7 +336,8 @@ namespace CardEditor.UserControls
             else
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    CMess.invaFileForm.ToText(), new[] { CMess.ok.ToText() });
+                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()),
+                    new[] { CMess.ok.ToText() });
             }
         }
         public void CheckLua()
@@ -352,7 +353,8 @@ namespace CardEditor.UserControls
             else
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    CMess.invaFileForm.ToText(), new[] { CMess.ok.ToText() });
+                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()),
+                    new[] { CMess.ok.ToText() });
             }
         }
         public string FormatLuaWithStylua(string luaCode)
@@ -392,7 +394,9 @@ namespace CardEditor.UserControls
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, CMess.invaFileForm.ToText(), new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()),
+                    new[] { CMess.ok.ToText() });
                 return $"Lỗi định dạng: {ex.Message}";
             }
         }

@@ -234,6 +234,8 @@ namespace CardEditor.Models
         ReplaceDesc = 1,
         ReplaceField = 2,
         ImportData = 3,
+        PendulumLanguage = 4,
+        Credit = 5,
     }
     [Flags]
     public enum FilterOption
@@ -247,6 +249,14 @@ namespace CardEditor.Models
         MatchWhole  = 1 << 5,
         IgnPunct    = 1 << 6,
         IgnSpace    = 1 << 7
+    }
+
+    public enum LanguageArea
+    {
+        Unknown = 0,
+        TCG = 1,
+        OCG = 2,
+        Mixed = 3
     }
     #endregion
 }

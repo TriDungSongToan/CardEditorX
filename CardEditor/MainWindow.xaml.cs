@@ -33,7 +33,6 @@ using CardEditor.UserControls;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
-using Microsoft.Build.Framework.XamlTypes;
 
 namespace CardEditor
 {
@@ -264,6 +263,18 @@ namespace CardEditor
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{CMess.errorOcc.ToText()} {messageSeries}", new[] { CMess.ok.ToText() });
+            }
+            var (resultPenLang, messagePenLang) = await PenLanguageViewModel.Instance.LoadAsync();
+            if (!resultPenLang)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {messagePenLang}", new[] { CMess.ok.ToText() });
+            }
+            var (resultCredit, messageCredit) = await CreditsViewModel.Instance.LoadData();
+            if (!resultCredit)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {messageCredit}", new[] { CMess.ok.ToText() });
             }
         }
         private void LoadBGImage()
@@ -613,7 +624,8 @@ namespace CardEditor
             if (!string.IsNullOrEmpty(dbFilePath))
             {
                 var result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"{string.Format(CMess.creaSuc.ToText(), System.IO.Path.GetFileName(dbFilePath), CMess.CardDB.ToText())} {CMess.QuestOpen.ToText()}",
+                    $"{string.Format(CMess.ThreePlaceholderSuccess.ToText(), System.IO.Path.GetFileName(dbFilePath), CMess.CardDB.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
+                    // FileName Card Database created successfully! Do you want to open it?
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result == 0)
                 {
@@ -711,7 +723,8 @@ namespace CardEditor
             if (!string.IsNullOrWhiteSpace(createdScriptPath) && System.IO.File.Exists(createdScriptPath))
             {
                 var result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"{string.Format(CMess.creaSuc.ToText(), System.IO.Path.GetFileName(createdScriptPath), CMess.CardScript.ToText())} {CMess.QuestOpen.ToText()}",
+                    $"{string.Format(CMess.ThreePlaceholderSuccess.ToText(), System.IO.Path.GetFileName(createdScriptPath), CMess.CardScript.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
+                    // FilePath Card Script created successfully! Do you want to open it?
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result == 0)
                 {
@@ -793,7 +806,8 @@ namespace CardEditor
             if (!string.IsNullOrEmpty(deckFilePath) && System.IO.File.Exists(deckFilePath))
             {
                 var result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"{string.Format(CMess.creaSuc.ToText(), System.IO.Path.GetFileName(deckFilePath), CMess.Deck.ToText())} {CMess.QuestOpen.ToText()}",
+                    $"{string.Format(CMess.ThreePlaceholderSuccess.ToText(), System.IO.Path.GetFileName(deckFilePath), CMess.Deck.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
+                    // FileName Card Database created successfully! Do you want to open it?
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result == 0)
                 {
@@ -863,7 +877,8 @@ namespace CardEditor
             if (!string.IsNullOrEmpty(banListFilePath) && System.IO.File.Exists(banListFilePath))
             {
                 var result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"{string.Format(CMess.creaSuc.ToText(), System.IO.Path.GetFileName(banListFilePath), CMess.BanList.ToText())} {CMess.QuestOpen.ToText()}",
+                    $"{string.Format(CMess.ThreePlaceholderSuccess.ToText(), System.IO.Path.GetFileName(banListFilePath), CMess.BanList.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
+                    // FileName Card Database created successfully! Do you want to open it?
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result == 0)
                 {
@@ -1002,7 +1017,7 @@ namespace CardEditor
                         await connection.OpenAsync();
                         if (!CheckDatabase.CheckDatabaseValidity(connection))
                         {
-                            throw new FormatException($"{CMess.invaFileForm.ToText()}");
+                            throw new FormatException($"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())}");
                         }
                     }
 
@@ -2140,8 +2155,8 @@ namespace CardEditor
                             bool saveSuccess = await saveable.Save();
                             if (!saveSuccess)
                             {
-                                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                                    CMess.errorSave.ToText(), new[] { CMess.ok.ToText() });
+                                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Error,
+                                    string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Card.ToText()), new[] { CMess.ok.ToText() });
                                 e.Cancel = true;
                                 return;
                             }
@@ -2300,7 +2315,7 @@ namespace CardEditor
             string ScriptSupportPath = GetScriptSupportPath();
             if (string.IsNullOrEmpty(ScriptSupportPath) || !File.Exists(ScriptSupportPath))
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.ScriptSupport.ToText()} {CMess.invaFilePath.ToText()}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.ScriptSupport.ToText()} {string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText())}", new[] { CMess.ok.ToText() });
                 return;
             }
 
@@ -2421,7 +2436,7 @@ namespace CardEditor
                             if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0) // Ask
                             {
                                 int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                                    new[] { CMess.Overwrite.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
+                                    new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
                                 if (resultImport == 0) currentDataEditor.ImportOverwrite(pastedCards); // Overwrite
                                 else if (resultImport == 1) currentDataEditor.ImportAppendwrite(pastedCards); // Append
                                 else if (resultImport == 2) ImportDataCreateNewDataEdit(pastedCards); // Create New
@@ -2462,7 +2477,7 @@ namespace CardEditor
                             if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0) // Ask
                             {
                                 int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                                    new[] { CMess.Overwrite.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
+                                    new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
                                 if (resultImport == 0) currentBanListEditor.ImportOverwrite(pastedCards); // Overwrite
                                 else if (resultImport == 1) currentBanListEditor.ImportAppendwrite(pastedCards); // Append
                                 else if (resultImport == 2) ImportDataCreateNewBanListEdit(pastedCards); // Create New
@@ -2489,6 +2504,80 @@ namespace CardEditor
         }
 
         #region Filter
+        private void menuItemFilterCard_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFilterCard();
+        }
+        private void OpenFilterCard()
+        {
+            FilterCard filterCard = new FilterCard();
+            filterCard.ShowInTaskbar = false;
+            filterCard.Owner = this;
+            filterCard.MainWindowReference = this;
+            filterCard.ShowDialog();
+        }
+
+        public async Task<ResultItem> FilterCardByLanguage(int languageCode, bool isInclude)
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                return await currentDataEditor.FilterCardByLanguage(languageCode, isInclude);
+            }
+            else
+            {
+                return new ResultItem
+                {
+                    Succeeded = true,
+                    FilteredCount = 0,
+                    TotalCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+        }
+        public async Task<ResultItem> FilterCardByCDBFile(string filePath, bool isDuplicate)
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                return await currentDataEditor.FilterCardByCDBFile(filePath, isDuplicate);
+            }
+            else if (currentUserControl is BanListEditor currentBanListEditor)
+            {
+                return await currentBanListEditor.FilterCardByCDBFile(filePath, isDuplicate);
+            }
+            else
+            {
+                return new ResultItem
+                {
+                    Succeeded = true,
+                    FilteredCount = 0,
+                    TotalCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+        }
+        public async Task<ResultItem> FilterCardByYDKFile(string filePath, bool isDuplicate)
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                return await currentDataEditor.FilterCardByYDKFile(filePath, isDuplicate);
+            }
+            else if (currentUserControl is BanListEditor currentBanListEditor)
+            {
+                return await currentBanListEditor.FilterCardByYDKFile(filePath, isDuplicate);
+            }
+            else
+            {
+                return new ResultItem
+                {
+                    Succeeded = true,
+                    FilteredCount = 0,
+                    TotalCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+        }
+
+
         private async void filterCDBDuplicate_Click(object sender, RoutedEventArgs e)
         {
             if (currentUserControl is DataEditor currentDataEditor)
@@ -2561,7 +2650,7 @@ namespace CardEditor
             if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
             {
                 var (result, message) = await currentDataEditor.CreateMultiImageDataEditor(Scope, Series, onProgress);
-                return (result, result ? message : $"{CMess.errorCreateCard.ToText()}\n{message}");
+                return (result, result ? message : $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText(), CMess.Card.ToText())}\n{message}");
             }
             else return (false, CMess.noSelecWin.ToText());
         }
@@ -2646,7 +2735,61 @@ namespace CardEditor
         }
         #endregion
 
-        #region Import
+        #region Item Editor
+        private void menuImport_Click(object sender, RoutedEventArgs e)
+        {
+            ItemsEditor itemsEditor = new ItemsEditor(ItemsEdit.ImportData);
+            itemsEditor.ShowInTaskbar = false;
+            itemsEditor.Owner = this;
+            itemsEditor.MainWindowReference = this;
+            itemsEditor.ShowDialog();
+        }
+
+        #region Replace Desc
+        private void menuReplace_Click(object sender, RoutedEventArgs e)
+        {
+            ItemsEditor itemsEditor = new ItemsEditor(ItemsEdit.ReplaceDesc);
+            itemsEditor.ShowInTaskbar = false;
+            itemsEditor.Owner = this;
+            itemsEditor.MainWindowReference = this;
+            itemsEditor.ShowDialog();
+        }
+        public async Task<ResultItem> ReplaceDesc(string findWhat, string replaceWith, int scope)
+        {
+            if (string.IsNullOrWhiteSpace(findWhat))
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.FindWhat.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+            }
+            if (string.IsNullOrWhiteSpace(replaceWith))
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.Replacewith.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+            }
+            if (scope < 1 || scope > 3)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                var result = await currentDataEditor.ReplaceText(findWhat, replaceWith, scope);
+                return result;
+            }
+            return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
+        }
+        #endregion
+
+        #region Replace Fields
         public (bool, List<ulong>) CheckDuplicateIds()
         {
             if (currentUserControl != null)
@@ -2663,20 +2806,10 @@ namespace CardEditor
             }
             else return (false, null);
         }
-
-        private void menuImport_Click(object sender, RoutedEventArgs e)
-        {
-            ItemsEditor itemsEditor = new ItemsEditor(ItemsEdit.ImportData);
-            itemsEditor.ShowInTaskbar = false;
-            itemsEditor.Owner = this;
-            itemsEditor.MainWindowReference = this;
-            itemsEditor.ShowDialog();
-        }
-
         // Replace Card List chính bằng Card List phụ, theo từng thuộc tính được chọn. Có tùy chọn Add các Card có id không xuất hiện trong Card list chính.
         public async Task<(bool, string)> ReplaceField(string filePath, ulong flags, bool IsAddNew)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return (false, CMess.invaFilePath.ToText());
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
             //if (!CheckDatabase.IsDatabaseFile(filePath)) return (false, CMess.notDatabase.ToText());
 
             try
@@ -2690,7 +2823,7 @@ namespace CardEditor
                             ".ceds" => await LoadDataServices.LoadCedsCard(filePath),
                             ".xlsx" => await LoadDataServices.LoadExcelCard(filePath),
                             ".cdb" or ".db" or ".sqlite" => await LoadDataServices.LoadDatabaseCard(filePath),
-                            _ => throw new NotSupportedException(CMess.invaFileForm.ToText()),
+                            _ => throw new NotSupportedException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())),
                         };
                         if (CardList == null) return (false, message);
 
@@ -2699,7 +2832,7 @@ namespace CardEditor
                     else if (currentUserControl is BanListEditor currentBanListEditor)
                     {
                         string fileName = Path.GetFileName(filePath).ToLowerInvariant();
-                        if (string.IsNullOrEmpty(fileName)) return (false, CMess.invaFilePath.ToText());
+                        if (string.IsNullOrEmpty(fileName)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
                         if (fileName.EndsWith(".lflist.conf"))
                         {
                             var (Banlist, message) = await LoadDataServices.LoadFileBanList(filePath);
@@ -2715,7 +2848,7 @@ namespace CardEditor
                                 var file when file.EndsWith(".cdb") || file.EndsWith(".db") || file.EndsWith(".sqlite")
                                 => await LoadDataServices.LoadDatabaseCardBanList(filePath),
 
-                                _ => throw new NotSupportedException(CMess.invaFileForm.ToText()),
+                                _ => throw new NotSupportedException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())),
                             };
                             if (CardList == null) return (false, message);
                             return currentBanListEditor.ReplaceDataCommand(CardList, flags, IsAddNew);
@@ -2730,11 +2863,13 @@ namespace CardEditor
                 return (false, ex.Message);
             }
         }
+        #endregion
 
+        #region Import Data
         // Add các Card có id không xuất hiện trong Card List phụ vào Card List chính. Tùy chọn replace thuộc tính được chọn đối với các Card trong Card List chính có id xuất hiện trong Card List phụ.
         public async Task<(bool, string)> ImportData(string filePath, ulong flags)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return (false, CMess.invaFilePath.ToText());
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
             //if (!CheckDatabase.IsDatabaseFile(filePath)) return (false, CMess.notDatabase.ToText());
 
             try
@@ -2748,7 +2883,7 @@ namespace CardEditor
                             ".ceds" => await LoadDataServices.LoadCedsCard(filePath),
                             ".xlsx" => await LoadDataServices.LoadExcelCard(filePath),
                             ".cdb" or ".db" or ".sqlite" => await LoadDataServices.LoadDatabaseCard(filePath),
-                            _ => throw new NotSupportedException(CMess.invaFileForm.ToText()),
+                            _ => throw new NotSupportedException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())),
                         };
                         if (CardList == null) return (false, message);
 
@@ -2757,7 +2892,7 @@ namespace CardEditor
                     else if (currentUserControl is BanListEditor currentBanListEditor)
                     {
                         string fileName = Path.GetFileName(filePath).ToLowerInvariant();
-                        if (string.IsNullOrEmpty(fileName)) return (false, CMess.invaFilePath.ToText());
+                        if (string.IsNullOrEmpty(fileName)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
                         if (fileName.EndsWith(".lflist.conf"))
                         {
                             var (Banlist, message) = await LoadDataServices.LoadFileBanList(filePath);
@@ -2773,7 +2908,7 @@ namespace CardEditor
                                 var file when file.EndsWith(".cdb") || file.EndsWith(".db") || file.EndsWith(".sqlite")
                                 => await LoadDataServices.LoadDatabaseCardBanList(filePath),
 
-                                _ => throw new NotSupportedException(CMess.invaFileForm.ToText()),
+                                _ => throw new NotSupportedException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())),
                             };
                             if (CardList == null) return (false, message);
                             return currentBanListEditor.ImportDataCommand(CardList, flags);
@@ -2964,15 +3099,90 @@ namespace CardEditor
         */
         #endregion
 
-        #region Replace Desc
-        private void menuReplace_Click(object sender, RoutedEventArgs e)
+        #region Pendulum Language
+        public async Task<ResultItem> PendulumLanguage(PendulumLanguageRule rule, int scope)
         {
-            ItemsEditor itemsEditor = new ItemsEditor(ItemsEdit.ReplaceDesc);
-            itemsEditor.ShowInTaskbar = false;
-            itemsEditor.Owner = this;
-            itemsEditor.MainWindowReference = this;
-            itemsEditor.ShowDialog();
+            if (rule == null || scope < 0 || scope > 2)
+            {
+                ResultItem nullItem = new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+                return nullItem;
+            }
+
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                var result = await currentDataEditor.PendulumLanguage(rule, scope);
+                return result;
+            }
+            else return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
         }
+        #endregion
+
+        #region Credit
+        public async Task<ResultItem> CreditTeam(CreditItem credit, int scope, int writeMode)
+        {
+            if (credit == null || scope < 0 || scope > 2 || writeMode < 1 || writeMode > 4)
+            {
+                ResultItem nullItem = new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+                return nullItem;
+            }
+
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                var result = await currentDataEditor.CreditTeam(credit, scope, writeMode);
+                return result;
+            }
+            else return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
+        }
+        public async Task<ResultItem> RemoveCredit(int scope)
+        {
+            if (scope < 0 || scope > 2)
+            {
+                ResultItem nullItem = new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+                return nullItem;
+            }
+
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                var result = await currentDataEditor.RemoveCredit(scope);
+                return result;
+            }
+            else return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
+        }
+        public (bool, string) RollbackCredit()
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                return currentDataEditor.RollbackCredits();
+            }
+            else return (false, CMess.noSelecWin.ToText());
+        }
+        public void StopApplyCredits()
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                currentDataEditor.StopApplyCredits();
+            }
+        }
+        #endregion
+
         private void menuItemEditor_Click(object sender, RoutedEventArgs e)
         {
             ItemsEditor itemsEditor = new ItemsEditor(ItemsEdit.ReplaceField);
@@ -2988,22 +3198,6 @@ namespace CardEditor
             itemsEditor.Owner = this;
             itemsEditor.MainWindowReference = this;
             itemsEditor.ShowDialog();
-        }
-        public async Task<(bool, string)> ReplaceDesc(string FindWhat, string ReplaceWith, int Scope)
-        {
-            if (string.IsNullOrWhiteSpace(FindWhat)) return (false, $"{CMess.FindWhat.ToText()} {CMess.cannotEmpty.ToText()}");
-            if (string.IsNullOrWhiteSpace(ReplaceWith)) return (false, $"{CMess.Replacewith.ToText()} {CMess.cannotEmpty.ToText()}");
-            if (Scope < 1 || Scope > 3) return (false, CMess.invaScope.ToText());
-
-            if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
-            {
-                var result = await currentDataEditor.ReplaceText(FindWhat, ReplaceWith, Scope);
-                return result;
-            }
-            else
-            {
-                return (false, CMess.noSelecWin.ToText());
-            }
         }
         #endregion
 

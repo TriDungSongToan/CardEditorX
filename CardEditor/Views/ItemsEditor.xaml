@@ -125,6 +125,129 @@
             </Grid>
         </DataTemplate>
 
+        <Converter:ColorWithOpacityConverter x:Key="ColorWithOpacityConverter"/>
+        <Converter:PositiveBoolToVisibilityConverter x:Key="PositiveBoolToVisibilityConverter"/>
+        <Converter:NegativeBoolToVisibilityConverter x:Key="NegativeBoolToVisibilityConverter"/>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridRow">
+                        <Border x:Name="DGR_Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DGR_Border"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Brushes.Transparent}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Normal_Selected">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DGR_Border"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Brushes.Transparent}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Normal_Editing">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DGR_Border"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{x:Static Brushes.Transparent}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DGR_Border"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ThemeColor,
+                                                    Source={x:Static ViewModels:UIConfigViewModel.Instance},
+                                                    Converter={StaticResource ColorWithOpacityConverter},
+                                                    ConverterParameter=0.5}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="MouseOver_Selected">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DGR_Border"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ThemeColor,
+                                                    Source={x:Static ViewModels:UIConfigViewModel.Instance},
+                                                    Converter={StaticResource ColorWithOpacityConverter},
+                                                    ConverterParameter=1}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Selected">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DGR_Border"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ThemeColor,
+                                                    Source={x:Static ViewModels:UIConfigViewModel.Instance},
+                                                    Converter={StaticResource ColorWithOpacityConverter},
+                                                    ConverterParameter=1}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Unfocused_Selected">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="DGR_Border"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ThemeColor,
+                                                    Source={x:Static ViewModels:UIConfigViewModel.Instance},
+                                                    Converter={StaticResource ColorWithOpacityConverter},
+                                                    ConverterParameter=1}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+
+                            <SelectiveScrollingGrid>
+                                <SelectiveScrollingGrid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </SelectiveScrollingGrid.ColumnDefinitions>
+                                <SelectiveScrollingGrid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </SelectiveScrollingGrid.RowDefinitions>
+
+                                <DataGridCellsPresenter Grid.Column="1"
+                                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+
+                                <DataGridDetailsPresenter Grid.Column="1" Grid.Row="1"
+                                                          SelectiveScrollingGrid.SelectiveScrollingOrientation=
+                                                          "{Binding AreRowDetailsFrozen,
+                                    ConverterParameter={x:Static SelectiveScrollingOrientation.Vertical},
+                                    Converter={x:Static DataGrid.RowDetailsScrollingConverter},
+                                    RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                                          Visibility="{TemplateBinding DetailsVisibility}"/>
+
+                                <DataGridRowHeader Grid.RowSpan="2"
+                                                   SelectiveScrollingGrid.SelectiveScrollingOrientation="Vertical"
+                                                   Visibility="{Binding HeadersVisibility,
+                                    ConverterParameter={x:Static DataGridHeadersVisibility.Row},
+                                    Converter={x:Static DataGrid.HeadersVisibilityConverter},
+                                    RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                            </SelectiveScrollingGrid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
 
     <materialDesign:Card UniformCornerRadius="5"
@@ -149,8 +272,10 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="auto" />
                     </Grid.ColumnDefinitions>
-                    <Image x:Name="iconHeader" Grid.Column="0" Width="25" Height="25"
-                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+
+                    <materialDesign:PackIcon Kind="{Binding HeaderIcon}" Grid.Column="0" Width="25" Height="25"
+                                             VerticalAlignment="Center" HorizontalAlignment="Center"
+                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
 
                     <TextBlock x:Name="txtHeader" Grid.Column="1" Text="{Lag:Localize ItemsEdit}" Margin="10,0,0,0"
                                VerticalAlignment="Center" HorizontalAlignment="Stretch"
@@ -184,28 +309,30 @@
                 </Grid>
             </Border>
 
-            <TabControl x:Name="tabMain" Grid.Row="1" TabStripPlacement="Left"
+            <TabControl x:Name="tabMain" Grid.Row="1" TabStripPlacement="Top"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                         HorizontalContentAlignment="Center" VerticalContentAlignment="Top"
                         materialDesign:ColorZoneAssist.Mode="Custom"
                         materialDesign:NavigationRailAssist.ShowSelectionBackground="True"
-                        materialDesign:NavigationRailAssist.SelectionCornerRadius="50"
+                        materialDesign:NavigationRailAssist.SelectionCornerRadius="40"
                         Style="{StaticResource MaterialDesignNavigationRailTabControl}"
                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                         SelectedIndex="{Binding TabHeaderIndex}" >
 
                 <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
-                    <Grid Margin="10" >
+                    <Grid Margin="10,0,10,5" >
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
-                            <RowDefinition Height="10" />
-                            <RowDefinition Height="1" />
-                            <RowDefinition Height="10" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <Grid Margin="0" >
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="1" Margin="2,7,2,7" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto" />
                                 <ColumnDefinition Width="*" />
@@ -259,7 +386,7 @@
                         <Border Grid.Row="2" Height="1" IsHitTestVisible="False"
                                 Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
 
-                        <Grid x:Name="grAdvancedOption" Grid.Row="4" Margin="0"
+                        <Grid x:Name="grAdvancedOption" Grid.Row="3" Margin="2,7,2,7"
                               IsEnabled="{Binding filterSetting.Advanced}" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto" />
@@ -350,20 +477,23 @@
                     </Grid>
                     
                     <TabItem.Header>
-                        <StackPanel Width="auto" Height="auto" Background="{x:Null}" >
+                        <StackPanel Width="auto" Height="auto" Margin="0" Background="{x:Null}" >
                             <materialDesign:PackIcon Width="24" Height="24" Kind="CogOutline" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12"
                                        Text="{Lag:Localize filterSetting}" TextWrapping="Wrap" TextAlignment="Center"
                                        Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
                         </StackPanel>
                     </TabItem.Header>
                 </TabItem>
                 
                 <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
-                    <Grid Margin="10" >
+                    <Grid Margin="10,0,10,5" >
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
                             <RowDefinition Height="auto" />
                             <RowDefinition Height="5" />
                             <RowDefinition Height="auto" />
@@ -371,7 +501,10 @@
                             <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
 
-                        <TextBox x:Name="txtfindwhat" Grid.Row="0" Height="43" Padding="10,13,3,0" BorderThickness="0.7"
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        
+                        <TextBox x:Name="txtfindwhat" Grid.Row="2" Height="43" Padding="10,13,3,0" BorderThickness="0.7"
                                  Text="{Binding FindWhat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -388,7 +521,7 @@
                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                  materialDesign:ThemeAssist.Theme="Dark" />
                         
-                        <TextBox x:Name="txtreplacewith" Grid.Row="2" Height="43" Padding="10,13,3,0" BorderThickness="0.7"
+                        <TextBox x:Name="txtreplacewith" Grid.Row="4" Height="43" Padding="10,13,3,0" BorderThickness="0.7"
                                  Text="{Binding ReplaceWith, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -405,7 +538,7 @@
                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                  materialDesign:ThemeAssist.Theme="Dark" />
 
-                        <Grid Grid.Row="4" >
+                        <Grid Grid.Row="6" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="5" />
@@ -461,16 +594,21 @@
                 
                 <TabItem HorizontalAlignment="Center" Padding="0" Margin="0"
                          ToolTip="{Lag:Localize toolReplaceField}">
-                    <Grid Margin="10,10,10,5" >
+                    <Grid Margin="10,0,10,5" >
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
-                            <RowDefinition Height="10" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="5" />
                             <RowDefinition Height="25" />
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0" >
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="2" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="8" />
@@ -478,7 +616,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBox Grid.Column="0" Height="43"
-                                     Padding="10,13,3,0" BorderThickness="0.7" IsReadOnly="True"
+                                     Padding="10,12,3,0" BorderThickness="0.7" IsReadOnly="True"
                                      Text="{Binding ReplaceFieldFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -519,7 +657,7 @@
                                     Style="{StaticResource ButtonDanger}" />
                         </Grid>
 
-                        <Grid Grid.Row="2" Margin="0" >
+                        <Grid Grid.Row="4" Margin="0" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="5" />
@@ -545,7 +683,7 @@
                             </Border>
                         </Grid>
 
-                        <Grid Grid.Row="4" >
+                        <Grid Grid.Row="6" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto" />
                                 <ColumnDefinition Width="*" />
@@ -586,6 +724,7 @@
                             </Viewbox>
                         </Grid>
                     </Grid>
+                    
                     <TabItem.Header>
                         <StackPanel Width="auto" Height="auto" Background="{x:Null}" >
                             <materialDesign:PackIcon Width="24" Height="24" Kind="FileReplaceOutline" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -600,15 +739,21 @@
 
                 <TabItem HorizontalAlignment="Center" Padding="0" Margin="0"
                          ToolTip="{Lag:Localize toolImportData}" >
-                    <Grid Margin="10,10,10,5" >
+                    <Grid Margin="10,0,10,5" >
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
-                            <RowDefinition Height="25" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
                             <RowDefinition Height="5" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0" >
+                        
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        
+                        <Grid Grid.Row="2" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="8" />
@@ -616,7 +761,7 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBox Grid.Column="0" Height="43"
-                                     Padding="10,13,3,0" BorderThickness="0.7" IsReadOnly="True"
+                                     Padding="10,12,3,0" BorderThickness="0.7" IsReadOnly="True"
                                      Text="{Binding ImportDataFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -657,13 +802,13 @@
                                     Style="{StaticResource ButtonDanger}" />
                         </Grid>
 
-                        <TextBlock Grid.Row="1" Text="{Lag:Localize SelectDataField}"
+                        <TextBlock Grid.Row="4" Text="{Lag:Localize SelectDataField}"
                                    HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
                                    Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
 
-                        <Grid Grid.Row="3" Margin="0" >
+                        <Grid Grid.Row="6" Margin="0" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="5" />
@@ -702,6 +847,673 @@
                     </TabItem.Header>
                 </TabItem>
 
+                <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
+                    <Grid Margin="10,0,10,5" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="7" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" Height="43"
+                                      BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      ItemsSource="{Binding OrderedPenMapsUI, Source={x:Static ViewModels:PenLanguageViewModel.Instance}}"
+                                      SelectedItem="{Binding SelectedRule}"
+                                      DisplayMemberPath="Locale"
+                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                      VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                      materialDesign:ColorZoneAssist.Mode="Custom"
+                                      materialDesign:HintAssist.Hint="{Lag:Localize Language}"
+                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      TextOptions.TextFormattingMode="Display"
+                                      TextOptions.TextRenderingMode="ClearType"
+                                      materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
+                            </ComboBox>
+
+                            <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Margin="0" Padding="10,4,10,4" Height="35" BorderThickness="0"
+                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    Style="{StaticResource ButtonSuccess}"
+                                    Command="{Binding ReloadPenLanguageCommand}">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#FF30FFFF" Offset="0.0"/>
+                                        <GradientStop Color="#FF008EFF" Offset="0.35"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox Stretch="Uniform" StretchDirection="Both">
+                                            <TextBlock Text="{Lag:Localize tlReload}"
+                                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+
+                        <Grid Grid.Row="4" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="7" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="0" Height="43"
+                                      BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      SelectedIndex="{Binding SelectedPenLangScope, Mode=TwoWay}"
+                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                      VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                      materialDesign:ColorZoneAssist.Mode="Custom"
+                                      materialDesign:HintAssist.Hint="{Lag:Localize cardLabelScope}"
+                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      TextOptions.TextFormattingMode="Display"
+                                      TextOptions.TextRenderingMode="ClearType"
+                                      materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
+                                <ComboBoxItem Content="{Lag:Localize SelectCards}" />
+                                <ComboBoxItem Content="{Lag:Localize FoundCards}" />
+                                <ComboBoxItem Content="{Lag:Localize AllCards}" />
+                            </ComboBox>
+
+                            <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Margin="0" Padding="10,4,10,4" Height="35" BorderThickness="0"
+                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    Style="{StaticResource ButtonSuccess}"
+                                    Command="{Binding ApplyPenLanguageCommand}">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#FF30FFFF" Offset="0.0"/>
+                                        <GradientStop Color="#FF008EFF" Offset="0.35"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox Stretch="Uniform" StretchDirection="Both">
+                                            <TextBlock Text="{Lag:Localize Apply}"
+                                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+                    </Grid>
+                    
+                    <TabItem.Header>
+                        <StackPanel Width="auto" Height="auto" Background="{x:Null}" >
+                            <materialDesign:PackIcon Width="24" Height="24" Kind="Translate" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12"
+                                       Text="{Lag:Localize PendulumLanguage}" TextWrapping="Wrap" TextAlignment="Center"
+                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+
+                <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
+                    <Grid Margin="10,0,10,5" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="2" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="2" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Grid.Column="0" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="2" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="2" />
+                                    <RowDefinition Height="auto" />
+                                </Grid.RowDefinitions>
+
+                                <Border Grid.Row="0" Width="auto" Height="98"
+                                        BorderThickness="0.7" CornerRadius="5"
+                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                        BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                                    <DataGrid Grid.Column="0" BorderThickness="0"
+                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              ItemsSource="{Binding CreditDataUI, Source={x:Static ViewModels:CreditsViewModel.Instance}}"
+                                              SelectedItem="{Binding SelectedCreditItem}"
+                                              SelectionUnit="FullRow"
+                                              AutoGenerateColumns="False"
+                                              CanUserAddRows="False"
+                                              VirtualizingPanel.IsVirtualizing="True"
+                                              VirtualizingPanel.VirtualizationMode="Recycling"
+                                              EnableRowVirtualization="True"
+                                              materialDesign:DataGridAssist.ColumnHeaderPadding="4 2 2 2"
+                                              materialDesign:DataGridAssist.CellPadding="4 2 2 2" >
+                                        <DataGrid.Columns>
+                                            <materialDesign:DataGridTextColumn Width="50" Binding="{Binding Id}" IsReadOnly="True"
+                                                                               Header="{Lag:Localize dataGridID}">
+                                                <DataGridTextColumn.HeaderStyle>
+                                                    <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                                        <Setter Property="ContentTemplate">
+                                                            <Setter.Value>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding}" TextAlignment="Left" TextWrapping="Wrap" />
+                                                                </DataTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                        <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                    </Style>
+                                                </DataGridTextColumn.HeaderStyle>
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MaterialDesignDataGridTextColumnStyle}">
+                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </materialDesign:DataGridTextColumn>
+                                            <materialDesign:DataGridTextColumn Width="*" Binding="{Binding Name}" IsReadOnly="True"
+                                                                               Header="{Lag:Localize CreditName}">
+                                                <DataGridTextColumn.HeaderStyle>
+                                                    <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                                        <Setter Property="ContentTemplate">
+                                                            <Setter.Value>
+                                                                <DataTemplate>
+                                                                    <TextBlock Text="{Binding}" TextAlignment="Left" TextWrapping="Wrap" />
+                                                                </DataTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                                                        <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                    </Style>
+                                                </DataGridTextColumn.HeaderStyle>
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MaterialDesignDataGridTextColumnStyle}">
+                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </materialDesign:DataGridTextColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Border>
+
+                                <Grid Grid.Row="2" Height="30">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Margin="0" Padding="4" BorderThickness="0" Height="30"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                            Style="{StaticResource ButtonSuccess}" Command="{Binding AddCreditCommand}" >
+                                        <Button.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#FFAAFF90" Offset="0.0"/>
+                                                <GradientStop Color="#FF19D400" Offset="0.3"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                        <Button.Content>
+                                            <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                <TextBlock Text="{Lag:Localize tlAdd}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                            </Viewbox>
+                                        </Button.Content>
+                                    </Button>
+
+                                    <Button Grid.Column="2" Margin="0" Padding="4" BorderThickness="0" Height="30"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                            Style="{StaticResource ButtonSuccess}" Command="{Binding ModifyCreditCommand}" >
+                                        <Button.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#FF30FFFF" Offset="0.0"/>
+                                                <GradientStop Color="#FF008EFF" Offset="0.35"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                        <Button.Content>
+                                            <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                <TextBlock Text="{Lag:Localize tlModify}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                            </Viewbox>
+                                        </Button.Content>
+                                    </Button>
+
+                                    <Button Grid.Column="4" Margin="0" Padding="4" BorderThickness="0" Height="30"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                            Style="{StaticResource ButtonSuccess}" Command="{Binding ResetCreditCommand}" >
+                                        <Button.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#E633FFFF" Offset="0.0" />
+                                                <GradientStop Color="#FFCA00DC" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                        <Button.Content>
+                                            <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                <TextBlock Text="{Lag:Localize tlReset}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                            </Viewbox>
+                                        </Button.Content>
+                                    </Button>
+                                </Grid>
+
+                                <Grid Grid.Row="4" Height="30" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Margin="0" Padding="4" BorderThickness="0" Height="30"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                            Style="{StaticResource ButtonSuccess}" Command="{Binding ClearCreditCommand}" >
+                                        <Button.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" >
+                                                <GradientStop Color="#FFFFCCA0" Offset="0.0" />
+                                                <GradientStop Color="#FFFF8921" Offset="0.3"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                        <Button.Content>
+                                            <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Stretch" >
+                                                <TextBlock Text="{Lag:Localize tlClear}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                            </Viewbox>
+                                        </Button.Content>
+                                    </Button>
+
+                                    <Button Grid.Column="2" Margin="0" Padding="4" BorderThickness="0" Height="30"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                            Style="{StaticResource ButtonSuccess}" Command="{Binding SortCreditCommand}" >
+                                        <Button.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#FF326CF3" Offset="0.0" />
+                                                <GradientStop Color="#FF00D1FF" Offset="0.4"/>
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                        <Button.Content>
+                                            <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                <TextBlock Text="{Lag:Localize Sort}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                            </Viewbox>
+                                        </Button.Content>
+                                    </Button>
+
+                                    <Button Grid.Column="4" Margin="0" Padding="4" BorderThickness="0" Height="30"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                            Style="{StaticResource ButtonSuccess}" Command="{Binding DeleteCreditCommand}" >
+                                        <Button.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#FFFFA5AA" Offset="0.0" />
+                                                <GradientStop Color="#FFF01717" Offset="0.4" />
+                                            </LinearGradientBrush>
+                                        </Button.Background>
+                                        <Button.Content>
+                                            <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                <TextBlock Text="{Lag:Localize tlDelete}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                            </Viewbox>
+                                        </Button.Content>
+                                    </Button>
+
+                                </Grid>
+
+                            </Grid>
+
+                            <StackPanel Grid.Column="2" Orientation="Vertical" >
+
+                                <Grid Height="80" Margin="0,0,0,0" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Grid Grid.Column="0" >
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="2" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <ComboBox Grid.Row="0" BorderThickness="0.7" Padding="5,15,10,2" IsEditable="False"
+                                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  SelectedIndex="{Binding SelectedScopeCredit, Mode=TwoWay}"
+                                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                  materialDesign:ColorZoneAssist.Mode="Custom"
+                                                  materialDesign:HintAssist.Hint="{Lag:Localize cardLabelScope}"
+                                                  Style="{StaticResource MaterialDesignFilledComboBox}"
+                                                  TextOptions.TextFormattingMode="Display"
+                                                  TextOptions.TextRenderingMode="ClearType"
+                                                  materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
+                                            <ComboBoxItem Content="{Lag:Localize SelectCards}" />
+                                            <ComboBoxItem Content="{Lag:Localize FoundCards}" />
+                                            <ComboBoxItem Content="{Lag:Localize AllCards}" />
+                                        </ComboBox>
+
+                                        <ComboBox Grid.Row="2" BorderThickness="0.7" Padding="5,15,10,2" IsEditable="False"
+                                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  SelectedIndex="{Binding SelectedWriteModeCredit, Mode=TwoWay}"
+                                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                  materialDesign:ColorZoneAssist.Mode="Custom"
+                                                  materialDesign:HintAssist.Hint="{Lag:Localize WriteMode}"
+                                                  Style="{StaticResource MaterialDesignFilledComboBox}"
+                                                  TextOptions.TextFormattingMode="Display"
+                                                  TextOptions.TextRenderingMode="ClearType"
+                                                  materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
+                                            <ComboBoxItem Content="{Lag:Localize AskMe}" />
+                                            <ComboBoxItem Content="{Lag:Localize OverwriteDupli}" />
+                                            <ComboBoxItem Content="{Lag:Localize OverwriteAll}" />
+                                            <ComboBoxItem Content="{Lag:Localize Appendwrite}" />
+                                            <ComboBoxItem Content="{Lag:Localize Skip}" />
+                                        </ComboBox>
+
+                                    </Grid>
+
+                                    <Grid Grid.Column="2" Width="90" >
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="1" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="1" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        
+                                        <Button Grid.Row="0" Margin="0" Padding="4" BorderThickness="0" Height="26"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Style="{StaticResource ButtonSuccess}" Command="{Binding RollbackCreditCommand}" >
+                                            <Button.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#FFEF9AFF" Offset="0.0" />
+                                                    <GradientStop Color="#FFA500ED" Offset="0.4"/>
+                                                </LinearGradientBrush>
+                                            </Button.Background>
+                                            <Button.Content>
+                                                <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                    <TextBlock Text="{Lag:Localize RollBack}"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                </Viewbox>
+                                            </Button.Content>
+                                        </Button>
+
+                                        <Button Grid.Row="2" Margin="0" Padding="4" BorderThickness="0" Height="26"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Style="{StaticResource ButtonSuccess}" Command="{Binding RemoveCreditCommand}" >
+                                            <Button.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1" >
+                                                    <GradientStop Color="#FFFFD1A9" Offset="0.0" />
+                                                    <GradientStop Color="#FFE66C00" Offset="0.3"/>
+                                                </LinearGradientBrush>
+                                            </Button.Background>
+                                            <Button.Content>
+                                                <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Stretch" >
+                                                    <TextBlock Text="{Lag:Localize Remove}"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                </Viewbox>
+                                            </Button.Content>
+                                        </Button>
+
+                                        <Button Grid.Row="4" Margin="0" Padding="4" BorderThickness="0" Height="26"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Panel.ZIndex="1"
+                                                Visibility="{Binding IsApplyingCredit, Converter={StaticResource NegativeBoolToVisibilityConverter}}"
+                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Style="{StaticResource ButtonSuccess}" Command="{Binding CancelCreditCommand}" >
+                                            <Button.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#FFAAFDAC" Offset="0.0" />
+                                                    <GradientStop Color="#FF13DD00" Offset="0.4" />
+                                                </LinearGradientBrush>
+                                            </Button.Background>
+                                            <Button.Content>
+                                                <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                    <TextBlock Text="{Lag:Localize cancel}"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                </Viewbox>
+                                            </Button.Content>
+                                        </Button>
+                                        
+                                        <Button Grid.Row="4" Margin="0" Padding="4" BorderThickness="0" Height="26"
+                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Panel.ZIndex="2"
+                                                Visibility="{Binding IsApplyingCredit, Converter={StaticResource PositiveBoolToVisibilityConverter}}"
+                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Style="{StaticResource ButtonSuccess}" Command="{Binding ApplyCreditCommand}" >
+                                            <Button.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#FF29E7FF" Offset="0.0" />
+                                                    <GradientStop Color="#FF006EDD" Offset="0.4" />
+                                                </LinearGradientBrush>
+                                            </Button.Background>
+                                            <Button.Content>
+                                                <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
+                                                    <TextBlock Text="{Lag:Localize Apply}"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                </Viewbox>
+                                            </Button.Content>
+                                        </Button>
+                                        
+                                    </Grid>
+
+                                </Grid>
+                                
+                                <Grid Grid.Row="2" Margin="0,2,0,0" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="2" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox Grid.Column="0" Width="80" Height="39"
+                                             Padding="8,10,3,0" BorderThickness="0.7"
+                                             Text="{Binding IdText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Behaviors:FileDropBehavior.Enable="True"
+                                             Behaviors:PasteSanitizerBehavior.Enable="True"
+                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                             materialDesign:HintAssist.Hint="{Lag:Localize dataGridID}"
+                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                             TextOptions.TextFormattingMode="Display"
+                                             TextOptions.TextRenderingMode="ClearType"
+                                             materialDesign:TextFieldAssist.HasClearButton="False"
+                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                             materialDesign:ThemeAssist.Theme="Dark" />
+
+                                    <TextBox Grid.Column="2" Height="39"
+                                             Padding="8,10,3,0" BorderThickness="0.7"
+                                             Text="{Binding CreditName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Behaviors:FileDropBehavior.Enable="True"
+                                             Behaviors:PasteSanitizerBehavior.Enable="True"
+                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                             materialDesign:HintAssist.Hint="{Lag:Localize CreditName}"
+                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                             TextOptions.TextFormattingMode="Display"
+                                             TextOptions.TextRenderingMode="ClearType"
+                                             materialDesign:TextFieldAssist.HasClearButton="False"
+                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                             materialDesign:ThemeAssist.Theme="Dark" />
+                                </Grid>
+
+                                <Grid Margin="0,2,0,0" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox Grid.Column="0" Height="39"
+                                             Padding="8,10,3,0" BorderThickness="0.7"
+                                             Text="{Binding CreditHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Behaviors:FileDropBehavior.Enable="True"
+                                             Behaviors:PasteSanitizerBehavior.Enable="True"
+                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                             materialDesign:HintAssist.Hint="Credit Header"
+                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                             TextOptions.TextFormattingMode="Display"
+                                             TextOptions.TextRenderingMode="ClearType"
+                                             materialDesign:TextFieldAssist.HasClearButton="False"
+                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                             materialDesign:ThemeAssist.Theme="Dark" />
+
+                                    <TextBox Grid.Column="2" Height="39"
+                                             Padding="8,10,3,0" BorderThickness="0.7"
+                                             Text="{Binding CreditFooter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Behaviors:FileDropBehavior.Enable="True"
+                                             Behaviors:PasteSanitizerBehavior.Enable="True"
+                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                             materialDesign:HintAssist.Hint="Credit Footer"
+                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                             TextOptions.TextFormattingMode="Display"
+                                             TextOptions.TextRenderingMode="ClearType"
+                                             materialDesign:TextFieldAssist.HasClearButton="False"
+                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                             materialDesign:ThemeAssist.Theme="Dark" />
+
+                                </Grid>
+
+                            </StackPanel>
+
+                        </Grid>
+
+                        <Grid Grid.Row="4" >
+                            <TextBox Padding="6,14,6,0" BorderThickness="0.7"
+                                     TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"
+                                     Text="{Binding CreditDesc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Behaviors:FileDropBehavior.Enable="True"
+                                     Behaviors:PasteSanitizerBehavior.Enable="True"
+                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                     VerticalContentAlignment="Top" HorizontalContentAlignment="Left"
+                                     materialDesign:HintAssist.Hint="{Lag:Localize CreditDesc}"
+                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                     TextOptions.TextFormattingMode="Display"
+                                     TextOptions.TextRenderingMode="ClearType"
+                                     materialDesign:TextFieldAssist.HasClearButton="False"
+                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                     materialDesign:ThemeAssist.Theme="Dark" />
+                        </Grid>
+                        
+                    </Grid>
+
+                    <TabItem.Header>
+                        <StackPanel Width="auto" Height="auto" Background="{x:Null}" >
+                            <materialDesign:PackIcon Width="24" Height="24" Kind="CreditCardEditOutline" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12"
+                                       Text="{Lag:Localize CreditTeam}" TextWrapping="Wrap" TextAlignment="Center"
+                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                
             </TabControl>
         </Grid>
     </materialDesign:Card>

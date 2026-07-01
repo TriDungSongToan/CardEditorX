@@ -1478,7 +1478,7 @@ namespace CardEditor.ViewModels
                         {
                             Title = CMess.error.ToText(),
                             IconType = CMSG.MessageBoxIconType.Error,
-                            Message = $"{CMess.errorCreaImg.ToText()} {messResult}",
+                            Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText())} {messResult}",
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -1490,7 +1490,7 @@ namespace CardEditor.ViewModels
                     }
                 }
 
-                if(!RareRawDataViewModel.Instance.IsLoadedImageRareCache)
+                if (!RareRawDataViewModel.Instance.IsLoadedImageRareCache)
                 {
                     if (!await RareRawDataViewModel.Instance.LoadImageCache())
                     {
@@ -1541,7 +1541,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.notifi.ToText(),
                         IconType = CMSG.MessageBoxIconType.Notification,
-                        Message = CMess.invaScope.ToText(),
+                        Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()),
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -1557,7 +1557,7 @@ namespace CardEditor.ViewModels
                     ProgressMaximum = total;
                     ProgressValue = 0;
                 });
-                
+
                 int maxParallelism = Math.Max(Environment.ProcessorCount / 2, 1);
                 var semaphore = new SemaphoreSlim(maxParallelism);
                 var tasks = new List<Task>();
@@ -1634,7 +1634,7 @@ namespace CardEditor.ViewModels
 
                 var messageBuilder = new StringBuilder();
                 if (token.IsCancellationRequested) messageBuilder.AppendLine($"{CMess.cancelled.ToText()}");
-                messageBuilder.AppendLine(string.Format(CMess.creaSuc.ToText(), successCount.ToString(), CMess.CardImg.ToText()));
+                messageBuilder.AppendLine(string.Format(CMess.ThreePlaceholderSuccess.ToText(), successCount.ToString(), CMess.Image.ToText(), CMess.Create.ToText()));
                 if (failCount > 0)
                 {
                     messageBuilder.AppendLine(string.Format(CMess.geneImgFail.ToText(), failCount.ToString()));
@@ -1731,10 +1731,10 @@ namespace CardEditor.ViewModels
                 {
                     var requestDelete = new MessageBoxRequest
                     {
-                        Title = CMess.conDelete.ToText(),
+                        Title = CMess.questi.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
                         Message = CMess.confirmWriteData.ToText(),
-                        Buttons = new[] { CMess.Overwrite.ToText(), CMess.Appendwrite.ToText(), CMess.cancel.ToText() },
+                        Buttons = new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.cancel.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
                     OnMessageBoxRequested(requestDelete);
@@ -1774,7 +1774,7 @@ namespace CardEditor.ViewModels
                         {
                             Title = CMess.notifi.ToText(),
                             IconType = CMSG.MessageBoxIconType.Notification,
-                            Message = CMess.invaFileForm.ToText(),
+                            Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()),
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -1800,9 +1800,7 @@ namespace CardEditor.ViewModels
                     {
                         ModifyRareCardView(newCard);
                         // RareCardsView.Refresh();
-                        OnSnackbarRequested(isAdd
-                            ? string.Format(CMess.addSuc.ToText(), 1.ToString(), CMess.Card.ToText())
-                            : string.Format(CMess.updateSuc.ToText(), 1.ToString(), CMess.Card.ToText()));
+                        OnSnackbarRequested(string.Format(CMess.ThreePlaceholderSuccess.ToText(), 1.ToString(), CMess.Card.ToText(), isAdd ? CMess.tlAdd.ToText() : CMess.Update.ToText()));
                     }
                 }
                 else
@@ -1811,7 +1809,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.error.ToText(),
                         IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorAddCard.ToText()} {messageDB}",
+                        Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Card.ToText())} {messageDB}",
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -1824,7 +1822,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{CMess.errorAddCard.ToText()} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Card.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -1865,7 +1863,7 @@ namespace CardEditor.ViewModels
                 var (result, message) = await RareRawDataViewModel.Instance.SaveAllRareCardDatabase();
                 if (result)
                 {
-                    OnSnackbarRequested(string.Format(CMess.saveSuc.ToText(), message, CMess.Card.ToText()));
+                    OnSnackbarRequested(string.Format(CMess.ThreePlaceholderSuccess.ToText(), message, CMess.Card.ToText(), CMess.Save.ToText()));
                 }
                 else
                 {
@@ -1873,7 +1871,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.error.ToText(),
                         IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorSaveCard.ToText()} {message}",
+                        Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Card.ToText())} {message}",
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -1887,7 +1885,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{CMess.errorSaveCard.ToText()} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Card.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -1934,7 +1932,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.questi.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmReset.ToText(), CMess.selectedCard.ToText()),
+                        Message = string.Format(CMess.confirmReset.ToText(), CMess.SelectCards.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
@@ -1967,7 +1965,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.conClear.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmClearAll.ToText(), CMess.selectedCard.ToText()),
+                        Message = string.Format(CMess.confirmClearAll.ToText(), CMess.SelectCards.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
@@ -2023,7 +2021,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.conDelete.ToText(),
                     IconType = CMSG.MessageBoxIconType.Question,
-                    Message = String.Format(CMess.confirmDelete.ToText(), CMess.selectedCard.ToText()),
+                    Message = String.Format(CMess.confirmDelete.ToText(), CMess.SelectCards.ToText()),
                     Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                     ResponseSource = new TaskCompletionSource<int>()
                 };
@@ -2042,7 +2040,7 @@ namespace CardEditor.ViewModels
                         Title = CMess.conDelete.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
                         Message = CMess.quesSelectDelete.ToText(),
-                        Buttons = new[] { CMess.selectedCard.ToText(), CMess.newIDCard.ToText(), CMess.cancel.ToText() },
+                        Buttons = new[] { CMess.SelectCards.ToText(), CMess.newIDCard.ToText(), CMess.cancel.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
                     OnMessageBoxRequested(request);
@@ -2078,7 +2076,7 @@ namespace CardEditor.ViewModels
                     {
                         DeleteRareCardView(idCard);
                         // RareCardsView.Refresh();
-                        OnSnackbarRequested(String.Format(CMess.deleteSuc.ToText(), 1.ToString(), CMess.Card.ToText()));
+                        OnSnackbarRequested(string.Format(CMess.ThreePlaceholderSuccess.ToText(), 1.ToString(), CMess.Card.ToText(), CMess.tlDelete.ToText()));
                     }
                 }
                 else
@@ -2087,7 +2085,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.error.ToText(),
                         IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorDeleteCard.ToText()} {messageDB}",
+                        Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {messageDB}",
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -2101,7 +2099,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{CMess.errorDeleteCard.ToText()} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -2123,7 +2121,7 @@ namespace CardEditor.ViewModels
         {
             if (scope < 0 || scope > 2) return;
 
-            string scopeText = scope == 0 ? CMess.selectedCard.ToText() :
+            string scopeText = scope == 0 ? CMess.SelectCards.ToText() :
                                scope == 1 ? CMess.FoundCards.ToText() :
                                CMess.AllCards.ToText();
 
@@ -2203,7 +2201,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.warning.ToText(),
                     IconType = CMSG.MessageBoxIconType.Warning,
-                    Message = CMess.invaScope.ToText(),
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()),
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -2224,7 +2222,7 @@ namespace CardEditor.ViewModels
                     {
                         DeleteMultipleRareCardView(cardsToDelete);
                         RareCardsView.Refresh();
-                        OnSnackbarRequested(string.Format(CMess.deleteSuc.ToText(), resultMemory.ToString(), CMess.Card.ToText()));
+                        OnSnackbarRequested(string.Format(CMess.ThreePlaceholderSuccess.ToText(), resultMemory.ToString(), CMess.Card.ToText(),CMess.tlDelete.ToText()));
                     }
                 }
                 else
@@ -2233,7 +2231,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.error.ToText(),
                         IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorDeleteCard.ToText()} {messageDB}",
+                        Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {messageDB}",
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -2246,7 +2244,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{CMess.errorDeleteCard.ToText()} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -2271,7 +2269,7 @@ namespace CardEditor.ViewModels
                     {
                         RareCards.Clear();
                         RareCardsView.Refresh();
-                        OnSnackbarRequested(string.Format(CMess.deleteSuc.ToText(), resultMemory.ToString(), CMess.Card.ToText()));
+                        OnSnackbarRequested(string.Format(CMess.ThreePlaceholderSuccess.ToText(), resultMemory.ToString(), CMess.Card.ToText(), CMess.tlDelete.ToText()));
                     }
                 }
                 else
@@ -2280,7 +2278,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.error.ToText(),
                         IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorDeleteCard.ToText()} {messageDB}",
+                        Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {messageDB}",
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -2293,7 +2291,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{CMess.errorDeleteCard.ToText()} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -2499,9 +2497,7 @@ namespace CardEditor.ViewModels
                     {
                         ModifyRareItemView(newItem);
                         RareRawDataViewModel.Instance.RareListSyncToUI();
-                        OnSnackbarRequested(isAdd ?
-                            string.Format(CMess.addSuc.ToText(), newItem.Name, CMess.Rarity.ToText())
-                            : string.Format(CMess.updateSuc.ToText(), newItem.Name, CMess.Rarity.ToText()));
+                        OnSnackbarRequested(string.Format(CMess.ThreePlaceholderSuccess.ToText(), newItem.Name, CMess.Rarity.ToText(), isAdd ? CMess.tlAdd.ToText() : CMess.Update.ToText()));
                     }
                 }
                 else
@@ -2510,7 +2506,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.error.ToText(),
                         IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorAddRare.ToText()} {messageDB}",
+                        Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Rarity.ToText())} {messageDB}",
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -2523,7 +2519,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{CMess.errorAddRare.ToText()} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Rarity.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -2562,8 +2558,8 @@ namespace CardEditor.ViewModels
                     Directory.CreateDirectory(CardAppContext.Instance.StampFolderPath);
 
                 string safeRareName = MakeValidFileName(RareName);
-                if (!System.IO.File.Exists(RareImagePath)) return (false, CMess.invaFilePath.ToText());
-                if (string.IsNullOrWhiteSpace(safeRareName)) return (false, CMess.invaRareName.ToText());
+                if (!System.IO.File.Exists(RareImagePath)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
+                if (string.IsNullOrWhiteSpace(safeRareName)) return (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.RarityName.ToText()));
 
                 string destinationPath = System.IO.Path.Combine(CardAppContext.Instance.StampFolderPath, $"{safeRareName}.png");
 
@@ -2592,7 +2588,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.questi.ToText(),
                     IconType = CMSG.MessageBoxIconType.Question,
-                    Message = String.Format(CMess.confirmReset.ToText(), CMess.selectedRare.ToText()),
+                    Message = String.Format(CMess.confirmReset.ToText(), CMess.SelectedRare.ToText()),
                     Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                     ResponseSource = new TaskCompletionSource<int>()
                 };
@@ -2627,7 +2623,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.conClear.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmClearAll.ToText(), CMess.selectedRare.ToText()),
+                        Message = string.Format(CMess.confirmClearAll.ToText(), CMess.SelectedRare.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
@@ -2668,7 +2664,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.conDelete.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmDelete.ToText(), CMess.selectedRare.ToText()),
+                        Message = string.Format(CMess.confirmDelete.ToText(), CMess.SelectedRare.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
@@ -2705,7 +2701,7 @@ namespace CardEditor.ViewModels
                     {
                         RareItemsView.Refresh();
                         RareRawDataViewModel.Instance.RareListSyncToUI();
-                        OnSnackbarRequested(string.Format(CMess.deleteSuc.ToText(), 1.ToString(), CMess.Rarity.ToText()));
+                        OnSnackbarRequested(string.Format(CMess.ThreePlaceholderSuccess.ToText(), 1.ToString(), CMess.Rarity.ToText(), CMess.tlDelete.ToText()));
                     }
                 }
                 else
@@ -2714,7 +2710,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.error.ToText(),
                         IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorDeleteRare.ToText()} {messageDB}",
+                        Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Rarity.ToText())} {messageDB}",
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
@@ -2728,7 +2724,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{CMess.errorDeleteRare.ToText()} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Rarity.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };
@@ -2788,7 +2784,7 @@ namespace CardEditor.ViewModels
                 if (resultImg && resultData)
                 {
                     OnSettingSaved?.Invoke();
-                    OnSnackbarRequested(CMess.saveSettingSuc.ToText());
+                    OnSnackbarRequested(string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()));
                 }
                 else
                 {

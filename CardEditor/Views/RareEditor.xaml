@@ -942,7 +942,7 @@
                                               materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
                                               materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
                                         <ComboBoxItem Content="{Lag:Localize AskMe}" />
-                                        <ComboBoxItem Content="{Lag:Localize Overwrite}" />
+                                        <ComboBoxItem Content="{Lag:Localize OverwriteDupli}" />
                                         <ComboBoxItem Content="{Lag:Localize Appendwrite}" />
                                         <ComboBoxItem Content="{Lag:Localize CreateNew}" />
                                     </ComboBox>
@@ -1114,7 +1114,7 @@
                                             <materialDesign:PackIcon Grid.Column="1" Kind="FilterMultipleOutline" Padding="0"
                                                                      VerticalAlignment="Center" HorizontalAlignment="Center" Width="28" Height="28" />
                                             <Viewbox Grid.Column="2" Stretch="Uniform" StretchDirection="Both">
-                                                <TextBlock Text="{Lag:Localize tlSearch}"
+                                                <TextBlock Text="{Lag:Localize tlFilter}"
                                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                            VerticalAlignment="Center" HorizontalAlignment="Center" />

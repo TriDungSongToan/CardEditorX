@@ -83,7 +83,7 @@ namespace CardEditor.ViewModels
                 var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateRaresListDatabase(CardAppContext.Instance.RaresFolderPath, "RaresListDB.cdb"));
                 if (!resultCreate)
                 {
-                    OnErrorOccurred?.Invoke($"{CMess.errorCreaCRRL.ToText()} {messageCreate}");
+                    OnErrorOccurred?.Invoke($"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.ListRareDB.ToText(), CMess.File.ToText())} {messageCreate}");
                     return;
                 }
                 
@@ -150,7 +150,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorAddRare.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Rarity.ToText())} {ex.Message}");
                 return (false, ex.Message);
             }
         }
@@ -179,7 +179,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorDeleteRare.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Rarity.ToText())} {ex.Message}");
                 return (false, ex.Message);
             }
         }
@@ -304,7 +304,7 @@ namespace CardEditor.ViewModels
                 var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateRareCardsDatabase(CardAppContext.Instance.RaresFolderPath, "RareCardsDB.cdb"));
                 if (!resultCreate)
                 {
-                    OnErrorOccurred?.Invoke($"{CMess.errorCreaCRRC.ToText()} {messageCreate}");
+                    OnErrorOccurred?.Invoke($"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardRareDB.ToText(), CMess.File.ToText())} {messageCreate}");
                     return;
                 }
             }
@@ -367,7 +367,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorAddCard.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Card.ToText())} {ex.Message}");
                 return (false, ex.Message);
             }
         }
@@ -428,7 +428,7 @@ namespace CardEditor.ViewModels
                     }
                 }
 
-                return (false, $"{CMess.errorSaveCard.ToText()} {ex.Message}");
+                return (false, $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Card.ToText())} {ex.Message}");
             }
         }
         public async Task<(bool, string)> DeleteRareCardDatabase(RareCard rareCard)
@@ -454,7 +454,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorDeleteCard.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {ex.Message}");
                 return (false, ex.Message);
             }
         }
@@ -501,7 +501,7 @@ namespace CardEditor.ViewModels
                 {
                     OnErrorOccurred?.Invoke($"Rollback failed: {rollbackEx.Message}");
                 }
-                OnErrorOccurred?.Invoke($"{CMess.errorDeleteCard.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {ex.Message}");
                 return (false, ex.Message);
             }
         }
@@ -534,7 +534,7 @@ namespace CardEditor.ViewModels
                 {
                     OnErrorOccurred?.Invoke($"Rollback failed: {rollbackEx.Message}");
                 }
-                OnErrorOccurred?.Invoke($"{CMess.errorDeleteCard.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {ex.Message}");
                 return (false, ex.Message);
             }
         }
@@ -809,8 +809,8 @@ namespace CardEditor.ViewModels
                     }
                     else
                     {
-                        OnErrorOccurred?.Invoke($"{CMess.CardDB.ToText()} {CMess.invaFileForm.ToText()}");
-                        return (false, $"{CMess.CardDB.ToText()} {CMess.invaFileForm.ToText()}");
+                        OnErrorOccurred?.Invoke($"{CMess.CardDB.ToText()} {string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())}");
+                        return (false, $"{CMess.CardDB.ToText()} {string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())}");
                     }
                 }
 
@@ -830,14 +830,14 @@ namespace CardEditor.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    OnErrorOccurred?.Invoke($"{CMess.errorImport.ToText()} {ex.Message}");
-                    return (false, $"{CMess.errorImport.ToText()} {ex.Message}");
+                    OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
+                    return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.CardDB.ToText()} {CMess.errorRead.ToText()} {ex.Message}");
-                return (false, $"{CMess.CardDB.ToText()} {CMess.errorRead.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Read.ToText())} {CMess.CardDB.ToText()} {ex.Message}");
+                return (false, $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Read.ToText())} {CMess.CardDB.ToText()} {ex.Message}");
             }
         }
         private static JsonSerializerOptions CreateSerializerOptions()
@@ -886,8 +886,8 @@ namespace CardEditor.ViewModels
                     }
                     catch (Exception ex)
                     {
-                        OnErrorOccurred?.Invoke($"{CMess.errorImport.ToText()} {ex.Message}");
-                        return (false, $"{CMess.errorImport.ToText()} {ex.Message}");
+                        OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
+                        return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
                     }
 
                 }
@@ -899,8 +899,8 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorImport.ToText()} {ex.Message}");
-                return (false, $"{CMess.errorImport.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
+                return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
             }
         }
         public async Task<(bool,string)> BrowseDataExcel(string filePath, bool Overwrite)
@@ -918,8 +918,8 @@ namespace CardEditor.ViewModels
 
                 if (!CheckDatabase.CheckExcelValidity(worksheet))
                 {
-                    OnErrorOccurred?.Invoke(CMess.invaFileForm.ToText());
-                    return (false, CMess.invaFileForm.ToText());
+                    OnErrorOccurred?.Invoke(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
+                    return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
                 }
 
                 int lastRow = worksheet.Dimension?.End.Row ?? 1;
@@ -948,8 +948,8 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorRead.ToText()} {CMess.excelfile.ToText()} {ex.Message}");
-                return (false, $"{CMess.errorRead.ToText()} {CMess.excelfile.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Read.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {ex.Message}");
+                return (false, $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Read.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {ex.Message}");
             }
 
             try
@@ -968,8 +968,8 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorImport.ToText()} {ex.Message}");
-                return (false, $"{CMess.errorImport.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
+                return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
             }
         }
         public async Task<(bool,string)> BrowseDataDeck(string filePath, bool Overwrite)
@@ -1057,13 +1057,13 @@ namespace CardEditor.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    OnErrorOccurred?.Invoke($"{CMess.errorImport.ToText()} {ex.Message}");
-                    return (false, $"{CMess.errorImport.ToText()} {ex.Message}");
+                    OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
+                    return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
                 }
             }
             catch (Exception ex)
             {
-                OnErrorOccurred?.Invoke($"{CMess.errorImport.ToText()} {ex.Message}");
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
                 return (false,ex.Message);
             }
         }

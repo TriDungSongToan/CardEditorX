@@ -65,7 +65,8 @@ namespace CardEditor.ImageGene
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorCreaImg.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.FourPlaceholder.ToText(), CMess.error.ToText(), CMess.Create.ToText(), CMess.Image.ToText(), CMess.File.ToText())} {ex.Message}", //Errot Create Image File
+                    new[] { CMess.ok.ToText() });
                 return string.Empty;
             }
         }
@@ -188,7 +189,8 @@ namespace CardEditor.ImageGene
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorCreaImg.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.FourPlaceholder.ToText(), CMess.error.ToText(), CMess.Create.ToText(), CMess.Image.ToText(), CMess.File.ToText())} {ex.Message}", //Errot Create Image File
+                    new[] { CMess.ok.ToText() });
                 return string.Empty;
             }
             return string.Empty;

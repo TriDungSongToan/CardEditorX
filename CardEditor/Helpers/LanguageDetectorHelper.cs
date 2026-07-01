@@ -3,18 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CardEditor.Models;
 
 namespace CardEditor.Helpers
 {
     public class LanguageDetectorHelper
     {
-        public enum LanguageArea
-        {
-            Unknown = 0,
-            TCG = 1,
-            OCG = 2,
-            Mixed = 3
-        }
         public static LanguageArea CheckLanguageArea(string input)
         {
             if (string.IsNullOrEmpty(input)) return LanguageArea.Unknown;

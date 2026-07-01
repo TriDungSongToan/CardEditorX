@@ -58,7 +58,7 @@ namespace CardEditor.Helpers
                     }
                 }
                 CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                    $"{CMess.expoDataSuc.ToText()}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText())}", new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace CardEditor.Helpers
                     }
                 }
                 CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                    $"{CMess.expoDataSuc.ToText()}", new[] { CMess.ok.ToText() });
+                    string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {

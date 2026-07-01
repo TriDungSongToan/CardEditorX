@@ -17,11 +17,11 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardDB.ToText()} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Ceds.ToText()} (*.ceds)", "*.ceds"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Excel.ToText()} (*.xlsx)", "*.xlsx"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.configfile.ToText()} (*.lflist.conf)", "*.lflist.conf"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.lflist.conf)", "*.lflist.conf"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -35,10 +35,10 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardDB.ToText()} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Ceds.ToText()} (*.ceds)", "*.ceds"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Excel.ToText()} (*.xlsx)", "*.xlsx"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -52,8 +52,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.configfile.ToText()} (*.ydk)", "*.ydk"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -67,10 +67,10 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardDB.ToText()}(*.cdb)", "*.cdb"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Ceds.ToText()}(*.ceds)", "*.ceds"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Excel.ToText()}(*.xlsx)", "*.xlsx"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.deckfile.ToText()}(*.ydk)", "*.ydk"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb)", "*.cdb"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -84,9 +84,9 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardDB.ToText()} (*.cdb)", "*.cdb"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.txtfile.ToText()} (*.txt)", "*.txt"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb)", "*.cdb"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -100,14 +100,14 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardScript.ToText()} (*.lua)", "*.lua"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.txtfile.ToText()} (*.txt)", "*.txt"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.mdfile.ToText()} (*.md)", "*.md"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.logfile.ToText()} (*.log)", "*.log"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.deckfile.ToText()} (*.ydk)", "*.ydk"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.yamlfile.ToText()} (*.yml)", "*.yml"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.configfile.ToText()} (*.conf)", "*.conf"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())} (*.lua)", "*.lua"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())} (*.md)", "*.md"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())} (*.log)", "*.log"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())} (*.yml)", "*.yml"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.conf)", "*.conf"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -121,8 +121,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Ceds.ToText()}(*.ceds)", "*.ceds"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -136,8 +136,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Excel.ToText()}(*.xlsx)", "*.xlsx"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -153,7 +153,7 @@ namespace CardEditor.Helpers
             };
             string filterDiaLog = string.IsNullOrWhiteSpace(filter) ? CMess.cardlabelSetCode.ToText() : filter;
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog} (*.lua)", "*.lua"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -169,7 +169,7 @@ namespace CardEditor.Helpers
             };
             string filterDiaLog = string.IsNullOrWhiteSpace(filter) ? CMess.cardlabelSetCode.ToText() : filter;
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog} (*.conf)", "*.conf"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -183,8 +183,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.configfile.ToText()} (*.lflist.conf)", "*.lflist.conf"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.lflist.conf)", "*.lflist.conf"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -198,7 +198,7 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.imagefile.ToText()}(*.png, *.jpg, *.jpeg, *.bmp)", "*.jpg;*.jpeg;*.png;*.bmp"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Image.ToText())} (*.png, *.jpg, *.jpeg, *.bmp)", "*.jpg;*.jpeg;*.png;*.bmp"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -212,7 +212,7 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.videofile.ToText()}(*.mp4, *.avi)", "*.mp4;*.avi"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Video.ToText())} (*.mp4, *.avi)", "*.mp4;*.avi"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -226,8 +226,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.txtfile.ToText()} (*.txt)", "*.txt"));
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -241,7 +241,7 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 Multiselect = false,
             };
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
@@ -251,7 +251,9 @@ namespace CardEditor.Helpers
         {
             CommonOpenFileDialog openFileDialog = new CommonOpenFileDialog()
             {
-                Title = string.IsNullOrWhiteSpace(title) ? CMess.selectFolder.ToText() : string.Format(CMess.select.ToText(), title),
+                Title = string.IsNullOrWhiteSpace(title)
+                ? string.Format(CMess.PlaceholderSelect.ToText(), CMess.Folder.ToText())
+                : string.Format(CMess.PlaceholderSelect.ToText(), title),
                 IsFolderPicker = true,
             };
 
@@ -271,8 +273,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardDB.ToText()} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -309,9 +311,9 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.deckfile.ToText()} (*.ydk)", "*.ydk"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.txtfile.ToText()} (*.txt)", "*.txt"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -348,14 +350,14 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardScript.ToText()} (*.lua)", "*.lua"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.txtfile.ToText()} (*.txt)", "*.txt"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.mdfile.ToText()} (*.md)", "*.md"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.logfile.ToText()} (*.log)", "*.log"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.deckfile.ToText()} (*.ydk)", "*.ydk"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.yamlfile.ToText()} (*.yml)", "*.yml"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.configfile.ToText()} (*.conf)", "*.conf"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())} (*.lua)", "*.lua"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())} (*.md)", "*.md"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())} (*.log)", "*.log"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())} (*.yml)", "*.yml"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.conf)", "*.conf"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -393,8 +395,8 @@ namespace CardEditor.Helpers
                 AddToMostRecentlyUsedList = false,
                 OverwritePrompt = true
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"Registry(*.reg)", "*.reg"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"Registry (*.reg)", "*.reg"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -431,8 +433,8 @@ namespace CardEditor.Helpers
                 AddToMostRecentlyUsedList = false,
                 OverwritePrompt = true
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.txtfile.ToText()}(*.txt)", "*.txt"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -469,8 +471,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Ceds.ToText()}(*.ceds)", "*.ceds"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -508,8 +510,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.configfile.ToText()} (*.zip)", "*.zip"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.zip)", "*.zip"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -547,8 +549,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.CardScript.ToText()} (*.xlsx)", "*.xlsx"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())} (*.xlsx)", "*.xlsx"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -585,8 +587,8 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.Ceds.ToText()}(*.lflist.conf)", "*.lflist.conf"));
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{CMess.allfile.ToText()} (*.*)", "*.*"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.lflist.conf)", "*.lflist.conf"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 
             if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)

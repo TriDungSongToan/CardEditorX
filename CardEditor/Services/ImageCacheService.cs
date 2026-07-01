@@ -138,11 +138,11 @@ namespace CardEditor.Services
             }
             catch (NotSupportedException)
             {
-                return (RollBack, CMess.invaFileForm.ToText());
+                return (RollBack, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
             }
             catch (IOException)
             {
-                return (RollBack, CMess.invaFileOpe.ToText());
+                return (RollBack, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Operation.ToText()));
             }
             catch (Exception ex)
             {

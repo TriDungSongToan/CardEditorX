@@ -64,7 +64,7 @@
                      FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                      VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                     materialDesign:HintAssist.Hint="{Lag:Localize tlSearch}"
+                     materialDesign:HintAssist.Hint="{Lag:Localize tlFilter}"
                      Style="{StaticResource CustomMaterialDesignFilledTextBox}"
                      TextOptions.TextFormattingMode="Display"
                      TextOptions.TextRenderingMode="ClearType"

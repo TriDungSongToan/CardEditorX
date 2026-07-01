@@ -421,7 +421,8 @@ namespace CardEditor.UserControls
                 if (resultSave)
                 {
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.saveSuc.ToText(), SelectedBanList.Name, CMess.BanList.ToText()),
+                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
+                        // FileName BanList Save successfully!
                         new[] { CMess.ok.ToText() });
                     IsSaved = true;
                     return true;
@@ -485,13 +486,13 @@ namespace CardEditor.UserControls
                     if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0)
                     {
                         int resultBrowse = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                            new[] { CMess.Overwrite.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
+                            new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
                         if (resultBrowse == 0)
                         {
                             var (result, message) = await BrowseBanListFileOverWrite(filePath);
                             if (result)
                                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                                    $"{CMess.impoDataSuc.ToText()} ({CMess.Overwrite.ToText()})", new[] { CMess.ok.ToText() });
+                                    $"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Import.ToText(), CMess.Data.ToText())}  ({CMess.OverwriteDupli.ToText()})", new[] { CMess.ok.ToText() });
                             else
                                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                                     $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
@@ -501,7 +502,7 @@ namespace CardEditor.UserControls
                             var (result, message) = await BrowseBanListFileAppendwrite(filePath);
                             if (result)
                                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                                    $"{CMess.impoDataSuc.ToText()} ({CMess.Appendwrite.ToText()})", new[] { CMess.ok.ToText() });
+                                    $"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Import.ToText(), CMess.Data.ToText())} ({CMess.Appendwrite.ToText()})", new[] { CMess.ok.ToText() });
                             else
                                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                                     $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
@@ -517,7 +518,7 @@ namespace CardEditor.UserControls
                         var (result, message) = await BrowseBanListFileOverWrite(filePath);
                         if (result)
                             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                                $"{CMess.impoDataSuc.ToText()} ({CMess.Overwrite.ToText()})", new[] { CMess.ok.ToText() });
+                                $"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Import.ToText(), CMess.Data.ToText())} ({CMess.OverwriteDupli.ToText()})", new[] { CMess.ok.ToText() });
                         else
                             CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                                 $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
@@ -527,7 +528,7 @@ namespace CardEditor.UserControls
                         var (result, message) = await BrowseBanListFileAppendwrite(filePath);
                         if (result)
                             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                                $"{CMess.impoDataSuc.ToText()} ({CMess.Appendwrite.ToText()})", new[] { CMess.ok.ToText() });
+                                $"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Import.ToText(), CMess.Data.ToText())} ({CMess.Appendwrite.ToText()})", new[] { CMess.ok.ToText() });
                         else
                             CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                                 $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
@@ -622,8 +623,9 @@ namespace CardEditor.UserControls
                     if (resultSave)
                     {
                         CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                            string.Format(CMess.saveSuc.ToText(), saveBanList.Name, CMess.BanList.ToText()),
-                            new[] { CMess.ok.ToText() });
+                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), saveBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
+                        // FileName BanList Save successfully!
+                        new[] { CMess.ok.ToText() });
                         IsSaved = true;
                     }
                     else
@@ -641,7 +643,8 @@ namespace CardEditor.UserControls
                 if (resultSave)
                 {
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.saveSuc.ToText(), SelectedBanList.Name, CMess.BanList.ToText()),
+                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
+                        // FileName BanList Save successfully!
                         new[] { CMess.ok.ToText() });
                     IsSaved = true;
                 }
@@ -674,7 +677,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmDelete)
             {
                 int result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    string.Format(CMess.confirmDelete.ToText(), CMess.selectedBanList.ToText()),
+                    string.Format(CMess.confirmDelete.ToText(), CMess.SelectedBanList.ToText()),
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -684,7 +687,8 @@ namespace CardEditor.UserControls
             {
                 SelectedBanList = null;
                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    string.Format(CMess.deleteSuc.ToText(), oldName, CMess.BanList.ToText()), new[] { CMess.ok.ToText() });
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), oldName, CMess.BanList.ToText(), CMess.tlDelete.ToText()),
+                    new[] { CMess.ok.ToText() });
             }
             else
             {
@@ -699,7 +703,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmClear)
             {
                 int result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    string.Format(CMess.ConfirmClear.ToText(), CMess.selectedBanList.ToText()),
+                    string.Format(CMess.ConfirmClear.ToText(), CMess.SelectedBanList.ToText()),
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -750,7 +754,8 @@ namespace CardEditor.UserControls
                 {
                     BanListRawDataViewModel.Instance.BanLists.Add(newBanList);
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.addSuc.ToText(), BanListName, CMess.BanList.ToText()), new[] { CMess.ok.ToText() });
+                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), BanListName, CMess.BanList.ToText(), CMess.tlAdd.ToText()),
+                        new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -831,7 +836,7 @@ namespace CardEditor.UserControls
                 if (resultSave)
                 {
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.saveSuc.ToText(), saveBanList.Name, CMess.BanList.ToText()),
+                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), saveBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
                         new[] { CMess.ok.ToText() });
                 }
                 else
@@ -846,7 +851,7 @@ namespace CardEditor.UserControls
                 if (resultSave)
                 {
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.saveSuc.ToText(), SelectedBanList.Name, CMess.BanList.ToText()),
+                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
                         new[] { CMess.ok.ToText() });
                 }
                 else
@@ -894,7 +899,7 @@ namespace CardEditor.UserControls
                 else if (LimitedCount == 2) SemiLimitedCards.Add(newCard);
                 else UnLimitedCards.Add(newCard);
 
-                MessageNotifi.Enqueue(string.Format(CMess.addSuc.ToText(), 1.ToString(), CMess.Card.ToText()));
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), 1.ToString(), CMess.Card.ToText(), CMess.tlAdd.ToText()));
             }
             catch (Exception ex)
             {
@@ -918,8 +923,8 @@ namespace CardEditor.UserControls
                 int Semi = ModifyCollection(SemiLimitedCards, newCard);
                 int UnLimited = ModifyCollection(UnLimitedCards, newCard);
                 int Total = Forbidden + Limited + Semi + UnLimited;
-                MessageNotifi.Enqueue(string.Format(CMess.updateSuc.ToText(),
-                    Total.ToString(), CMess.Card.ToText()));
+                MessageNotifi.Enqueue(string.Format(CMess.TwoPlaceholderSuccess.ToText(), Total.ToString(), CMess.Card.ToText(), CMess.Update.ToText()));
+                // 1 Card Update successfully!
             }
             catch (Exception ex)
             {
@@ -963,7 +968,7 @@ namespace CardEditor.UserControls
             SelectedBanList.WhiteList = WhiteList;
 
             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                string.Format(CMess.updateSuc.ToText(), SelectedBanList.Name, CMess.BanList.ToText()), new[] { CMess.ok.ToText() });
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.Update.ToText(), SelectedBanList.Name, CMess.BanList.ToText()), new[] { CMess.ok.ToText() });
         }
         private bool CanUpLoadCard()
         {
@@ -1080,7 +1085,7 @@ namespace CardEditor.UserControls
                 UnLimitedCards.ReplaceAll(unlimited);
 
                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    string.Format(CMess.refreshSuc.ToText(), BanListName, CMess.BanList.ToText()), new[] { CMess.ok.ToText() });
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.Refresh.ToText(), BanListName, CMess.BanList.ToText()), new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
@@ -1436,7 +1441,7 @@ namespace CardEditor.UserControls
                 catch (Exception ex)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorCopy.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 }
             }
             else
@@ -1462,7 +1467,7 @@ namespace CardEditor.UserControls
                 catch (Exception ex)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorCopy.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 }
             }
             else
@@ -1489,7 +1494,7 @@ namespace CardEditor.UserControls
                 catch (Exception ex)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorCopy.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 }
             }
             else
@@ -1509,12 +1514,12 @@ namespace CardEditor.UserControls
 
                 Clipboard.SetText(json);
 
-                MessageNotifi.Enqueue(string.Format(CMess.copySuc.ToText(), SelectedItems.Count(), CMess.Card.ToText()));
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedItems.Count(), CMess.Card.ToText(), CMess.Copy.ToText()));
             }
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorCopy.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
             finally
             {
@@ -1751,7 +1756,7 @@ namespace CardEditor.UserControls
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         public async Task FilterDuplicateDataFromCdbFile(bool isDuplicate)
@@ -1860,9 +1865,210 @@ namespace CardEditor.UserControls
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
+
+
+        public async Task<ResultItem> FilterCardByCDBFile(string filePath, bool isDuplicate)
+        {
+            int totalCards =
+                ForbiddenCards.Count +
+                LimitedCards.Count +
+                SemiLimitedCards.Count +
+                UnLimitedCards.Count;
+
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = totalCards,
+                    Message = CMess.noFileFound.ToText()
+                };
+            }
+
+            if (ForbiddenCards == null || !ForbiddenCards.Any() ||
+                LimitedCards == null || !LimitedCards.Any() ||
+                SemiLimitedCards == null || !SemiLimitedCards.Any() ||
+                UnLimitedCards == null || !UnLimitedCards.Any())
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = 0,
+                    Message = CMess.noCardFilter.ToText()
+                };
+            }
+
+            try
+            {
+                var cardIds = new HashSet<ulong>();
+                using (var connection = new SQLiteConnection($"Data Source={filePath};Version=3;"))
+                {
+                    await connection.OpenAsync();
+                    using (var command = new SQLiteCommand("SELECT id FROM datas", connection))
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                                cardIds.Add((ulong)reader.GetInt64(0));
+                        }
+                    }
+                }
+                return FilterCardByListID(cardIds, isDuplicate);
+            }
+            catch (Exception ex)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = totalCards,
+                    Message = ex.Message
+                };
+            }
+        }
+        public async Task<ResultItem> FilterCardByYDKFile(string filePath, bool isDuplicate)
+        {
+            int totalCards =
+                ForbiddenCards.Count +
+                LimitedCards.Count +
+                SemiLimitedCards.Count +
+                UnLimitedCards.Count;
+
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = totalCards,
+                    Message = CMess.noFileFound.ToText()
+                };
+            }
+
+            if (ForbiddenCards == null || !ForbiddenCards.Any() ||
+                LimitedCards == null || !LimitedCards.Any() ||
+                SemiLimitedCards == null || !SemiLimitedCards.Any() ||
+                UnLimitedCards == null || !UnLimitedCards.Any())
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = 0,
+                    Message = CMess.noCardFilter.ToText()
+                };
+            }
+
+            try
+            {
+                var cardIds = new HashSet<ulong>();
+                const int bufferSize = 4096;
+
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, useAsync: true))
+                using (var reader = new StreamReader(fs, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: bufferSize, leaveOpen: false))
+                {
+                    string line;
+                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+                    {
+                        line = line.Trim();
+                        if (string.IsNullOrEmpty(line)) continue;
+                        if (!Regex.IsMatch(line, @"^\d+$")) continue;
+
+                        if (ulong.TryParse(line, out ulong id))
+                        {
+                            cardIds.Add(id);
+                        }
+                    }
+                }
+
+                return FilterCardByListID(cardIds, isDuplicate);
+            }
+            catch (Exception ex)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = totalCards,
+                    Message = ex.Message
+                };
+            }
+        }
+        private ResultItem FilterCardByListID(HashSet<ulong> ids, bool isDuplicate)
+        {
+            int totalCards =
+                ForbiddenCards.Count +
+                LimitedCards.Count +
+                SemiLimitedCards.Count +
+                UnLimitedCards.Count;
+
+            try
+            {
+                ClearFilterCard();
+
+                ForbiddenCardsView.Filter = item =>
+                {
+                    var card = (CardEditor.Models.Card)item;
+                    return isDuplicate == ids.Contains(card.id);
+                };
+                LimitedCardsView.Filter = item =>
+                {
+                    var card = (CardEditor.Models.Card)item;
+                    return isDuplicate == ids.Contains(card.id);
+                };
+                SemiLimitedCardsView.Filter = item =>
+                {
+                    var card = (CardEditor.Models.Card)item;
+                    return isDuplicate == ids.Contains(card.id);
+                };
+                UnLimitedCardsView.Filter = item =>
+                {
+                    var card = (CardEditor.Models.Card)item;
+                    return isDuplicate == ids.Contains(card.id);
+                };
+
+                int totalFilted =
+                    ForbiddenCardsView.Cast<CardEditor.Models.Card>().Count() +
+                    LimitedCardsView.Cast<CardEditor.Models.Card>().Count() +
+                    SemiLimitedCardsView.Cast<CardEditor.Models.Card>().Count() +
+                    UnLimitedCardsView.Cast<CardEditor.Models.Card>().Count();
+
+                return new ResultItem
+                {
+                    Succeeded = true,
+                    FilteredCount = totalFilted,
+                    TotalCount = totalCards,
+                    Message = string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = totalCards,
+                    Message = ex.Message
+                };
+            }
+        }
+        private void ClearFilterCard()
+        {
+            ForbiddenCardsView.Filter = null;
+            LimitedCardsView.Filter = null;
+            SemiLimitedCardsView.Filter = null;
+            UnLimitedCardsView.Filter = null;
+            ForbiddenCardsView.Refresh();
+            LimitedCardsView.Refresh();
+            SemiLimitedCardsView.Refresh();
+            UnLimitedCardsView.Refresh();
+        }
+
         #endregion
 
         #region Open
@@ -2165,7 +2371,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmDelete)
             {
                 int result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.selectedCard.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
+                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.SelectCards.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -2179,7 +2385,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmDelete)
             {
                 int result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.selectedCard.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
+                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.SelectCards.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -2193,7 +2399,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmDelete)
             {
                 int result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.selectedCard.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
+                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.SelectCards.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -2207,7 +2413,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmDelete)
             {
                 int result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.selectedCard.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
+                    $"{string.Format(CMess.confirmDelete.ToText(), CMess.SelectCards.ToText())} ({selectedCards.Count} {CMess.Card.ToText()})",
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }

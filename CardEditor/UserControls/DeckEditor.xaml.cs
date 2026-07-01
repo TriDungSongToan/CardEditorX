@@ -486,7 +486,7 @@ namespace CardEditor.UserControls
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private async Task LoadDeck()
@@ -1472,7 +1472,7 @@ namespace CardEditor.UserControls
             }
             CurrentDeck.Path = filePath;
             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                string.Format(CMess.saveSuc.ToText(), CurrentDeck.Name, CMess.Deck.ToText()),
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), CurrentDeck.Name, CMess.Deck.ToText(), CMess.Save.ToText()),
                 new[] { CMess.ok.ToText() });
             return true;
         }
@@ -1518,7 +1518,7 @@ namespace CardEditor.UserControls
             DeckViewModel.Instance.Decks.Add(newDeck);
             CurrentDeck = newDeck;
             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.saveSuc.ToText(), newName, CMess.Deck.ToText()), new[] { CMess.ok.ToText() });
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), newName, CMess.Deck.ToText(), CMess.Save.ToText()), new[] { CMess.ok.ToText() });
         }
         private void SortCommand()
         {
@@ -1537,7 +1537,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmClear)
             {
                 var result = CMSG.Show(CMess.conClear.ToText(), CMSG.MessageBoxIconType.Question,
-                    string.Format(CMess.confirmClearAll.ToText(), CMess.selectedDeck.ToText()),
+                    string.Format(CMess.confirmClearAll.ToText(), CMess.SelectedDeck.ToText()),
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -1561,7 +1561,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmDelete)
             {
                 var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    string.Format(CMess.confirmDelete.ToText(), CMess.selectedDeck.ToText()),
+                    string.Format(CMess.confirmDelete.ToText(), CMess.SelectedDeck.ToText()),
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -1580,7 +1580,7 @@ namespace CardEditor.UserControls
                 return;
             }
             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                string.Format(CMess.deleteSuc.ToText(), deleteName, CMess.Deck.ToText()),
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), deleteName, CMess.Deck.ToText(), CMess.tlDelete.ToText()),
                 new[] { CMess.ok.ToText() });
 
             if (DeckViewModel.Instance.Decks.Count == 0)
@@ -1684,7 +1684,8 @@ namespace CardEditor.UserControls
                 return;
             }
             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                string.Format(CMess.creaSuc.ToText(), newName, CMess.Deck.ToText()), new[] { CMess.ok.ToText() });
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), newName, CMess.Deck.ToText(), CMess.Create.ToText()),
+                new[] { CMess.ok.ToText() });
 
             var newdeck = DeckViewModel.Instance.Decks.FirstOrDefault(d => d.Path == messageFile);
             if (newdeck != null) CurrentDeck = newdeck;
@@ -1721,7 +1722,8 @@ namespace CardEditor.UserControls
                 return;
             }
             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.renameSuc.ToText(), CMess.Deck.ToText(), oldName, newName), new[] { CMess.ok.ToText() });
+                string.Format(CMess.renameSuc.ToText(), CMess.Deck.ToText(), oldName, newName),
+                new[] { CMess.ok.ToText() });
 
         }
         private bool ReNameInValid()
@@ -1799,7 +1801,8 @@ namespace CardEditor.UserControls
             else
             {
                 CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    CMess.invaDataForm.ToText(), new[] { CMess.ok.ToText() });
+                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()),
+                    new[] { CMess.ok.ToText() });
             }
         }
         private bool CanYDKEImport()
@@ -2894,7 +2897,7 @@ namespace CardEditor.UserControls
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorFilterCard.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlFilter.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 });
             }
             finally

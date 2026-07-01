@@ -154,7 +154,7 @@ namespace CardEditor.Services
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText()});
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText()});
             }
         }
         public static void GetConstantsData(string constantsPath, string outputPath)
@@ -219,7 +219,7 @@ namespace CardEditor.Services
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         public static void GetNameSpaceData(string constantsPath, string outputPath)
@@ -286,7 +286,7 @@ namespace CardEditor.Services
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorRead.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
     }

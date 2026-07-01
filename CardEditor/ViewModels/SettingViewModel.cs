@@ -299,7 +299,7 @@ namespace CardEditor.ViewModels
                         {
                             Title = CMess.error.ToText(),
                             IconType = CMSG.MessageBoxIconType.Error,
-                            Message = CMess.invaPermi.ToText(),
+                            Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()),
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -328,7 +328,7 @@ namespace CardEditor.ViewModels
                         {
                             Title = CMess.error.ToText(),
                             IconType = CMSG.MessageBoxIconType.Error,
-                            Message = CMess.invaPermi.ToText(),
+                            Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()),
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -357,7 +357,7 @@ namespace CardEditor.ViewModels
                         {
                             Title = CMess.error.ToText(),
                             IconType = CMSG.MessageBoxIconType.Error,
-                            Message = CMess.invaPermi.ToText(),
+                            Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()),
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -496,7 +496,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.notifi.ToText(),
                         IconType = CMSG.MessageBoxIconType.Notification,
-                        Message = CMess.saveSettingSuc.ToText(),
+                        Message = string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()),
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };

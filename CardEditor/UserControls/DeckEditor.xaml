@@ -993,7 +993,7 @@
                                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             materialDesign:HintAssist.Hint="{Lag:Localize selectFolder}"
+                                                             materialDesign:HintAssist.Hint="{Lag:Localize Folder}"
                                                              Behaviors:FileDropBehavior.Enable="True"
                                                              Behaviors:PasteSanitizerBehavior.Enable="True"
                                                              TextOptions.TextFormattingMode="Display"
@@ -1848,7 +1848,7 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
 
-                                    <Button x:Name="btnSearch" Grid.Row="0" Content="{Lag:Localize tlSearch}" BorderThickness="0" Margin="0" Padding="8,0,8,0" 
+                                    <Button x:Name="btnSearch" Grid.Row="0" Content="{Lag:Localize tlFilter}" BorderThickness="0" Margin="0" Padding="8,0,8,0" 
                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -2947,7 +2947,7 @@
                                         <Setter Property="Text" Value="{Lag:Localize Appendwrite}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsChecked, ElementName=tbtnOverwrite}" Value="True">
-                                                <Setter Property="Text" Value="{Lag:Localize Overwrite}"/>
+                                                <Setter Property="Text" Value="{Lag:Localize OverwriteAll}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding IsChecked, ElementName=tbtnOverwrite}" Value="{x:Null}">
                                                 <Setter Property="Text" Value="{Lag:Localize CreateNew}"/>

@@ -21,6 +21,9 @@ namespace CardEditor.Models
         public string RareCardDBPath { get; }
         public string GenesysFolderPath { get; }
         public string GenesysDBPath { get; }
+        public string PenDescLangFilePath { get; }
+        public string CreditFolderPath { get; }
+        public string CreditDBPath { get; }
         public string StampFolderPath { get; }
         public string KonamiIDFilePath { get; }
 
@@ -36,6 +39,9 @@ namespace CardEditor.Models
             RareCardDBPath = System.IO.Path.Combine(RaresFolderPath, "RareCardsDB.cdb");
             GenesysFolderPath = System.IO.Path.Combine(DataFolderPath, @"CardData\Genesys");
             GenesysDBPath = System.IO.Path.Combine(GenesysFolderPath, "GenesysCardsDB.cdb");
+            PenDescLangFilePath = System.IO.Path.Combine(DataFolderPath, $@"CardData\Language\PenDescFormat.json");
+            CreditFolderPath = System.IO.Path.Combine(DataFolderPath, "Credit");
+            CreditDBPath = System.IO.Path.Combine(CreditFolderPath, "CreditDB.cdb");
             StampFolderPath = System.IO.Path.Combine(DataFolderPath, "RareStamp");
             KonamiIDFilePath = System.IO.Path.Combine(ConfigFolderPath, $@"CardData\KonamiID\KonamiID.cdb");
         }

@@ -167,13 +167,13 @@ namespace CardEditor
                 if (!resultReload)
                 {
                     CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                        $"{CMess.errorCreaImg.ToText()} {messageReload}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText())} {messageReload}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.invaSetting.ToText()}\n{ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText())}\n{ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         private bool CanSave()
@@ -244,7 +244,7 @@ namespace CardEditor
                 if (!checkResult)
                 {
                     CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                        $"{CMess.invaSetting.ToText()} {checkMessage}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText())} {checkMessage}", new[] { CMess.ok.ToText() });
                     return;
                 }
                 await CreateImg();
@@ -252,7 +252,7 @@ namespace CardEditor
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorCreateCard.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }
             finally
             {

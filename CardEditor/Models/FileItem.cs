@@ -6,7 +6,8 @@ using System.Runtime.CompilerServices;
 using System.ComponentModel;
 using CardEditor.Helpers;
 using CardEditor.Localization;
-using System.Web.Routing;
+using CardEditor.Models;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Models
 {
@@ -52,7 +53,7 @@ namespace CardEditor.Models
         {
             if (string.IsNullOrWhiteSpace(FullPath))
             {
-                DisplayName = CardEditor.Localization.Language.allfile.ToText();
+                DisplayName = string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText());
                 return;
             }
             if (!File.Exists(FullPath))

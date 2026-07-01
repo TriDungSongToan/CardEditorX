@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using System.Text;
-using static CardEditor.Helpers.LanguageDetectorHelper;
+using CardEditor.Models;
 
 namespace CardEditor.Services
 {
@@ -84,7 +84,7 @@ namespace CardEditor.Services
         public static (bool, string) CreateDatabase(string folderPath, string cdbFileName)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(cdbFileName))
-                return (false, CMess.invaFolderPath.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
             if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
             string dbFilePath = Path.Combine(folderPath, cdbFileName);
@@ -151,7 +151,7 @@ namespace CardEditor.Services
         public static (bool, string) CreateChatDatabase(string folderPath, string FileName)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath) || string.IsNullOrWhiteSpace(FileName))
-                return (false, CMess.invaFolderPath.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
 
             string dbFilePath = Path.Combine(folderPath, FileName);
             string tempDbFilePath = dbFilePath + ".tmp";
@@ -196,7 +196,7 @@ namespace CardEditor.Services
         public static (bool, string) CreateRaresListDatabase(string folderPath, string FileName)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(FileName))
-                return (false, CMess.invaFolderPath.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
             if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
             string dbFilePath = Path.Combine(folderPath, FileName);
@@ -233,7 +233,7 @@ namespace CardEditor.Services
         public static (bool, string) CreateRareCardsDatabase(string folderPath, string FileName)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(FileName))
-                return (false, CMess.invaFolderPath.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
             if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
             string dbFilePath = Path.Combine(folderPath, FileName);
@@ -269,7 +269,7 @@ namespace CardEditor.Services
         public static (bool, string) CreateGenesysCardsDatabase(string folderPath, string FileName)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(FileName))
-                return (false, CMess.invaFolderPath.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
             if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
             string dbFilePath = Path.Combine(folderPath, FileName);
@@ -302,10 +302,48 @@ namespace CardEditor.Services
                 return (false, ex.Message);
             }
         }
+        public static (bool, string) CreateCreditsDatabase(string folderPath, string FileName)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(FileName))
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
+            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+
+            string dbFilePath = Path.Combine(folderPath, FileName);
+            string tempDbFilePath = dbFilePath + ".tmp";
+
+            try
+            {
+                SQLiteConnection.CreateFile(tempDbFilePath);
+                using (var connection = new SQLiteConnection($"Data Source={tempDbFilePath};Version=3;"))
+                {
+                    connection.Open();
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            CREATE TABLE IF NOT EXISTS Credit (
+                            Id INTEGER PRIMARY KEY NOT NULL,
+                            Name TEXT,
+                            Header TEXT NOT NULL,
+                            Footer TEXT,
+                            Description TEXT
+                        );";
+                        command.ExecuteNonQuery();
+                    }
+                }
+                if (File.Exists(dbFilePath)) File.Delete(dbFilePath);
+                File.Move(tempDbFilePath, dbFilePath);
+                return (true, dbFilePath);
+            }
+            catch (Exception ex)
+            {
+                if (File.Exists(tempDbFilePath)) File.Delete(tempDbFilePath);
+                return (false, ex.Message);
+            }
+        }
         public static (bool, string) CreateScript(string folderPath, string fileName, bool newScript, string luaContent = "", LanguageArea Area = LanguageArea.Unknown)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(fileName))
-                return (false, CMess.invaFolderPath.ToText());
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
             if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
             string filePath = Path.Combine(folderPath, fileName);
