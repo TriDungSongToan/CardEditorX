@@ -373,119 +373,256 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
                             <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
 
                         <Grid Grid.Row="0" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition Width="10" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Grid.Column="0" Text="{Lag:Localize ByLanguage}" Margin="0,0,0,0" VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                            
-                            <ComboBox Grid.Column="2" Height="43"
-                                      BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
-                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                      FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                      FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                      ItemsSource="{Binding AvailableLanguages}"
-                                      SelectedIndex="{Binding SelectedLanguageIndex}"
-                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                      VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                      materialDesign:ColorZoneAssist.Mode="Custom"
-                                      materialDesign:HintAssist.Hint="{Lag:Localize Language}"
-                                      Style="{StaticResource MaterialDesignFilledComboBox}"
-                                      TextOptions.TextFormattingMode="Display"
-                                      TextOptions.TextRenderingMode="ClearType"
-                                      materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="10" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="{Lag:Localize ByLanguage}" Margin="0,0,0,0" VerticalAlignment="Center"
+                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                                <ComboBox Grid.Column="2" Height="43"
+                                          BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          ItemsSource="{Binding AvailableLanguages}"
+                                          SelectedIndex="{Binding SelectedLanguageIndex}"
+                                          VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                          VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                          materialDesign:ColorZoneAssist.Mode="Custom"
+                                          materialDesign:HintAssist.Hint="{Lag:Localize Language}"
+                                          Style="{StaticResource MaterialDesignFilledComboBox}"
+                                          TextOptions.TextFormattingMode="Display"
+                                          TextOptions.TextRenderingMode="ClearType"
+                                          materialDesign:TextFieldAssist.HasClearButton="True"
+                                          materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                          materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+
+                            </Grid>
+
+                            <Grid Grid.Row="2" Margin="0,8,0,0" Height="30" >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid Grid.Column="0" Margin="10,0,0,0"
+                                      ToolTip="{Lag:Localize toolFilInclude}"
+                                      Visibility="{Binding IsIncludeDesclang, Converter={StaticResource NegativeBoolToVisibility}}" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <materialDesign:PackIcon Grid.Column="0" Kind="CheckOutline" Width="28" Height="28" Margin="0"
+                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                                    <TextBlock Grid.Column="2" Text="{Lag:Localize IncludeLanguage}" Background="Transparent"
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                </Grid>
+
+                                <Grid Grid.Column="0" Margin="10,0,0,0"
+                                      ToolTip="{Lag:Localize toolFilExclude}"
+                                      Visibility="{Binding IsIncludeDesclang, Converter={StaticResource PositiveBoolToVisibility}}" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <materialDesign:PackIcon Grid.Column="0" Kind="CloseOutline" Width="28" Height="28" Margin="0"
+                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                                    <TextBlock Grid.Column="2" Text="{Lag:Localize ExcludeLanguage}" Background="Transparent"
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                </Grid>
+
+                                <ToggleButton Grid.Column="1" Panel.ZIndex="2"
+                                              IsChecked="{Binding IsIncludeDesclang}"
+                                              VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                              Width="55" Height="28" Margin="0,0,20,0" >
+                                    <ToggleButton.Content>
+                                        <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
+                                    </ToggleButton.Content>
+                                    <materialDesign:ToggleButtonAssist.OnContent>
+                                        <materialDesign:PackIcon Kind="CheckOutline" Width="20" Height="20" />
+                                    </materialDesign:ToggleButtonAssist.OnContent>
+                                    <ToggleButton.Style>
+                                        <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignSwitchSecondaryToggleButton}" >
+                                            <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOffBackground" Value="Red" />
+                                            <Setter Property="Background" Value="Red" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOnBackground" Value="Blue" />
+                                                    <Setter Property="Background" Value="Green" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
+
+                                <Button Grid.Column="2" Height="30" Margin="0,0,0,0" Padding="14,0,14,0"
+                                        Command="{Binding FilterLanguageCommand}" Content="{Lag:Localize tlFilter}"
+                                        HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                        FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                        materialDesign:ButtonAssist.CornerRadius="5"
+                                        Style="{StaticResource ButtonDanger}" />
+
+                            </Grid>
 
                         </Grid>
 
-                        <Grid Grid.Row="2" Margin="0,8,0,0" Height="30" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition Width="auto" />
-                            </Grid.ColumnDefinitions>
+                        <Border Grid.Row="1" Height="1" Margin="0,8,0,8"
+                                Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
 
-                            <Grid Grid.Column="0" Margin="10,0,0,0"
-                                  ToolTip="{Lag:Localize toolFilInclude}"
-                                  Visibility="{Binding IsInclude, Converter={StaticResource NegativeBoolToVisibility}}" >
+                        <Grid Grid.Row="2" >
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto" />
                                     <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <materialDesign:PackIcon Grid.Column="0" Kind="CheckOutline" Width="28" Height="28" Margin="0"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-
-                                <TextBlock Grid.Column="2" Text="{Lag:Localize IncludeLanguage}" Background="Transparent"
-                                           HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                <TextBlock Grid.Column="0" Text="{Lag:Localize ByPenLanguage}" Margin="0,0,0,0" VerticalAlignment="Center"
                                            Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                                <ComboBox Grid.Column="2" Height="43"
+                                          BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          ItemsSource="{Binding OrderedPenMapsUI, Source={x:Static ViewModels:PenLanguageViewModel.Instance}}"
+                                          SelectedItem="{Binding SelectedRule}"
+                                          DisplayMemberPath="Locale"
+                                          VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                          VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                          materialDesign:ColorZoneAssist.Mode="Custom"
+                                          materialDesign:HintAssist.Hint="{Lag:Localize Language}"
+                                          Style="{StaticResource MaterialDesignFilledComboBox}"
+                                          TextOptions.TextFormattingMode="Display"
+                                          TextOptions.TextRenderingMode="ClearType"
+                                          materialDesign:TextFieldAssist.HasClearButton="True"
+                                          materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                          materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+
                             </Grid>
 
-                            <Grid Grid.Column="0" Margin="10,0,0,0"
-                                  ToolTip="{Lag:Localize toolFilExclude}"
-                                  Visibility="{Binding IsInclude, Converter={StaticResource PositiveBoolToVisibility}}" >
+                            <Grid Grid.Row="2" Margin="0,8,0,0" Height="30" >
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="auto" />
-                                    <ColumnDefinition Width="10" />
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <materialDesign:PackIcon Grid.Column="0" Kind="CloseOutline" Width="28" Height="28" Margin="0"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                <Grid Grid.Column="0" Margin="10,0,0,0"
+                                      ToolTip="{Lag:Localize toolFilInclude}"
+                                      Visibility="{Binding IsIncludePenlang, Converter={StaticResource NegativeBoolToVisibility}}" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
 
-                                <TextBlock Grid.Column="2" Text="{Lag:Localize ExcludeLanguage}" Background="Transparent"
-                                           HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                    <materialDesign:PackIcon Grid.Column="0" Kind="CheckOutline" Width="28" Height="28" Margin="0"
+                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                                    <TextBlock Grid.Column="2" Text="{Lag:Localize IncludeLanguage}" Background="Transparent"
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                </Grid>
+
+                                <Grid Grid.Column="0" Margin="10,0,0,0"
+                                      ToolTip="{Lag:Localize toolFilExclude}"
+                                      Visibility="{Binding IsIncludePenlang, Converter={StaticResource PositiveBoolToVisibility}}" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <materialDesign:PackIcon Grid.Column="0" Kind="CloseOutline" Width="28" Height="28" Margin="0"
+                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                                    <TextBlock Grid.Column="2" Text="{Lag:Localize ExcludeLanguage}" Background="Transparent"
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                </Grid>
+
+                                <ToggleButton Grid.Column="1" Panel.ZIndex="2"
+                                              IsChecked="{Binding IsIncludePenlang}"
+                                              VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                              Width="55" Height="28" Margin="0,0,20,0" >
+                                    <ToggleButton.Content>
+                                        <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
+                                    </ToggleButton.Content>
+                                    <materialDesign:ToggleButtonAssist.OnContent>
+                                        <materialDesign:PackIcon Kind="CheckOutline" Width="20" Height="20" />
+                                    </materialDesign:ToggleButtonAssist.OnContent>
+                                    <ToggleButton.Style>
+                                        <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignSwitchSecondaryToggleButton}" >
+                                            <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOffBackground" Value="Red" />
+                                            <Setter Property="Background" Value="Red" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOnBackground" Value="Blue" />
+                                                    <Setter Property="Background" Value="Green" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
+
+                                <Button Grid.Column="2" Height="30" Margin="0,0,0,0" Padding="14,0,14,0"
+                                        Command="{Binding FilterPenLangCommand}" Content="{Lag:Localize tlFilter}"
+                                        HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                        FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                        materialDesign:ButtonAssist.CornerRadius="5"
+                                        Style="{StaticResource ButtonDanger}" />
+
                             </Grid>
-
-                            <ToggleButton Grid.Column="1" Panel.ZIndex="2"
-                                          IsChecked="{Binding IsInclude}"
-                                          VerticalAlignment="Center" HorizontalAlignment="Center" 
-                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                                          Width="55" Height="28" Margin="0,0,20,0" >
-                                <ToggleButton.Content>
-                                    <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
-                                </ToggleButton.Content>
-                                <materialDesign:ToggleButtonAssist.OnContent>
-                                    <materialDesign:PackIcon Kind="CheckOutline" Width="20" Height="20" />
-                                </materialDesign:ToggleButtonAssist.OnContent>
-                                <ToggleButton.Style>
-                                    <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignSwitchSecondaryToggleButton}" >
-                                        <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOffBackground" Value="Red" />
-                                        <Setter Property="Background" Value="Red" />
-                                        <Style.Triggers>
-                                            <Trigger Property="IsChecked" Value="True">
-                                                <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOnBackground" Value="Blue" />
-                                                <Setter Property="Background" Value="Green" />
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ToggleButton.Style>
-                            </ToggleButton>
-
-                            <Button Grid.Column="2" Height="30" Margin="0,0,0,0" Padding="14,0,14,0"
-                                    Command="{Binding FilterLanguageCommand}" Content="{Lag:Localize tlFilter}"
-                                    HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                    materialDesign:ButtonAssist.CornerRadius="5"
-                                    Style="{StaticResource ButtonDanger}" />
 
                         </Grid>
 

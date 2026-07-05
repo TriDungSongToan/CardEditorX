@@ -2010,12 +2010,13 @@
                                     </Grid.RowDefinitions>
 
                                     <Border Grid.Row="0" BorderThickness="0,0,0,0.7" Height="30"
+                                            Visibility="{Binding IsPendulumIntf, Converter={StaticResource NegativeBoolToVis}}"
                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="10" />
                                                 <ColumnDefinition Width="auto" />
+                                                <ColumnDefinition Width="10" />
+                                                <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="3" />
                                                 <ColumnDefinition Width="auto" />
                                                 <ColumnDefinition Width="3" />
@@ -2028,7 +2029,7 @@
                                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                        FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
 
-                                            <ComboBox Grid.Column="2" Width="100" Height="29"
+                                            <ComboBox Grid.Column="2" Height="29" Margin="0"
                                                       BorderThickness="0.7,0,0.7,0" Padding="5,0,10,0" IsEditable="False"
                                                       BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                       Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -2036,7 +2037,7 @@
                                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                       ItemsSource="{Binding OrderedPenMapsUI, Source={x:Static ViewModels:PenLanguageViewModel.Instance}}"
-                                                      SelectedItem="{Binding SelectedPenLang}"
+                                                      SelectedItem="{Binding SelectedPenLangRule}"
                                                       DisplayMemberPath="Locale"
                                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                                       VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
@@ -2045,12 +2046,19 @@
                                                       TextOptions.TextFormattingMode="Display"
                                                       TextOptions.TextRenderingMode="ClearType"
                                                       materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
-                                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+                                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
+                                                <ComboBox.Resources>
+                                                    <Style TargetType="ScrollBar">
+                                                        <Setter Property="Background" Value="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                        <Setter Property="Opacity" Value="0.5" />
+                                                    </Style>
+                                                </ComboBox.Resources>
+                                            </ComboBox>
 
                                             <Button Grid.Column="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                     Margin="0" Padding="7,3,7,3" BorderThickness="0"
                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                    Style="{StaticResource ButtonSuccess}" Command="{Binding ModifyCreditCommand}" >
+                                                    Style="{StaticResource ButtonSuccess}" Command="{Binding PreViewPendulumDescCommand}" >
                                                 <Button.Background>
                                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                                         <GradientStop Color="#FF4A90E2" Offset="0.0"/>
@@ -2059,7 +2067,7 @@
                                                 </Button.Background>
                                                 <Button.Content>
                                                     <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
-                                                        <TextBlock Text="Preview"
+                                                        <TextBlock Text="{Lag:Localize PreView}"
                                                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                    VerticalAlignment="Center" HorizontalAlignment="Center" />
@@ -2070,7 +2078,7 @@
                                             <Button Grid.Column="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                     Margin="0" Padding="7,3,7,3" BorderThickness="0"
                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                    Style="{StaticResource ButtonSuccess}" Command="{Binding ModifyCreditCommand}" >
+                                                    Style="{StaticResource ButtonSuccess}" Command="{Binding ApplyPendulumDescCommand}" >
                                                 <Button.Background>
                                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                                         <GradientStop Color="#FF5EFFFF" Offset="0.0"/>
@@ -2079,7 +2087,7 @@
                                                 </Button.Background>
                                                 <Button.Content>
                                                     <Viewbox Stretch="Uniform" StretchDirection="Both" HorizontalAlignment="Center" >
-                                                        <TextBlock Text="Apply"
+                                                        <TextBlock Text="{Lag:Localize Apply}"
                                                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                    VerticalAlignment="Center" HorizontalAlignment="Center" />
@@ -2116,6 +2124,30 @@
                                             </Style>
                                         </TextBox.Resources>
                                     </TextBox>
+
+                                    <Button x:Name="btnCopyCardDesc" Grid.Row="1" Margin="0,2,0,0" Padding="0"
+                                            BorderThickness="0" Background="Transparent" Width="19" Height="17"
+                                            HorizontalAlignment="Right" VerticalAlignment="Top" Panel.ZIndex="3"
+                                            Command="{Binding CopyCardDescCommand}" >
+                                        <Viewbox>
+                                            <materialDesign:PackIcon Kind="{Binding CopyCardDescIcon}"
+                                                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="materialDesign:PackIcon">
+                                                        <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsMouseOver, ElementName=btnCopyCardDesc}" Value="True">
+                                                                <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsPressed, ElementName=btnCopyCardDesc}" Value="True">
+                                                                <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon>
+                                        </Viewbox>
+                                    </Button>
 
                                     <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top" Width="auto"
                                           Panel.ZIndex="10" Margin="0,2,0,0" >

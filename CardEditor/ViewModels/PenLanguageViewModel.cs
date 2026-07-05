@@ -1,18 +1,21 @@
 ﻿#nullable enable
-using CardEditor.Collections;
-using CardEditor.Helpers;
-using CardEditor.Models;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.ComponentModel;
+using CardEditor.Models;
+using CardEditor.Helpers;
+using CardEditor.Collections;
+using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor.ViewModels
@@ -22,13 +25,14 @@ namespace CardEditor.ViewModels
         private static readonly Lazy<PenLanguageViewModel> _instance = new Lazy<PenLanguageViewModel>(() => new PenLanguageViewModel());
         public static PenLanguageViewModel Instance => _instance.Value;
 
+        #region Data Storage
         private List<PendulumLanguageRule> _rules = new();
         public IReadOnlyList<PendulumLanguageRule> OrderedPenMaps => _rules;
         public BulkObservableCollection<PendulumLanguageRule> OrderedPenMapsUI { get; set; } = new();
 
         public PendulumLanguageRule EdoProNoPenRule { get; } = new()
         {
-            Locale = "EDOPro-NoPenEffect",
+            Locale = PendulumLocales.EDOProNonPen,
             HasPenScalePattern = false,
             PenHeaderMode = PenHeaderMode.Never,
             HasSeparator = false,
@@ -37,7 +41,7 @@ namespace CardEditor.ViewModels
         };
         public PendulumLanguageRule UnknownRule { get; } = new()
         {
-            Locale = "Unknown",
+            Locale = PendulumLocales.Unknown,
             HasPenScalePattern = false,
             PenHeaderMode = PenHeaderMode.Never,
             HasSeparator = false,
@@ -45,13 +49,27 @@ namespace CardEditor.ViewModels
             MonsterHeaders = new()
         };
 
+        private Dictionary<Card, string>? _lastSnapshot;
+        private readonly object _snapshotLock = new object();
+        /// <summary>
+        /// True nếu đang có 1 snapshot chưa được rollback (do lần chạy trước để lại).
+        /// </summary>
+        public bool HasPendingRollback
+        {
+            get { lock (_snapshotLock) return _lastSnapshot != null; }
+        }
+        #endregion
+
         #region Load
         public void SetLanguage(List<PendulumLanguageRule> rules)
         {
-            // Giữ nguyên thứ tự từ file JSON, nhưng đảm bảo an toàn tuyệt đối:
-            // nếu rule "EDOPro" lỡ không nằm cuối trong JSON, tự động đẩy xuống cuối.
-            _rules = rules.Where(r => r.Locale != "EDOPro")
-                .Concat(rules.Where(r => r.Locale == "EDOPro")).ToList();
+            // Giữ nguyên thứ tự trong JSON, nhưng luôn đặt EDOPro xuống cuối.
+            _rules = rules.Where(r => r.Locale != PendulumLocales.EDOPro)
+                .Concat(rules.Where(r => r.Locale == PendulumLocales.EDOPro))
+                .Append(EdoProNoPenRule).Append(UnknownRule).ToList();
+
+            OrderedPenMapsUI.Clear();
+            OrderedPenMapsUI.AddRange(_rules);
         }
         public async Task<(bool Success, string Error)> LoadAsync()
         {
@@ -64,9 +82,6 @@ namespace CardEditor.ViewModels
                     return (false, error ?? "Failed to load language data.");
 
                 SetLanguage(lang);
-                OrderedPenMapsUI.Clear();
-                OrderedPenMapsUI.AddRange(lang);
-
                 return (true, string.Empty);
             }
             catch (Exception e)
@@ -147,6 +162,177 @@ namespace CardEditor.ViewModels
                 }
             }
             return summary;
+        }
+        public Task<PenDescProcessSummary> ProcessPenDesc(IEnumerable<Card>? cards, PendulumLanguageRule newRule)
+        {
+            return Task.Run(() =>
+            {
+                var summary = new PenDescProcessSummary();
+                if (cards == null) return summary;
+
+                var options = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2)
+                };
+
+                Parallel.ForEach(cards, options, card =>
+                {
+                    if ((card.type & (ulong)CardType.Pendulum) == 0)
+                        return;
+
+                    Interlocked.Increment(ref summary.Total);
+
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(card.desc))
+                        {
+                            Interlocked.Increment(ref summary.EmptyDesc);
+                            return;
+                        }
+
+                        var analysisResult = Analyze(card.desc);
+
+                        if (analysisResult.RuleResult.Locale == EdoProNoPenRule.Locale)
+                        {
+                            Interlocked.Increment(ref summary.EdoProFallback);
+                        }
+
+                        card.desc = BuildDesc(newRule, analysisResult.DescResult, card.level, card.type);
+                        Interlocked.Increment(ref summary.Success);
+                    }
+                    catch (Exception)
+                    {
+                        Interlocked.Increment(ref summary.Error);
+                    }
+                });
+
+                return summary;
+            });
+        }
+
+        public Task<PenDescProcessSummary> ProcessPenDesc(IEnumerable<Card> cards, PendulumLanguageRule newRule,
+            CancellationToken token, bool allowOverwritePendingSnapshot = false)
+        {
+            return Task.Run(() =>
+            {
+                var summary = new PenDescProcessSummary();
+                if (cards == null) return summary;
+
+                lock (_snapshotLock)
+                {
+                    if (_lastSnapshot != null && !allowOverwritePendingSnapshot)
+                    {
+                        throw new InvalidOperationException(
+                            "There is one snapshot that hasn't been rolled back from the previous run." +
+                            "Call Rollback() first, or pass allowOverwritePendingSnapshot: true if you accept losing the ability to roll back the previous time.");
+                    }
+                }
+
+                var cardList = cards.ToList();
+
+                var snapshot = new Dictionary<Card, string>();
+                foreach (var card in cardList)
+                {
+                    snapshot[card] = card.desc;
+                }
+
+                var errorIdsLock = new object();
+
+                var options = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2),
+                    CancellationToken = token
+                };
+
+                try
+                {
+                    Parallel.ForEach(cardList, options, card =>
+                    {
+                        if ((card.type & (ulong)CardType.Pendulum) == 0) return;
+                        Interlocked.Increment(ref summary.Total);
+
+                        try
+                        {
+                            if (string.IsNullOrWhiteSpace(card.desc))
+                            {
+                                Interlocked.Increment(ref summary.EmptyDesc);
+                                return;
+                            }
+
+                            var analysisResult = Analyze(card.desc);
+
+                            if (analysisResult.RuleResult.Locale == EdoProNoPenRule.Locale)
+                            {
+                                Interlocked.Increment(ref summary.EdoProFallback);
+                            }
+
+                            card.desc = BuildDesc(newRule, analysisResult.DescResult, card.level, card.type);
+                            Interlocked.Increment(ref summary.Success);
+                        }
+                        catch (Exception)
+                        {
+                            Interlocked.Increment(ref summary.Error);
+                            lock (errorIdsLock)
+                            {
+                                summary.ErrorCardIds.Add(card.id);
+                            }
+                        }
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    RollbackFromDictionary(snapshot);
+                    summary.Cancelled = true;
+                    summary.RolledBack = true;
+                    summary.Message = summary.BuildMessage();
+                    return summary;
+                }
+                catch (Exception ex)
+                {
+                    RollbackFromDictionary(snapshot);
+                    summary.RolledBack = true;
+                    summary.Result = false;
+                    summary.Message = ex.Message;
+                    return summary;
+                }
+
+                lock (_snapshotLock)
+                {
+                    _lastSnapshot = snapshot;
+                }
+
+                summary.Result = true;
+                summary.Message = summary.BuildMessage();
+                return summary;
+            }, token);
+        }
+
+        /// <summary>
+        /// Rollback thủ công, gọi sau khi ProcessPenDesc đã chạy xong (thành công hoặc không).
+        /// </summary>
+        public (bool, string) PerformManualRollback()
+        {
+            try
+            {
+                lock (_snapshotLock)
+                {
+                    if (_lastSnapshot == null) return (false, CMess.noValiDataFound.ToText());
+                    RollbackFromDictionary(_lastSnapshot);
+                    _lastSnapshot = null;
+                    return (true, string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        private static void RollbackFromDictionary(Dictionary<Card, string> snapshot)
+        {
+            foreach (var kvp in snapshot)
+            {
+                kvp.Key.desc = kvp.Value;
+            }
         }
         #endregion
 
@@ -405,6 +591,13 @@ namespace CardEditor.ViewModels
             return rule.MonsterHeaders.Count > 1
                 ? rule.MonsterHeaders[1]
                 : rule.MonsterHeaders.FirstOrDefault();
+        }
+        #endregion
+
+        #region Helper
+        public bool HasLastSnapshot()
+        {
+            return _lastSnapshot != null && _lastSnapshot.Count > 0;
         }
         #endregion
 

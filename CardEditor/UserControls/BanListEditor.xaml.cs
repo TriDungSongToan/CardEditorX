@@ -944,7 +944,7 @@ namespace CardEditor.UserControls
             if (collection == null || updated == null) return 0;
 
             var match = collection.Search(
-                x => x.Id == updated.Id, new SearchOptions
+                x => x.Id == updated.Id, new CardEditor.Collections.SearchOptions
                 {
                     UseCache = true,
                     CacheKey = $"Banlist_{updated.Id}",

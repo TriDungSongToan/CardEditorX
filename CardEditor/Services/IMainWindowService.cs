@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CardEditor.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,5 +38,8 @@ namespace CardEditor.Services
         Task OpenKonamiDB(ulong id, string name);
         Task OpenYugipedia(ulong id, string name);
         Task OpenYGOResources(ulong id, string name);
+
+
+        void OpenPreViewDescWindow(CardEditor.Models.Card card, CardEditor.Models.PendulumLanguageRule rule);
     }
 }

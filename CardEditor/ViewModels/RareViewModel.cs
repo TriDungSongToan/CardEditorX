@@ -2,41 +2,29 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Threading;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shell;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using System.Data.SQLite;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Transactions;
 using System.Threading.Tasks;
-using System.Linq.Expressions;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using CardEditor.Models;
 using CardEditor.Helpers;
-using CardEditor.Manager;
-using CardEditor.Commands;
 using CardEditor.Services;
 using CardEditor.ImageGene;
-using CardEditor.Properties;
-using CardEditor.ImagesConfig;
 using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
 using RelayCommand = CardEditor.Commands.RelayCommand;
-using System.Drawing;
 
 namespace CardEditor.ViewModels
 {
@@ -1120,7 +1108,7 @@ namespace CardEditor.ViewModels
                         {
                             Title = CMess.questi.ToText(),
                             IconType = CMSG.MessageBoxIconType.Question,
-                            Message = $"{CMess.HasUnSaveData.ToText()} {CMess.confirmReload.ToText()}",
+                            Message = $"{CMess.HasUnSaveData.ToText()} {string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReload.ToText(), CMess.ListRareDB.ToText())}",
                             Buttons = new[] { CMess.originaData.ToText(), CMess.unSavedData.ToText(), CMess.cancel.ToText() },
                             ResponseSource = new TaskCompletionSource<int>()
                         };
@@ -1932,7 +1920,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.questi.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmReset.ToText(), CMess.SelectCards.ToText()),
+                        Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReset.ToText(), CMess.SelectCards.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
@@ -1965,7 +1953,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.conClear.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmClearAll.ToText(), CMess.SelectCards.ToText()),
+                        Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectCards.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
@@ -2588,7 +2576,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.questi.ToText(),
                     IconType = CMSG.MessageBoxIconType.Question,
-                    Message = String.Format(CMess.confirmReset.ToText(), CMess.SelectedRare.ToText()),
+                    Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReset.ToText(), CMess.SelectedRare.ToText()),
                     Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                     ResponseSource = new TaskCompletionSource<int>()
                 };
@@ -2623,7 +2611,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.conClear.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmClearAll.ToText(), CMess.SelectedRare.ToText()),
+                        Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectedRare.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };

@@ -452,7 +452,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.questi.ToText(),
                     IconType = CMSG.MessageBoxIconType.Question,
-                    Message = string.Format(CMess.confirmReload.ToText(), CMess.Setting.ToText()),
+                    Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReload.ToText(), CMess.Setting.ToText()),
                     Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                     ResponseSource = new TaskCompletionSource<int>()
                 };

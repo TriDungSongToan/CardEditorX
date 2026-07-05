@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -79,8 +78,8 @@ namespace CardEditor.Views
                 if (_filterCDBFilePath != value)
                 {
                     _filterCDBFilePath = value;
-                    OnPropertyChanged();
-                    Console.WriteLine($"Filter CDB File Path Changed: {FilterCDBFilePath}");
+                    OnPropertyChanged(nameof(FilterCDBFilePath));
+                    FilterCDBCommand?.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -94,7 +93,6 @@ namespace CardEditor.Views
                 {
                     _isDupliCDBCards = value;
                     OnPropertyChanged();
-                    Console.WriteLine($"IsDupliCDBCards Changed: {IsDupliCDBCards.ToString()}");
                 }
             }
         }
@@ -112,8 +110,8 @@ namespace CardEditor.Views
                 if (_filterYDKFilePath != value)
                 {
                     _filterYDKFilePath = value;
-                    OnPropertyChanged();
-                    Console.WriteLine("Filter YDK File Path Changed: " + FilterYDKFilePath);
+                    OnPropertyChanged(nameof(FilterYDKFilePath));
+                    FilterYDKCommand?.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -127,7 +125,6 @@ namespace CardEditor.Views
                 {
                     _isDupliYDKCards = value;
                     OnPropertyChanged();
-                    Console.WriteLine($"IsDupliYDKCards Changed: {IsDupliYDKCards.ToString()}");
                 }
             }
         }
@@ -136,6 +133,8 @@ namespace CardEditor.Views
         #endregion
 
         #region Filter By Language
+
+        #region By Desc language
         public BulkObservableCollection<string> AvailableLanguages { get; set; } = new ();
         private int _selectedLanguageIndex = -1;
         public int SelectedLanguageIndex
@@ -146,26 +145,59 @@ namespace CardEditor.Views
                 if (_selectedLanguageIndex != value)
                 {
                     _selectedLanguageIndex = value;
-                    OnPropertyChanged();
-                    Console.WriteLine($"SelectedLanguageIndex Changed: {SelectedLanguageIndex.ToString()}");
+                    OnPropertyChanged(nameof(SelectedLanguageIndex));
+                    FilterLanguageCommand?.RaiseCanExecuteChanged();
                 }
             }
         }
-        private bool _isInclude = true;
-        public bool IsInclude
+        private bool _isIncludeDesclang = true;
+        public bool IsIncludeDesclang
         {
-            get => _isInclude;
+            get => _isIncludeDesclang;
             set
             {
-                if (_isInclude != value)
+                if (_isIncludeDesclang != value)
                 {
-                    _isInclude = value;
-                    OnPropertyChanged();
-                    Console.WriteLine($"IsInclude Changed: {IsInclude.ToString()}");
+                    _isIncludeDesclang = value;
+                    OnPropertyChanged(nameof(IsIncludeDesclang));
                 }
             }
         }
         public RelayCommand FilterLanguageCommand { get; set; }
+        #endregion
+
+        #region By Pendulum language
+        private PendulumLanguageRule _selectedRule;
+        public PendulumLanguageRule SelectedRule
+        {
+            get => _selectedRule;
+            set
+            {
+                if (_selectedRule != value)
+                {
+                    _selectedRule = value;
+                    OnPropertyChanged(nameof(SelectedRule));
+                    FilterPenLangCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+        private bool _isIncludePenlang = true;
+        public bool IsIncludePenlang
+        {
+            get => _isIncludePenlang;
+            set
+            {
+                if (_isIncludePenlang != value)
+                {
+                    _isIncludePenlang = value;
+                    OnPropertyChanged(nameof(IsIncludePenlang));
+                }
+            }
+        }
+        public RelayCommand FilterPenLangCommand { get; set; }
+        #endregion
+
+
         #endregion
 
         public RelayCommand CancelCommand { get; set; }
@@ -194,9 +226,10 @@ namespace CardEditor.Views
             BrowseCDBFilePathCommand = new RelayCommand(_ => BrowseCDBFilePathFunction());
             BrowseYDKFilePathCommand = new RelayCommand(_ => BrowseYDKFilePathFunction());
 
-            FilterCDBCommand = new RelayCommand(async _ => await FilterByCDBFunction());
-            FilterYDKCommand = new RelayCommand(async _ => await FilterByYDKFunction());
-            FilterLanguageCommand = new RelayCommand(async _ => await FilterByLanguageFunction());
+            FilterCDBCommand = new RelayCommand(async _ => await FilterByCDBFunction(), _ => CanFilterByCDB());
+            FilterYDKCommand = new RelayCommand(async _ => await FilterByYDKFunction(), _ => CanFilterByYDK());
+            FilterLanguageCommand = new RelayCommand(async _ => await FilterByLanguageFunction(), _ => CanFilterByLanguage());
+            FilterPenLangCommand = new RelayCommand(async _ => await FilterByPenLangFunction(), _ => CanFilterByPenLang());
 
             CancelCommand = new RelayCommand(_ => this.Close());
         }
@@ -250,9 +283,18 @@ namespace CardEditor.Views
                     new[] { CMess.ok.ToText() });
             }
         }
+        private bool CanFilterByCDB()
+        {
+            return !string.IsNullOrWhiteSpace(FilterCDBFilePath) && System.IO.File.Exists(FilterCDBFilePath);
+        }
+        private bool CanFilterByYDK()
+        {
+            return !string.IsNullOrWhiteSpace(FilterYDKFilePath) && System.IO.File.Exists(FilterYDKFilePath);
+        }
+
         private async Task FilterByLanguageFunction()
         {
-            ResultItem result = await MainWindowReference.FilterCardByLanguage(SelectedLanguageIndex, IsInclude);
+            ResultItem result = await MainWindowReference.FilterCardByLanguage(SelectedLanguageIndex, IsIncludeDesclang);
             if (result.Succeeded)
             {
                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
@@ -265,6 +307,30 @@ namespace CardEditor.Views
                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlFilter.ToText(), CMess.Card.ToText())} {result.Message}",
                    new[] { CMess.ok.ToText() });
             }
+        }
+        private async Task FilterByPenLangFunction()
+        {
+            ResultItem result = await MainWindowReference.FilterCardByPenLang(SelectedRule, IsIncludePenlang);
+            if (result.Succeeded)
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.filterSuc.ToText(), result.FilteredCount, result.TotalCount),
+                    new[] { CMess.ok.ToText() });
+            }
+            else
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                   $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlFilter.ToText(), CMess.Card.ToText())} {result.Message}",
+                   new[] { CMess.ok.ToText() });
+            }
+        }
+        private bool CanFilterByLanguage()
+        {
+            return SelectedLanguageIndex != -1;
+        }
+        private bool CanFilterByPenLang()
+        {
+            return SelectedRule != null;
         }
         #endregion
 

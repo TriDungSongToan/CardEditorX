@@ -31,19 +31,6 @@ namespace CardEditor.Views
 
         #region Header
         private int _tabHeaderIndex = -1;
-        private MaterialDesignThemes.Wpf.PackIconKind _headerIcon;
-        public MaterialDesignThemes.Wpf.PackIconKind HeaderIcon
-        {
-            get => _headerIcon;
-            set
-            {
-                if (_headerIcon != value)
-                {
-                    _headerIcon = value;
-                    OnPropertyChanged(nameof(HeaderIcon));
-                }
-            }
-        }
         public int TabHeaderIndex
         {
             get => _tabHeaderIndex;
@@ -62,7 +49,19 @@ namespace CardEditor.Views
                 }
             }
         }
-
+        private MaterialDesignThemes.Wpf.PackIconKind _headerIcon;
+        public MaterialDesignThemes.Wpf.PackIconKind HeaderIcon
+        {
+            get => _headerIcon;
+            set
+            {
+                if (_headerIcon != value)
+                {
+                    _headerIcon = value;
+                    OnPropertyChanged(nameof(HeaderIcon));
+                }
+            }
+        }
         public RelayCommand CancelCommand => new CardEditor.Commands.RelayCommand(_ => this.Close());
         #endregion
 
@@ -248,8 +247,12 @@ namespace CardEditor.Views
         }
 
         public RelayCommand ReloadPenLanguageCommand { get; set; }
+        public RelayCommand OpenEditPenLanguageCommand { get; set; }
         public RelayCommand ApplyPenLanguageCommand { get; set; }
         public RelayCommand CancelPenLanguageCommand { get; set; }
+        public RelayCommand RollbackPenLanguageCommand { get; set; }
+
+        public RelayCommand OpenApplyPenLanguageCommand { get; set; }
         #endregion
 
         #region Credits
@@ -530,7 +533,11 @@ namespace CardEditor.Views
             BrowseImportDataFilePathCommand = new CardEditor.Commands.RelayCommand(_ => BrowseImportDataFilePath());
 
             ReloadPenLanguageCommand = new CardEditor.Commands.RelayCommand(async _ => await ReloadPenLanguage());
+            OpenEditPenLanguageCommand = new CardEditor.Commands.RelayCommand(_ => OpenEditPenLanguage());
             ApplyPenLanguageCommand = new CardEditor.Commands.RelayCommand(async _ => await ApplyPenLanguage(), _ => CanApplyPenLanguage());
+            CancelPenLanguageCommand = new CardEditor.Commands.RelayCommand(_ => CancelPenLanguage());
+            RollbackPenLanguageCommand = new CardEditor.Commands.RelayCommand(_ => RollBackPenLanguage());
+            OpenApplyPenLanguageCommand = new CardEditor.Commands.RelayCommand(_ => OpenApplyPenLanguage());
 
             RollbackCreditCommand = new CardEditor.Commands.RelayCommand(_ => RollBackCredit());
             RemoveCreditCommand = new CardEditor.Commands.RelayCommand(async _ => await RemoveCredit());
@@ -550,7 +557,7 @@ namespace CardEditor.Views
         #region Load
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            TabHeaderIndex = 0;
+            // TabHeaderIndex = 0;
             filterSetting.SetValue(ConfigViewModel.Instance.dataHandlingSetting.Advanced);
         }
         #endregion
@@ -687,29 +694,83 @@ namespace CardEditor.Views
                     $"{CMess.errorOcc.ToText()} {messagePenLang}", new[] { CMess.ok.ToText() });
             }
         }
+        private void OpenEditPenLanguage()
+        {
+            PenLangHost.IsRightDrawerOpen = true;
+        }
         private async Task ApplyPenLanguage()
+        {
+            if (SelectedRule == null) return;
+
+            try
+            {
+                IsApplyingPenLanguage = true;
+
+                if (MainWindowReference != null)
+                {
+                    if (PenLanguageViewModel.Instance.HasLastSnapshot())
+                    {
+                        int confirm = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{CMess.HasSnapshot.ToText()} {CMess.QuestContinue.ToText()}",
+                            new[] { CMess.yes.ToText(), CMess.no.ToText() });
+
+                        if (confirm != 0) return;
+                    }
+
+                    var resultPenLang = await MainWindowReference.PendulumLanguage(SelectedRule, SelectedPenLangScope, true);
+                    if (resultPenLang == null || !resultPenLang.Result)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                            $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Apply.ToText(), CMess.PendulumLanguage.ToText())} {resultPenLang.Message}",
+                            new[] { CMess.ok.ToText() });
+                    }
+                    else
+                    {
+                        CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                            $"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Apply.ToText(), CMess.PendulumLanguage.ToText())}\n{resultPenLang.Message}",
+                            new[] { CMess.ok.ToText() });
+                    }
+                }
+            }
+            catch { }
+            finally
+            {
+                IsApplyingPenLanguage = false;
+            }
+        }
+        private void CancelPenLanguage()
         {
             if (MainWindowReference != null)
             {
-                var resultPenLang = await MainWindowReference.PendulumLanguage(SelectedRule, SelectedPenLangScope);
-                if (resultPenLang == null)
+                MainWindowReference.StopApplyPenLang();
+            }
+        }
+        private void RollBackPenLanguage()
+        {
+            if (MainWindowReference != null)
+            {
+                int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.RollBack.ToText(), CMess.PendulumLanguage.ToText()),
+                    new[] { CMess.yes.ToText(), CMess.no.ToText() });
+                if (resultChoose != 0) return;
+
+                var (resultRollback, messageRollback) = MainWindowReference.RollBackPenlang();
+                if (resultRollback)
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        CMess.errorOcc.ToText(), new[] { CMess.ok.ToText() });
-                    return;
-                }
-                if (resultPenLang.Succeeded)
-                {
-                    string msg = string.Format(CMess.changeSuc.ToText(), CMess.PendulumLanguage.ToText(), resultPenLang.FilteredCount, resultPenLang.TotalCount);
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification, msg, new[] { CMess.ok.ToText(), CMess.cancel.ToText() });
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.RollBack.ToText(), CMess.PendulumLanguage.ToText()),
+                        new[] { CMess.ok.ToText() });
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Replace.ToText(), CMess.Card.ToText())} {resultPenLang.Message}",
-                        new[] { CMess.ok.ToText() });
+                        $"{CMess.errorOcc.ToText()} {messageRollback}", new[] { CMess.ok.ToText() });
                 }
             }
+        }
+        private void OpenApplyPenLanguage()
+        {
+            PenLangHost.IsRightDrawerOpen = false;
         }
         private bool CanApplyPenLanguage()
         {

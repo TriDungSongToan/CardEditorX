@@ -226,7 +226,7 @@ namespace CardEditor.ViewModels
 
         public BanList FindById(Guid id, bool useCache = false)
         {
-            var options = new SearchOptions
+            var options = new CardEditor.Collections.SearchOptions
             {
                 UseCache = useCache,
                 CacheKey = useCache ? $"banlist_id_{id}" : null

@@ -429,7 +429,7 @@ namespace CardEditor.ViewModels
                         {
                             Title = CMess.questi.ToText(),
                             IconType = CMSG.MessageBoxIconType.Question,
-                            Message = $"{CMess.HasUnSaveData.ToText()} {CMess.confirmReload.ToText()}",
+                            Message = $"{CMess.HasUnSaveData.ToText()} {string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReload.ToText(), CMess.GenesysDB.ToText())}",
                             Buttons = new[] { CMess.originaData.ToText(), CMess.unSavedData.ToText(), CMess.cancel.ToText() },
                             ResponseSource = new TaskCompletionSource<int>()
                         };
@@ -866,7 +866,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.questi.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmReset.ToText(), CMess.SelectCards.ToText()),
+                        Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReset.ToText(), CMess.SelectCards.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };
@@ -899,7 +899,7 @@ namespace CardEditor.ViewModels
                     {
                         Title = CMess.conClear.ToText(),
                         IconType = CMSG.MessageBoxIconType.Question,
-                        Message = string.Format(CMess.confirmClearAll.ToText(), CMess.SelectCards.ToText()),
+                        Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectCards.ToText()),
                         Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                         ResponseSource = new TaskCompletionSource<int>()
                     };

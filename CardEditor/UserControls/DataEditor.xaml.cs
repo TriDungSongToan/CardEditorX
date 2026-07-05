@@ -1,13 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
-using System.Data;
-using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
+using System.Data;
+using System.Data.SQLite;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -16,18 +17,17 @@ using System.Windows.Media.Imaging;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Threading;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.ComponentModel;
-using OfficeOpenXml;
 using ICSharpCode.AvalonEdit.Document;
+using OfficeOpenXml;
 using MaterialDesignThemes.Wpf;
 using CardEditor.Models;
-using CardEditor.Manager;
 using CardEditor.Helpers;
+using CardEditor.Manager;
 using CardEditor.Commands;
 using CardEditor.Services;
 using CardEditor.ImageGene;
@@ -78,7 +78,7 @@ namespace CardEditor.UserControls
                 }
             }
         }
-        private bool _isPendulumIntf = false;
+        private bool _isPendulumIntf = true;
         public bool IsPendulumIntf
         {
             get => _isPendulumIntf;
@@ -91,7 +91,7 @@ namespace CardEditor.UserControls
                 }
             }
         }
-        private bool _isLinkIntf = false;
+        private bool _isLinkIntf = true;
         public bool IsLinkIntf
         {
             get => _isLinkIntf;
@@ -117,6 +117,34 @@ namespace CardEditor.UserControls
                 }
             }
         }
+
+        private PendulumLanguageRule _selectedPenLangRule;
+        public PendulumLanguageRule SelectedPenLangRule
+        {
+            get => _selectedPenLangRule;
+            set
+            {
+                if (_selectedPenLangRule != value)
+                {
+                    _selectedPenLangRule = value;
+                    OnPropertyChanged(nameof(SelectedPenLangRule));
+                }
+            }
+        }
+
+        private MaterialDesignThemes.Wpf.PackIconKind _copyCardDescIcon = PackIconKind.ContentCopy;
+        public MaterialDesignThemes.Wpf.PackIconKind CopyCardDescIcon
+        {
+            get => _copyCardDescIcon;
+            set
+            {
+                if (_copyCardDescIcon != value)
+                {
+                    _copyCardDescIcon = value;
+                    OnPropertyChanged(nameof(CopyCardDescIcon));
+                }
+            }
+        }
         #endregion
 
         #region Command
@@ -139,6 +167,10 @@ namespace CardEditor.UserControls
         public RelayCommand OpenKonamiDBCommand { get; set; }
         public RelayCommand OpenYugipediaCommand { get; set; }
         public RelayCommand OpenYGOResourcesCommand { get; set; }
+
+        public RelayCommand PreViewPendulumDescCommand { get; set; }
+        public RelayCommand ApplyPendulumDescCommand { get; set; }
+        public RelayCommand CopyCardDescCommand { get; set; }
         #endregion
 
         #region Constructor
@@ -193,6 +225,9 @@ namespace CardEditor.UserControls
             OpenYugipediaCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenYugipedia(), _ => CurrentCardExists());
             OpenYGOResourcesCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenYGOResources(), _ => CurrentCardExists());
 
+            PreViewPendulumDescCommand = new CardEditor.Commands.RelayCommand(_ => OpenPreViewDescWindow(), _ => CurrentCardExists());
+            ApplyPendulumDescCommand = new CardEditor.Commands.RelayCommand(_ => ApplyPendulumLanguageDesc(), _ => CurrentCardExists());
+            CopyCardDescCommand = new CardEditor.Commands.RelayCommand(async _ => await CopyCardDescExecute());
         }
         private void CardCommandCanExecute()
         {
@@ -227,10 +262,10 @@ namespace CardEditor.UserControls
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                IsPendulumIntf = true;
-                IsPendulumIntf = false;
-                IsLinkIntf = true;
-                IsLinkIntf = false;
+                //IsPendulumIntf = true;
+                //IsPendulumIntf = false;
+                //IsLinkIntf = true;
+                //IsLinkIntf = false;
                 IsSkillIntf = true;
                 IsSkillIntf = false;
 
@@ -2512,7 +2547,7 @@ namespace CardEditor.UserControls
                 if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmReSet)
                 {
                     var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                        string.Format(CMess.confirmReset.ToText(), CMess.SelectCards.ToText()),
+                        string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReset.ToText(), CMess.SelectCards.ToText()),
                         new[] { CMess.yes.ToText(), CMess.no.ToText() });
                     if (result != 0) return;
                 }
@@ -2531,7 +2566,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmClear)
             {
                 var result = CMSG.Show(CMess.conClear.ToText(), CMSG.MessageBoxIconType.Question,
-                    string.Format(CMess.confirmClearAll.ToText(), CMess.SelectCards.ToText()),
+                    string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectCards.ToText()),
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -2816,7 +2851,7 @@ namespace CardEditor.UserControls
                     MessageDelete.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.tlDelete.ToText(), 1.ToString(), CMess.Card.ToText()));
 
                     var result = CMSG.Show(CMess.conClear.ToText(), CMSG.MessageBoxIconType.Question,
-                        string.Format(CMess.confirmClearAll.ToText(), CMess.SelectCards.ToText()),
+                        string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectCards.ToText()),
                         new[] { CMess.yes.ToText(), CMess.no.ToText() });
                     if (result == 0)
                     {
@@ -3712,7 +3747,6 @@ namespace CardEditor.UserControls
 
         public async Task<ResultItem> FilterCardByLanguage(int languageCode, bool isInclude)
         {
-            Console.WriteLine($"Filtering cards by language code: {languageCode}, IsInclude: {isInclude}");
             if (Cards == null || !Cards.Any())
             {
                 return new ResultItem
@@ -3782,9 +3816,68 @@ namespace CardEditor.UserControls
                 };
             }
         }
+        public async Task<ResultItem> FilterCardByPenLang(PendulumLanguageRule rule, bool isInclude)
+        {
+            if (Cards == null || !Cards.Any())
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = 0,
+                    Message = CMess.noCardFilter.ToText()
+                };
+            }
+
+            try
+            {
+                ClearFilterCard();
+
+                var analyzer = PenLanguageViewModel.Instance;
+                // Analyze chỉ chạy đúng một lần cho mỗi card
+                var cache = Cards.ToDictionary(card => card, card =>
+                {
+                    // Không phải Pendulum -> luôn false
+                    if ((card.type & (ulong)CardType.Pendulum) == 0)
+                        return false;
+
+                    var analysis = analyzer.Analyze(card.desc);
+
+                    if (analysis.RuleResult == null)
+                        return !isInclude;
+
+                    bool isMatch = ReferenceEquals(analysis.RuleResult, rule);
+
+                    return isInclude ? isMatch : !isMatch;
+                });
+
+                CollectionViewCollection.Filter = item =>
+                {
+                    var card = (CardEditor.Models.Card)item;
+                    return cache.TryGetValue(card, out var match) && match;
+                };
+
+                return new ResultItem
+                {
+                    Succeeded = true,
+                    FilteredCount = CollectionViewCollection.Cast<CardEditor.Models.Card>().Count(),
+                    TotalCount = Cards.Count,
+                    Message = string.Empty
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    FilteredCount = 0,
+                    TotalCount = Cards.Count,
+                    Message = ex.Message
+                };
+            }
+        }
         public async Task<ResultItem> FilterCardByYDKFile(string filePath, bool isDuplicate)
         {
-            Console.WriteLine($"Filtering cards by CDB file: {filePath}, IsDuplicate: {isDuplicate}");
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
                 return new ResultItem
@@ -3844,7 +3937,6 @@ namespace CardEditor.UserControls
         }
         public async Task<ResultItem> FilterCardByCDBFile(string filePath, bool isDuplicate)
         {
-            Console.WriteLine($"Filtering cards by CDB file: {filePath}, IsDuplicate: {isDuplicate}");
 
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
@@ -3908,8 +4000,6 @@ namespace CardEditor.UserControls
                     return isDuplicate == ids.Contains(card.id);
                 };
 
-                Console.WriteLine($"Filtering cards by list of IDs. Total IDs: {ids.Count}, IsDuplicate: {isDuplicate}");
-
                 return new ResultItem
                 {
                     Succeeded = true,
@@ -3931,7 +4021,6 @@ namespace CardEditor.UserControls
         }
         private void ClearFilterCard()
         {
-            Console.WriteLine("Clearing filter called...");
             CollectionViewCollection.Filter = null;
             CollectionViewCollection.Refresh();
         }
@@ -4634,6 +4723,7 @@ namespace CardEditor.UserControls
                     CurrentCard = null;
                     ClearAll();
                 }
+                LoadPendulumLanguage();
             }
             catch (Exception ex)
             {
@@ -5284,7 +5374,7 @@ namespace CardEditor.UserControls
         #region Items Editor
 
         #region Replace Description
-        public async Task<ResultItem> ReplaceText(string findWhat, string replaceWith, int scope)
+        public async Task<ResultItem> ReplaceText1(string findWhat, string replaceWith, int scope)
         {
             // 1. Validate input
             if (string.IsNullOrWhiteSpace(findWhat))
@@ -5442,6 +5532,81 @@ namespace CardEditor.UserControls
                     : CMess.noCardReplace.ToText()
             };
         }
+        public async Task<ResultItem> ReplaceText(string findWhat, string replaceWith, int scope)
+        {
+            if (string.IsNullOrWhiteSpace(findWhat))
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.FindWhat.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+            if (string.IsNullOrWhiteSpace(replaceWith))
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.Replacewith.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+            if (scope < 1 || scope > 3)
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+
+            var optRaw = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
+
+            var opt = new CardEditor.Models.SearchOptions
+            {
+                MatchCase = (optRaw & 0x02) != 0,
+                UseWildcards = (optRaw & 0x04) != 0,
+                MatchPrefix = (optRaw & 0x08) != 0,
+                MatchSuffix = (optRaw & 0x10) != 0,
+                WholeWord = (optRaw & 0x20) != 0,
+                IgnorePunctuation = (optRaw & 0x40) != 0,
+                IgnoreWhitespace = (optRaw & 0x80) != 0
+            };
+
+            var targetCards = scope switch
+            {
+                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList(),
+                2 => CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList(),
+                3 => Cards.ToList(),
+                _ => new List<CardEditor.Models.Card>()
+            };
+
+            if (!targetCards.Any())
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = string.Format(CMess.noCardFound.ToText())
+                };
+
+            RegexOptions regexOpt = opt.MatchCase
+                ? RegexOptions.None
+                : RegexOptions.IgnoreCase;
+
+            int modifiedCount = await Task.Run(() => SearchPattern.Replace(targetCards, findWhat, replaceWith, opt, regexOpt));
+
+            if (modifiedCount > 0)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CollectionViewCollection.Refresh();
+                });
+            }
+
+            IsSaved = modifiedCount == 0;
+
+            return new ResultItem
+            {
+                Succeeded = true,
+                TotalCount = targetCards.Count,
+                FilteredCount = modifiedCount,
+                Message = modifiedCount > 0
+                    ? string.Format(CMess.TwoPlaceholderSuccess.ToText(), modifiedCount, CMess.Card.ToText())
+                    : CMess.noCardReplace.ToText()
+            };
+        }
         #endregion
 
         #region Replace Field
@@ -5492,6 +5657,7 @@ namespace CardEditor.UserControls
                     count++;
                 }
                 Cards.EndUpdate();
+                IsSaved = false;
 
                 return (true, count.ToString());
             }
@@ -5548,6 +5714,7 @@ namespace CardEditor.UserControls
                     count++;
                 }
                 Cards.EndUpdate();
+                IsSaved = false;
 
                 return (true, count.ToString());
             }
@@ -5608,12 +5775,113 @@ namespace CardEditor.UserControls
         #endregion
 
         #region Pendulum Language
-        public async Task<ResultItem> PendulumLanguage(PendulumLanguageRule rule, int scope)
+        private CancellationTokenSource _applyPenLangCts;
+        private void LoadPendulumLanguage() // Selected Card Changed
         {
-            Console.WriteLine($"PendulumLanguage DataEditor Called");
-            Console.WriteLine($"Rule: {rule.Locale.ToString()}");
-            Console.WriteLine($"Scope: {scope.ToString()}");
-            return null;
+            if (CurrentCard == null || !IsPendulumIntf) return;
+
+            PenAnalysisResult result = PenLanguageViewModel.Instance.Analyze(CurrentCard.desc);
+            if (result == null)
+            {
+                SelectedPenLangRule = null;
+                return;
+            }
+            Debug.WriteLine($"Rule: {result.RuleResult.Locale.ToString()}");
+            SelectedPenLangRule = result.RuleResult;
+        }
+        private void OpenPreViewDescWindow()
+        {
+            if (CurrentCard == null || !IsPendulumIntf) return;
+            if (SelectedPenLangRule?.Locale is PendulumLocales.EDOProNonPen or PendulumLocales.Unknown) return;
+
+            if (MainWindowService != null)
+            {
+                MainWindowService.OpenPreViewDescWindow(CurrentCard, SelectedPenLangRule);
+            }
+        }
+        private void ApplyPendulumLanguageDesc()
+        {
+            if (CurrentCard == null || !IsPendulumIntf || SelectedPenLangRule == null) return;
+            if (SelectedPenLangRule?.Locale is PendulumLocales.EDOProNonPen or PendulumLocales.Unknown) return;
+
+            PenAnalysisResult result = PenLanguageViewModel.Instance.Analyze(CurrentCard.desc);
+            PenDescResult effect = result.DescResult;
+
+            PenScale scale = GetPenScaleHelp.GetPenScale(CurrentCard.level);
+            bool IsNormalCard = (CurrentCard.type & (ulong)CardType.Normal) != 0;
+
+            string desc = PenLanguageViewModel.Instance.BuildDesc(SelectedPenLangRule, effect, scale, IsNormalCard);
+            txtcarddesc.Text = desc;
+        }
+        public async Task<PenDescProcessSummary> PendulumLanguage(PendulumLanguageRule rule, int scope, bool overwrite)
+        {
+            _applyPenLangCts?.Dispose();
+            _applyPenLangCts = new CancellationTokenSource();
+
+            if (scope < 0 || scope > 2)
+            {
+                return new PenDescProcessSummary
+                {
+                    Result = false,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+
+            var cardList = scope switch
+            {
+                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
+                _ => new List<CardEditor.Models.Card>()
+            };
+
+            if (cardList == null || cardList.Count == 0)
+            {
+                return new PenDescProcessSummary
+                {
+                    Result = false,
+                    Message = CMess.noCardSelec.ToText()
+                };
+            }
+
+            try
+            {
+                PenDescProcessSummary result = await PenLanguageViewModel.Instance.ProcessPenDesc(cardList, rule, _applyPenLangCts.Token, overwrite);
+                // Total: Tổng số card có cờ CardType.Pendulum được đưa vào xử lý (đếm ngay từ đầu vòng lặp, trước khi biết kết quả thành hay bại)
+                // Success: Số card đã build lại desc thành công bằng newRule, toàn bộ pipeline Analyze → BuildDesc chạy trót lọt không throw exception, và card.desc đã được gán giá trị mới.
+                // Error: Số card mà Analyze hoặc BuildDesc throw exception trong lúc xử lý. Card này bị bỏ qua, card.desc giữ nguyên giá trị gốc (không được gán lại). ID của các card này nằm trong ErrorCardIds.
+                // EmptyDesc: Số card có desc rỗng hoặc chỉ toàn khoảng trắng → bị skip ngay, không gọi Analyze/BuildDesc, không tính là lỗi. Comment gốc "-> Unknown" ý là: không xác định được ngôn ngữ vì không có gì để phân tích.
+                // EdoProFallback: Số card Analyze chạy không lỗi, nhưng kết quả phân tích rơi vào rule mặc định EdoProNoPenRule — tức là desc gốc không khớp với bất kỳ rule ngôn ngữ chính thức nào, phải fallback về format chung của EDOPro
+                /// Card này vẫn được build lại bằng newRule bình thường (không bị loại khỏi Success), số này chỉ để theo dõi tỷ lệ desc "không rõ nguồn gốc ngôn ngữ".
+                /// 1 card có thể vừa nằm trong EdoProFallback vừa nằm trong Success (2 số này không loại trừ nhau, vì EdoProFallback đếm ở giữa quá trình, Success đếm ở cuối nếu không exception).
+                // Cancelled: true nếu quá trình xử lý bị dừng giữa chừng do CancellationToken được yêu cầu hủy (user bấm Stop). Khi đó tất cả thay đổi đã tự động rollback.
+                // RolledBack: true nếu đã tự động rollback toàn bộ card.desc về giá trị gốc bằng _lastSnapshot, do gặp Cancelled hoặc lỗi nghiêm trọng ngoài dự kiến (không phải lỗi per-card)
+                /// Không liên quan đến rollback thủ công qua processor.Rollback()
+                // ErrorCardIds: Danh sách id của các card rơi vào nhóm Error, để tầng gọi (UI) có thể hiển thị chi tiết "những card nào bị lỗi, cần xem lại thủ công".
+
+                IsSaved = false;
+                return result;
+            }
+            finally
+            {
+                _applyPenLangCts.Dispose();
+                _applyPenLangCts = null;
+            }
+        }
+        public (bool, string) RollBackPenlang()
+        {
+            var result = PenLanguageViewModel.Instance.PerformManualRollback();
+            IsSaved = false;
+            return result;
+        }
+        public void StopApplyPenLang()
+        {
+            _applyPenLangCts?.Cancel();
+        }
+
+        public void ApplyPendulumLanguage(string desc)
+        {
+            txtcarddesc.Text = desc;
         }
         #endregion
 
@@ -5656,7 +5924,9 @@ namespace CardEditor.UserControls
 
             try
             {
-                return await CreditsViewModel.Instance.CreditTeam(cardList, credit, writeMode, _applyCreditCts.Token);
+                var result = await CreditsViewModel.Instance.CreditTeam(cardList, credit, writeMode, _applyCreditCts.Token);
+                IsSaved = false;
+                return result;
             }
             finally
             {
@@ -5696,11 +5966,15 @@ namespace CardEditor.UserControls
                 };
             }
 
-            return await CreditsViewModel.Instance.RemoveAllCredits(cardList);
+            var result = await CreditsViewModel.Instance.RemoveAllCredits(cardList);
+            IsSaved = false;
+            return result;
         }
         public (bool, string) RollbackCredits()
         {
-            return CreditsViewModel.Instance.PerformManualRollback();
+            var result = CreditsViewModel.Instance.PerformManualRollback();
+            IsSaved = false;
+            return result;
         }
         public void StopApplyCredits()
         {
@@ -5928,6 +6202,29 @@ namespace CardEditor.UserControls
             finally
             {
                 Mouse.OverrideCursor = null;
+            }
+        }
+
+        private async Task CopyCardDescExecute()
+        {
+            bool success = CopyCardDesc();
+            if (!success) return;
+
+            CopyCardDescIcon = PackIconKind.Check;
+
+            await Task.Delay(3000);
+            CopyCardDescIcon = PackIconKind.ContentCopy;
+        }
+        private bool CopyCardDesc()
+        {
+            try
+            {
+                Clipboard.SetText(txtcarddesc.Text);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
         #endregion

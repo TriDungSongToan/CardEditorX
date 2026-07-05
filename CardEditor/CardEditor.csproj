@@ -435,6 +435,7 @@
     <Compile Include="Helpers\FindNameHelper.cs" />
     <Compile Include="Helpers\GetPenScaleHelp.cs" />
     <Compile Include="Helpers\LanguageDetector.cs" />
+    <Compile Include="Helpers\SearchPattern.cs" />
     <Compile Include="ImageGene\TextLayoutEngine.cs" />
     <Compile Include="Models\AppContext.cs" />
     <Compile Include="Models\CreditItem.cs" />
@@ -442,6 +443,7 @@
     <Compile Include="Models\PendulumLanguage.cs" />
     <Compile Include="Models\ResultItems.cs" />
     <Compile Include="Models\KonamiID.cs" />
+    <Compile Include="Models\SearchOptions.cs" />
     <Compile Include="Models\Settings\FilterSetting.cs" />
     <Compile Include="Services\ImageCacheService.cs" />
     <Compile Include="Services\IMainWindowService.cs" />
@@ -589,6 +591,9 @@
     <Compile Include="Models\CardRarity.cs" />
     <Compile Include="Views\ItemsEditor.xaml.cs">
       <DependentUpon>ItemsEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PreviewDescWindow.xaml.cs">
+      <DependentUpon>PreviewDescWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RareEditor.xaml.cs">
       <DependentUpon>RareEditor.xaml</DependentUpon>
@@ -746,6 +751,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\ItemsEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PreviewDescWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

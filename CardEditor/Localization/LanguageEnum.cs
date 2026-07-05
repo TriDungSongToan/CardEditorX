@@ -96,6 +96,7 @@ namespace CardEditor.Localization
         Update = 0x114,         //Update
         Remove = 0x115,         //Remove
         RollBack = 0x116,       //RollBack
+        PreView = 0x117,        //Preview
 
         Read = 0x121,           //Read
         Write = 0x122,          //Write
@@ -230,11 +231,12 @@ namespace CardEditor.Localization
         ByCDBFile = 0x312,          //By CDB File
         ByYDKFile = 0x313,          //By YDK File
         ByLanguage = 0x314,         //By Language
+        ByPenLanguage = 0x315,      //By Pendulum Language
 
-        FilterFilepath = 0x315,     //Filter File Path
+        FilterFilepath = 0x316,     //Filter File Path
 
-        IncludeLanguage = 0x316,    //Include Language
-        ExcludeLanguage = 0x317,    //Exclude Language
+        IncludeLanguage = 0x317,    //Include Language
+        ExcludeLanguage = 0x318,    //Exclude Language
 
         #endregion
 
@@ -299,11 +301,14 @@ namespace CardEditor.Localization
         ImportDataFilePath = 0x36e,     //Import File Path
         SelectDataField = 0x36f,        //Select Fields to Overwrite
 
-        PendulumLanguage = 0x371,        //Pendulum Language
+        PendulumLanguage = 0x371,       //Pendulum Language
+        changeLangFail = 0x372,         //{0} Card Failed to change Pendulum Language.
+        emptyDesc = 0x373,              //{0} Card Missing descriptions.
+        fallbackEDORule = 0x374,        //{0} Card Using EDOPro fallback rules.
 
-        CreditTeam = 0x372,     //Credit Team
-        CreditName = 0x373,     //Credit Name
-        CreditDesc = 0x374,     //Credit Desc
+        CreditTeam = 0x375,     //Credit Team
+        CreditName = 0x376,     //Credit Name
+        CreditDesc = 0x377,     //Credit Desc
         #endregion
 
         #region Rarity
@@ -329,6 +334,14 @@ namespace CardEditor.Localization
         About = 0x39a,      //About
         Version = 0x39b,    //Version:
         Creator = 0x39c,    //Created by:
+        #endregion
+
+        #region Pendulum Language
+        PendulumEffect = 0x3a1,         //Pendulum Effect
+        MonsterEffect = 0x3a2,          //Monster Effect
+        CardDescription = 0x3a3,        //Card Description
+        NormalCard = 0x3a4,             //Normal Card
+
         #endregion
 
         #region Tooltip
@@ -506,39 +519,40 @@ namespace CardEditor.Localization
         TwoPlaceholderInva = 0x63d,         //Invalid {0} {1}:
         ThreePlaceholderInva = 0x63e,       //Invalid {0} {1} {2}:
 
-        cancelled = 0x63f,      //The process has been canceled upon request.
+        cancelled = 0x63f,          //The process has been canceled upon request.
+        rollbacked = 0x640,         //A serious error has occurred; all changes have been reverted.
 
         errorFetData = 0x651,       //Error fetching data:
         errorConDB = 0x652,         //Error connecting to database:
         errorCloneRepo = 0x653,     //Error cloning repository:
         needDeleteFolder = 0x654,   //You may need to delete the "data\CardData" folder and try again.
         errorLoadDB = 0x655,        //Error loading Card Database:
-        errorLoadImageCache = 0x656,// Error loading Image Cache:
+        errorLoadImageCache = 0x656,//Error loading Image Cache:
 
-        outofrange = 0x65a,     //out of allowed range.
-        cannotEmpty = 0x65b,    //cannot be empty.
+        outofrange = 0x65a,         //out of allowed range.
+        cannotEmpty = 0x65b,        //cannot be empty.
 
-        invaBackground = 0x65c,//Invalid Background Color Code.
-        invaForeground = 0x65d,//Invalid Foreground Color Code.
+        invaBackground = 0x65c,     //Invalid Background Color Code.
+        invaForeground = 0x65d,     //Invalid Foreground Color Code.
 
-        noCardFound = 0x661,    //No Cards found.
-        noCardSelec = 0x662,    //No Cards selected.
-        noCardCopy = 0x663,     //No Cards for copy.
-        noCardExport = 0x664,   //No Cards for export.
-        noCardFilter = 0x665,   //No Cards for filter.
-        noCardSave = 0x666,     //No Cards for save.
-        noCardReplace = 0x667,  //No Cards for Replaced.
-        noRareSelec = 0x668,    //No Raritys selected.
-        noFileFound = 0x669,    //No Files found.
-        noDeckFound = 0x66a,    //No Decks found.
-        noSelecWin = 0x66b,     //No selected Window.
-        noSelecDB = 0x66c,      //No selected Card Database.
-        noValiCardFound = 0x66d,//No valid Cards found.
-        noValiDataFound = 0x66e,//No valid Data found.
-        noValiDataClip = 0x66f, //No valid Data in Clipboard.
-        noRegularUser = 0x670,  //Not intended for regular users.
-        konamiIDnotFou = 0x671, //Konami ID not found.
-        yugiPedianotFou = 0x672,//Unable to search Yugipedia for this Card.
+        noCardFound = 0x661,        //No Cards found.
+        noCardSelec = 0x662,        //No Cards selected.
+        noCardCopy = 0x663,         //No Cards for copy.
+        noCardExport = 0x664,       //No Cards for export.
+        noCardFilter = 0x665,       //No Cards for filter.
+        noCardSave = 0x666,         //No Cards for save.
+        noCardReplace = 0x667,      //No Cards for Replaced.
+        noRareSelec = 0x668,        //No Raritys selected.
+        noFileFound = 0x669,        //No Files found.
+        noDeckFound = 0x66a,        //No Decks found.
+        noSelecWin = 0x66b,         //No selected Window.
+        noSelecDB = 0x66c,          //No selected Card Database.
+        noValiCardFound = 0x66d,    //No valid Cards found.
+        noValiDataFound = 0x66e,    //No valid Data found.
+        noValiDataClip = 0x66f,     //No valid Data in Clipboard.
+        noRegularUser = 0x670,      //Not intended for regular users.
+        konamiIDnotFou = 0x671,     //Konami ID not found.
+        yugiPedianotFou = 0x672,    //Unable to search Yugipedia for this Card.
 
         folderNotExit = 0x681,      //Folder does not exist.
         fileNotExit = 0x682,        //File does not exist.
@@ -579,30 +593,30 @@ namespace CardEditor.Localization
         quesSelectCreaScript = 0x6e3,   //Create the Card Script of the selected card or the card with newly entered ID?
         quesSelectCreaImg = 0x6e4,      //Create the Image of the selected card or the card with newly entered ID?
 
-        newIDCard = 0x6e5,          //Newly entered ID
-        originaData = 0x6e6,        //Original Data
-        unSavedData = 0x6e7,        //Unsaved Data
+        newIDCard = 0x6e5,              //Newly entered ID
+        originaData = 0x6e6,            //Original Data
+        unSavedData = 0x6e7,            //Unsaved Data
 
         NumberCloseTab = 0x701,         //You are closing {0} tabs.
         HasUnSaveData = 0x702,          //There is unsaved data.
-        HasDuplicateIDs = 0x703,        //There are {0} duplicate IDs in the Card List.
-        QuestContinue = 0x704,          //Do you want to continue?
-        QuestOpen = 0x705,              //Do you want to open it?
-        QuestOverwrite = 0x706,         //Do you want to overwrite it?
-        QuestSaveChange = 0x707,        //Do you want to save your changes for this file?
-        confirmAdd = 0x708,             //Are you sure? Cards with 4 digit IDs or lower will be the game ignore.
-        confirmClearAll = 0x709,        //Are you sure you want to Clear all {0}?
-        confirmDelete = 0x70a,          //Are you sure you want to PERMANENTLY DELETE {0}?
-        confirmReload = 0x70b,          //Are you sure you want to Reload {0}?
-        confirmReset = 0x70c,           //Are you sure you want to Reset {0}?
-        confirmResetSetting = 0x70d,    //Are you sure you want to reset settings to default? All changes will be lost.
-        confirmClearHistory = 0x70e,    //Are you sure you want to clear the recently opened {0} history?
-        confirmSaveBlank = 0x70f,       //Are you sure you want to save a blank file?
-        quesDownloadUpdate = 0x710,     //Update Available, dowload it now?
-        quesDownloadCardData = 0x711,   //Data source is missing or invalid, download now?
-        confirmWriteData = 0x712,       //How would you like to handle the selected data?
-        noUpdate = 0x713,               //No updates found.
-        updateCompe = 0x714,            //Update Complete!
+        HasSnapshot = 0x703,            //There is one snapshot that hasn't been rolled back from the previous run.
+        HasDuplicateIDs = 0x704,        //There are {0} duplicate IDs in the Card List.
+        QuestContinue = 0x705,          //Do you want to continue?
+        QuestOpen = 0x706,              //Do you want to open it?
+        QuestOverwrite = 0x707,         //Do you want to overwrite it?
+        QuestSaveChange = 0x708,        //Do you want to save your changes for this file?
+        confirmAdd = 0x709,             //Are you sure? Cards with 4 digit IDs or lower will be the game ignore.
+        TwoPlaceholderConfirm = 0x70a,  //Are you sure you want to {0} {1}?
+
+        confirmDelete = 0x70b,          //Are you sure you want to PERMANENTLY DELETE {0}?
+        confirmResetSetting = 0x70c,    //Are you sure you want to reset settings to default? All changes will be lost.
+        confirmClearHistory = 0x70d,    //Are you sure you want to clear the recently opened {0} history?
+        confirmSaveBlank = 0x70e,       //Are you sure you want to save a blank file?
+        quesDownloadUpdate = 0x70f,     //Update Available, dowload it now?
+        quesDownloadCardData = 0x710,   //Data source is missing or invalid, download now?
+        confirmWriteData = 0x711,       //How would you like to handle the selected data?
+        noUpdate = 0x712,               //No updates found.
+        updateCompe = 0x713,            //Update Complete!
 
         unableDelete = 0x725,           //Unable to delete existing file after multiple attempts.
         gitNotFound = 0x726,            //git.exe path not found, make sure Git is installed and using correct path in application configuration.
@@ -711,7 +725,9 @@ namespace CardEditor.Localization
         //errorSaveScript = 0x523,//Error saving script:
 
 
-
+        // confirmClearAll = 0x709,        //Are you sure you want to Clear all {0}?
+        // confirmReload = 0x70b,          //Are you sure you want to Reload {0}?
+        // confirmReset = 0x70c,           //Are you sure you want to Reset {0}?
 
         //errorAddCard = 0x531,       //Error adding card:
         //errorAddRare = 0x532,       //Error adding/modifying rarity:

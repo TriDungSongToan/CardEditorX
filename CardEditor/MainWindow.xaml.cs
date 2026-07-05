@@ -2534,6 +2534,23 @@ namespace CardEditor
                 };
             }
         }
+        public async Task<ResultItem> FilterCardByPenLang(PendulumLanguageRule rule, bool isInclude)
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                return await currentDataEditor.FilterCardByPenLang(rule, isInclude);
+            }
+            else
+            {
+                return new ResultItem
+                {
+                    Succeeded = true,
+                    FilteredCount = 0,
+                    TotalCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+        }
         public async Task<ResultItem> FilterCardByCDBFile(string filePath, bool isDuplicate)
         {
             if (currentUserControl is DataEditor currentDataEditor)
@@ -3100,15 +3117,22 @@ namespace CardEditor
         #endregion
 
         #region Pendulum Language
-        public async Task<ResultItem> PendulumLanguage(PendulumLanguageRule rule, int scope)
+        public void OpenPreViewDescWindow(Card card, PendulumLanguageRule rule)
+        {
+            PreviewDescWindow previewDescWindow = new PreviewDescWindow();
+            previewDescWindow.ShowInTaskbar = false;
+            previewDescWindow.Owner = this;
+            previewDescWindow.MainWindowReference = this;
+            previewDescWindow.InitializePartEffect(card, rule);
+            previewDescWindow.ShowDialog();
+        }
+        public async Task<PenDescProcessSummary> PendulumLanguage(PendulumLanguageRule rule, int scope, bool overwrite)
         {
             if (rule == null || scope < 0 || scope > 2)
             {
-                ResultItem nullItem = new ResultItem
+                PenDescProcessSummary nullItem = new PenDescProcessSummary
                 {
-                    Succeeded = false,
-                    TotalCount = 0,
-                    FilteredCount = 0,
+                    Result = false,
                     Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
                 };
                 return nullItem;
@@ -3116,10 +3140,32 @@ namespace CardEditor
 
             if (currentUserControl is DataEditor currentDataEditor)
             {
-                var result = await currentDataEditor.PendulumLanguage(rule, scope);
+                var result = await currentDataEditor.PendulumLanguage(rule, scope, overwrite);
                 return result;
             }
-            else return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
+            else return new PenDescProcessSummary { Result = false, Message = CMess.noSelecWin.ToText() };
+        }
+        public void ApplyPendulumLanguage(string desc)
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                currentDataEditor.ApplyPendulumLanguage(desc);
+            }
+        }
+        public void StopApplyPenLang()
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                currentDataEditor.StopApplyPenLang();
+            }
+        }
+        public (bool, string) RollBackPenlang()
+        {
+            if (currentUserControl is DataEditor currentDataEditor)
+            {
+                return currentDataEditor.RollBackPenlang();
+            }
+            else return (false, CMess.noSelecWin.ToText());
         }
         #endregion
 

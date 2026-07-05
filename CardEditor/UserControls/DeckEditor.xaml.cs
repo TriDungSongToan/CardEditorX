@@ -1537,7 +1537,7 @@ namespace CardEditor.UserControls
             if (ConfigViewModel.Instance.dataHandlingSetting.ConfirmClear)
             {
                 var result = CMSG.Show(CMess.conClear.ToText(), CMSG.MessageBoxIconType.Question,
-                    string.Format(CMess.confirmClearAll.ToText(), CMess.SelectedDeck.ToText()),
+                    string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectedDeck.ToText()),
                     new[] { CMess.yes.ToText(), CMess.no.ToText() });
                 if (result != 0) return;
             }
@@ -1818,6 +1818,8 @@ namespace CardEditor.UserControls
 
         private void ExportLinkYDKE()
         {
+            Debug.WriteLine("ExportLinkYDKE");
+
             List<ulong> MainCardID = new List<ulong>();
             List<ulong> ExtraCardID = new List<ulong>();
             List<ulong> SideCardID = new List<ulong>();
@@ -1845,6 +1847,7 @@ namespace CardEditor.UserControls
                         $"{CMess.errorOcc.ToText()} {ydke.message}", new[] { CMess.ok.ToText() });
                     return;
                 }
+                ydkeString = ydke.message;
             }
             else //32 bit
             {
@@ -1855,6 +1858,7 @@ namespace CardEditor.UserControls
                         $"{CMess.errorOcc.ToText()} {ydke.message}", new[] { CMess.ok.ToText() });
                     return;
                 }
+                ydkeString = ydke.message;
             }
             YDKEString = ydkeString;
         }
@@ -1970,17 +1974,17 @@ namespace CardEditor.UserControls
             }
             else
             {
-                DeckText.Append("#main");
+                DeckText.AppendLine("#main");
                 foreach (var card in MainDeck)
                 {
                     DeckText.AppendLine(card.Card.ID.ToString());
                 }
-                DeckText.Append("#extra");
+                DeckText.AppendLine("#extra");
                 foreach (var card in ExtraDeck)
                 {
                     DeckText.AppendLine(card.Card.ID.ToString());
                 }
-                DeckText.Append("!side");
+                DeckText.AppendLine("!side");
                 foreach (var card in SideDeck)
                 {
                     DeckText.AppendLine(card.Card.ID.ToString());
