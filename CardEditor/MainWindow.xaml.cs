@@ -2276,15 +2276,15 @@ namespace CardEditor
         {
             string cardEditorPath = Directory.GetParent(CardAppContext.Instance.ExeFilePath).Parent.FullName;
 
-            string scriptSPPathFinal = System.IO.Path.Combine(cardEditorPath, @"Script Support\Script Support.exe");
+            string scriptSPPathFinal = System.IO.Path.Combine(cardEditorPath, @"ScriptSupport\ScriptSupport.exe");
             if (File.Exists(scriptSPPathFinal)) return scriptSPPathFinal;
 
             string cardEditorX = Directory.GetParent(CardAppContext.Instance.ExeFilePath).Parent.Parent.Parent.FullName;
 
-            string scriptSPPathDebug = System.IO.Path.Combine(cardEditorX, @"Script Support\bin\Debug\Script Support.exe");
+            string scriptSPPathDebug = System.IO.Path.Combine(cardEditorX, @"ScriptSupport\bin\Debug\net8.0-windows\ScriptSupport.exe");
             if (File.Exists(scriptSPPathDebug)) return scriptSPPathDebug;
 
-            string scriptSPPathRelease = System.IO.Path.Combine(cardEditorX, @"Script Support\bin\Release\Script Support.exe");
+            string scriptSPPathRelease = System.IO.Path.Combine(cardEditorX, @"ScriptSupport\bin\Release\net8.0-windows\ScriptSupport.exe");
             if (File.Exists(scriptSPPathRelease)) return scriptSPPathRelease;
 
             string configPath = ConfigurationManager.AppSettings["scriptsupportpath"];
@@ -2304,11 +2304,34 @@ namespace CardEditor
         private const int GWL_STYLE = -16;
         private const int GWL_EXSTYLE = -20;
 
+        private const int WS_CHILD = 0x40000000;
+        private const int WS_POPUP = unchecked((int)0x80000000);
+
         private const int WS_CAPTION = 0xC00000;
         private const int WS_TOOLWINDOW = 0x00000080;  // Cửa sổ công cụ
         private const int WS_OVERLAPPEDWINDOW = 0x00CF0000;  // Cửa sổ bình thường
         private const int WS_THICKFRAME = 0x00040000;  // Cửa sổ có viền thay đổi kích thước (viền mỏng)
         private const int WS_SYSMENU = 0x00080000; // Cửa sổ có menu hệ thống (nếu cần thiết)
+
+        [DllImport("user32.dll")]
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
+            int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+        [DllImport("user32.dll")]
+        static extern IntPtr SetFocus(IntPtr hWnd);
+        [DllImport("user32.dll")]
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        [DllImport("kernel32.dll")]
+        static extern uint GetCurrentThreadId();
+
+        private uint _hostThreadId;
+        private uint _childThreadId;
+        private bool _threadsAttached = false;
+        private const uint SWP_NOZORDER = 0x0004;
+        private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint SWP_FRAMECHANGED = 0x0020;
 
         private void menuScriptSupport_Click(object sender, RoutedEventArgs e)
         {
@@ -2322,11 +2345,20 @@ namespace CardEditor
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = ScriptSupportPath,
-                Arguments = "-isChildWindow true",
+                Arguments = "--embedded true",
                 UseShellExecute = false
             };
 
             Process projectBProcess = Process.Start(startInfo);
+            projectBProcess.EnableRaisingEvents = true;
+            projectBProcess.Exited += (s, args) =>
+            {
+                if (_threadsAttached)
+                {
+                    AttachThreadInput(_hostThreadId, _childThreadId, false);
+                    _threadsAttached = false;
+                }
+            };
             // Đợi process khởi động và có window handle
             projectBProcess.WaitForInputIdle();
 
@@ -2347,12 +2379,22 @@ namespace CardEditor
                 WindowInteropHelper helper = new WindowInteropHelper(this);
                 IntPtr mainWindowHandle = helper.Handle;
                 SetParent(externalAppHandle, mainWindowHandle);
+                SetWindowToToolWindow(externalAppHandle);
+
                 int x = (int)(this.ActualWidth - 380);
                 int y = 40;
                 int width = 650;
                 int height = 600;
                 MoveWindow(externalAppHandle, x, y, width, height, true);
-                SetWindowToToolWindow(externalAppHandle);
+
+                // --- Fix bàn phím ---
+                _hostThreadId = GetCurrentThreadId();
+                _childThreadId = GetWindowThreadProcessId(externalAppHandle, out _);
+
+                _threadsAttached = AttachThreadInput(_hostThreadId, _childThreadId, true);
+
+                // Đẩy focus ban đầu vào Child để nó sẵn sàng nhận phím ngay
+                SetFocus(externalAppHandle);
             }
         }
         private void SetWindowToResizableWithThinBorder(IntPtr hWnd)
@@ -2363,17 +2405,31 @@ namespace CardEditor
         // Hàm để thiết lập cửa sổ con
         private void SetWindowToToolWindow(IntPtr hWnd)
         {
-            // Lấy kiểu cửa sổ hiện tại của cửa sổ con
-            int exStyle = GetWindowLong(hWnd, GWL_STYLE);
+            int style = GetWindowLong(hWnd, GWL_STYLE);
 
-            // Loại bỏ thanh tiêu đề (WS_CAPTION)
-            exStyle &= ~WS_CAPTION;
+            style &= ~WS_CAPTION;
+            style &= ~WS_POPUP;      // bỏ popup
+            style |= WS_CHILD;       // BẮT BUỘC để MoveWindow hiểu tọa độ theo parent
+            style |= WS_THICKFRAME | WS_SYSMENU;
 
-            // Giữ lại viền thay đổi kích thước (WS_THICKFRAME) và menu hệ thống (nếu cần thiết)
-            exStyle |= WS_THICKFRAME | WS_SYSMENU;
+            SetWindowLong(hWnd, GWL_STYLE, style);
 
-            // Cập nhật kiểu cửa sổ
-            SetWindowLong(hWnd, GWL_STYLE, exStyle);
+            // Bắt buộc gọi SetWindowPos với SWP_FRAMECHANGED
+            // để Windows áp dụng lại style/non-client area ngay lập tức
+            SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+            //// Lấy kiểu cửa sổ hiện tại của cửa sổ con
+            //int exStyle = GetWindowLong(hWnd, GWL_STYLE);
+
+            //// Loại bỏ thanh tiêu đề (WS_CAPTION)
+            //exStyle &= ~WS_CAPTION;
+
+            //// Giữ lại viền thay đổi kích thước (WS_THICKFRAME) và menu hệ thống (nếu cần thiết)
+            //exStyle |= WS_THICKFRAME | WS_SYSMENU;
+
+            //// Cập nhật kiểu cửa sổ
+            //SetWindowLong(hWnd, GWL_STYLE, exStyle);
         }
         #endregion
 

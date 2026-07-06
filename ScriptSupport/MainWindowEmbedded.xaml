@@ -27,12 +27,12 @@
 
     <Window.Resources>
         <Style x:Key="TitleButton" TargetType="Button">
-            <Setter Property="Width" Value="30" />
-            <Setter Property="Height" Value="30" />
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{Binding UIConfig.Foreground}" />
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -72,9 +72,9 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
 
-            <Grid Visibility="Collapsed"
+            <Grid Opacity="0.5"
                   Background="{Binding UIConfig.Background}"
-                  Height="30" MouseDown="TitleBar_MouseDown" >
+                  Height="20" MouseDown="TitleBar_MouseDown" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
