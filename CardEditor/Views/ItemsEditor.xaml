@@ -858,7 +858,9 @@
                         <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
                                 Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
 
-                        <materialDesign:DrawerHost x:Name="PenLangHost" Grid.Row="2" >
+                        <materialDesign:DrawerHost x:Name="PenLangHost" Grid.Row="2"
+                                                   HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                             
                             <materialDesign:DrawerHost.Content>
                                 <Grid Margin="0" >
@@ -990,7 +992,7 @@
                                             <ComboBoxItem Content="{Lag:Localize AllCards}" />
                                         </ComboBox>
 
-                                        <Button Grid.Column="2" Margin="0" Padding="8,1,8,1" BorderThickness="0" Height="42"
+                                        <Button Grid.Column="2" Margin="0" Padding="8,10,8,10" BorderThickness="0" Height="42"
                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Panel.ZIndex="1"
                                                 Width="{Binding ElementName=btnApplyPenLang, Path=ActualWidth}"
                                                 Visibility="{Binding IsApplyingPenLanguage, Converter={StaticResource NegativeBoolToVisibilityConverter}}"
@@ -1076,7 +1078,8 @@
 
                             <materialDesign:DrawerHost.RightDrawerContent>
                                 <Grid Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                      HorizontalAlignment="Stretch" Width="{Binding ActualWidth, ElementName=PenLangHost}" >
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      Width="{Binding ActualWidth, ElementName=PenLangHost}" >
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="auto" />
                                         <RowDefinition Height="*" />

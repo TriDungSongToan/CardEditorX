@@ -61,15 +61,25 @@ namespace CardEditor.ViewModels
         #endregion
 
         #region Load
-        public void SetLanguage(List<PendulumLanguageRule> rules)
+        public (bool, string) SetLanguage(List<PendulumLanguageRule> rules)
         {
-            // Giữ nguyên thứ tự trong JSON, nhưng luôn đặt EDOPro xuống cuối.
-            _rules = rules.Where(r => r.Locale != PendulumLocales.EDOPro)
-                .Concat(rules.Where(r => r.Locale == PendulumLocales.EDOPro))
-                .Append(EdoProNoPenRule).Append(UnknownRule).ToList();
+            try
+            {
+                _rules.Clear();
+                // Giữ nguyên thứ tự trong JSON, nhưng luôn đặt EDOPro xuống cuối.
+                _rules = rules.Where(r => r.Locale != PendulumLocales.EDOPro)
+                    .Concat(rules.Where(r => r.Locale == PendulumLocales.EDOPro))
+                    .Append(EdoProNoPenRule).Append(UnknownRule).ToList();
 
-            OrderedPenMapsUI.Clear();
-            OrderedPenMapsUI.AddRange(_rules);
+                OrderedPenMapsUI.Clear();
+                OrderedPenMapsUI.AddRange(_rules);
+
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
         }
         public async Task<(bool Success, string Error)> LoadAsync()
         {
@@ -78,11 +88,9 @@ namespace CardEditor.ViewModels
                 string filePath = CardAppContext.Instance.PenDescLangFilePath;
                 var (lang, error) = await LoadDataAsync(filePath);
 
-                if (lang is null)
-                    return (false, error ?? "Failed to load language data.");
+                if (lang is null) return (false, error ?? "Failed to load language data.");
 
-                SetLanguage(lang);
-                return (true, string.Empty);
+                return SetLanguage(lang);
             }
             catch (Exception e)
             {

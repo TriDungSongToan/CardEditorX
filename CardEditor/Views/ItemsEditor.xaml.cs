@@ -688,7 +688,13 @@ namespace CardEditor.Views
         private async Task ReloadPenLanguage()
         {
             var (resultPenLang, messagePenLang) = await PenLanguageViewModel.Instance.LoadAsync();
-            if (!resultPenLang)
+            if (resultPenLang)
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.tlReload.ToText(), CMess.PendulumLanguage.ToText()),
+                    new[] { CMess.ok.ToText() });
+            }
+            else
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{CMess.errorOcc.ToText()} {messagePenLang}", new[] { CMess.ok.ToText() });
