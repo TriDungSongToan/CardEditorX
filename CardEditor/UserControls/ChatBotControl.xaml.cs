@@ -1,25 +1,17 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Linq;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reflection;
 using CardEditor.Models;
 using CardEditor.Helpers;
-using CardEditor.Manager;
 using CardEditor.Services;
-using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -74,6 +66,7 @@ namespace CardEditor
 
         private async void ChatBotControl_Loaded(object sender, RoutedEventArgs e)
         {
+            InitializeContentMenu();
             await ChatBotViewModel.Instance.LoadChatSessions();
 
             if (ChatBotViewModel.Instance.ChatSessions.Any())
@@ -81,6 +74,10 @@ namespace CardEditor
                 await ChatBotViewModel.Instance.LoadChatMessages(ChatBotViewModel.Instance.ChatSessions.First().Id);
                 ScrollChatListBoxToBottom();
             }
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(MessageTextBox);
         }
         private async void ChatHistory_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

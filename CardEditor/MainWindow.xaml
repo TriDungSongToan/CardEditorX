@@ -11,6 +11,7 @@
                  xmlns:system="clr-namespace:System;assembly=mscorlib"
                  xmlns:main="clr-namespace:CardEditor"
                  xmlns:Commands="clr-namespace:CardEditor.Commands"
+                 xmlns:Converter="clr-namespace:CardEditor.Converter"
                  xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
                  xmlns:Lag="clr-namespace:CardEditor.Localization"
                  GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
@@ -35,6 +36,9 @@
     </mah:MetroWindow.WindowButtonCommands>
     <Window.Resources>
         <system:String x:Key="Partition">Beginning</system:String>
+
+        <Converter:PositiveBoolToVisibilityConverter x:Key="PositiveBoolToVis"/>
+        <Converter:NegativeBoolToVisibilityConverter x:Key="NegativeBoolToVis"/>
     </Window.Resources>
 
     <Window.CommandBindings>
@@ -43,6 +47,7 @@
         <CommandBinding Command="{x:Static Commands:CustomCommands.NewDeck}" Executed="CommandNewDeck_Executed" CanExecute="CommandBindingNew_CanExecute" />
         <CommandBinding Command="{x:Static Commands:CustomCommands.NewBanList}" Executed="CommandNewBanList_Executed" CanExecute="CommandBindingNew_CanExecute" />
 
+        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenArchive}" Executed="CommandOpenArchive_Executed" CanExecute="CommandBindingOpen_CanExecute" />
         <CommandBinding Command="{x:Static Commands:CustomCommands.OpenDatabase}" Executed="CommandOpenDatabase_Executed" CanExecute="CommandBindingOpen_CanExecute" />
         <CommandBinding Command="{x:Static Commands:CustomCommands.OpenScript}" Executed="CommandOpenScript_Executed" CanExecute="CommandBindingOpen_CanExecute" />
         <CommandBinding Command="{x:Static Commands:CustomCommands.OpenDeck}" Executed="CommandOpenDeck_Executed" CanExecute="CommandBindingOpen_CanExecute" />
@@ -58,12 +63,22 @@
             <Border x:Name="BorderLeftWindowCommands" Background="Transparent"
                     BorderBrush="Transparent" BorderThickness="0"
                     MouseLeftButtonDown="BorderLeftWindowCommands_MouseLeftButtonDown" >
-                <TextBlock x:Name="txtTitle" IsHitTestVisible="False" Margin="3,0,5,0"
-                           Background="Transparent"
-                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                           HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" >
+                    <TextBlock x:Name="txtTitle" IsHitTestVisible="False" Margin="3,0,5,0"
+                               Background="Transparent"
+                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                    <TextBlock Text="*" IsHitTestVisible="False" Margin="0,0,5,0"
+                               Background="Transparent"
+                               Visibility="{Binding IsSaved, Converter={StaticResource PositiveBoolToVis}}"
+                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                </StackPanel>
+                
             </Border>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
@@ -140,7 +155,7 @@
                                 <Image Source="pack://application:,,,/Images/Menu/File/New/NewDatabase.ico" Width="auto" Height="auto" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        
+
                         <!--New Script-->
                         <MenuItem Header="{Lag:Localize CardScript}" InputGestureText="Ctrl + N + S  "
                                   Command="{x:Static Commands:CustomCommands.NewScript}"
@@ -149,7 +164,7 @@
                                 <Image Source="pack://application:,,,/Images/Menu/File/New/NewScript.ico" Width="16" Height="16" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        
+
                         <!--New Deck-->
                         <MenuItem Header="{Lag:Localize Deck}" InputGestureText="Ctrl + N + K  "
                                   Command="{x:Static Commands:CustomCommands.NewDeck}"
@@ -168,13 +183,23 @@
                             </MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                    
+
                     <!--Open-->
                     <MenuItem Header="{Lag:Localize Open}" Margin="0" Padding="10,0,15,0" >
 
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Open/Open.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
+
+                        <!--Open Archive-->
+                        <MenuItem Header="{Lag:Localize CardArchive}" InputGestureText="Ctrl + O + A  "
+                                  Command="{x:Static Commands:CustomCommands.OpenArchive}"
+                                  Margin="0" Padding="10,0,0,0" >
+                            <MenuItem.Icon>
+                                <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenDatabase.ico" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+
                         <!--Open DB-->
                         <MenuItem Header="{Lag:Localize cardDB}" InputGestureText="Ctrl + O + D  "
                                   Command="{x:Static Commands:CustomCommands.OpenDatabase}"
@@ -183,8 +208,8 @@
                                 <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenDatabase.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        
-                         <!--Open Script-->
+
+                        <!--Open Script-->
                         <MenuItem Header="{Lag:Localize cardScript}" InputGestureText="Ctrl + O + S  "
                                   Command="{x:Static Commands:CustomCommands.OpenScript}"
                                   Margin="0" Padding="10,0,0,0" >
@@ -218,6 +243,11 @@
                             <Image Source="pack://application:,,,/Images/Menu/File/Open/Open.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
 
+                        <MenuItem x:Name="menuRecentArchive" Header="{Lag:Localize CardArchive}" Margin="0" Padding="10,0,15,0" >
+                            <MenuItem.Icon>
+                                <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenDatabase.ico" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                         <MenuItem x:Name="menuRecentDatabases" Header="{Lag:Localize cardDB}" Margin="0" Padding="10,0,15,0" >
                             <MenuItem.Icon>
                                 <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenDatabase.ico" Width="auto" Height="auto" Margin="0" />
@@ -246,7 +276,7 @@
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Save/Save.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
-                        
+
                         <!--cdb-->
                         <MenuItem x:Name="menuSaveDB" Header="{Lag:Localize cardDB}" Click="menuSaveDB_Click"
                                   ToolTip="{Lag:Localize toolSaveDB}" Margin="0" Padding="10,0,15,0" >
@@ -269,7 +299,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                    
+
                     <!--Save-->
                     <MenuItem x:Name="menuSave" Header="{Lag:Localize Save}" InputGestureText="Ctrl + S  "
                               Visibility="{Binding SaveVisibility}" Command="{x:Static Commands:CustomCommands.Save}"
@@ -278,7 +308,7 @@
                             <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveLua.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    
+
                     <!--save as cdb-->
                     <MenuItem x:Name="menuSaveAsCdb" Header="{Lag:Localize SaveAs}"
                               Visibility="{Binding DataEditVisibility}" Margin="0" Padding="10,0,15,0"
@@ -305,7 +335,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                     </MenuItem>
-                    
+
                     <!--save as-->
                     <MenuItem x:Name="menuSaveAs" Header="{Lag:Localize SaveAs}" InputGestureText="Ctrl + Shift + S  "
                               Visibility="{Binding SaveVisibility}" Command="{x:Static Commands:CustomCommands.SaveAs}"
@@ -542,14 +572,14 @@
                         </MenuItem>
                     </MenuItem>
 
-                    <MenuItem Header="Import" Visibility="{Binding CardVisibility}"
+                    <MenuItem Header="{Lag:Localize importData}" Visibility="{Binding CardVisibility}"
                               Margin="0" Padding="10,0,15,0" Click="menuImport_Click" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Data/Import/Import.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem Header="Replace" Visibility="{Binding DataEditVisibility}"
+                    <MenuItem Header="{Lag:Localize replaceText}" Visibility="{Binding DataEditVisibility}"
                               Margin="0" Padding="10,0,15,0" ToolTip="{Lag:Localize toolReplaceText}" Click="menuReplace_Click" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Data/Replace.ico" Width="auto" Height="auto" Margin="0" />
@@ -595,11 +625,22 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem x:Name="menuRegistry" Header="Registry" Margin="0" Padding="10,0,15,0"
-                              ToolTip="{Lag:Localize toolRegistry}" Click="menuRegistry_Click">
+                    <MenuItem Header="Registry" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Help/Registry.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
+                        <MenuItem Header="Register Registry" Margin="0" Padding="10,0,15,0"
+                                  ToolTip="{Lag:Localize toolRegistry}" Click="RegisterRegistry_Click" >
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="KeyPlus" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Unregister Registry" Margin="0" Padding="10,0,15,0"
+                                  Click="UnregisterRegistry_Click" >
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="KeyMinus" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
 
                 </MenuItem>
@@ -643,45 +684,8 @@
             </Menu>
         </Grid>
 
-        <Menu Grid.Row="0" materialDesign:MenuAssist.TopLevelMenuItemHeight="25" Margin="0" Padding="0"
-              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-              HorizontalAlignment="Right" Style="{DynamicResource MaterialDesignMenu}" >
-            <MenuItem Header="Loading" Margin="0" Padding="10,0,10,0" >
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" />
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" >
-                        <TextBlock x:Name="StatusText" Text="Loading card images..." Foreground="White" FontSize="14" TextAlignment="Center" Margin="0,0,0,10"/>
-                    </Grid>
-                    <Grid Grid.Row="1" >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="RAM Usage:" Grid.Column="0" Foreground="#888" FontSize="11" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="RAMText" Grid.Column="1" Text="0 MB" Foreground="LimeGreen"
-                                   FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                    </Grid>
-                    
-                    <Grid Grid.Row="1" >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <ProgressBar Grid.Column="0" Width="250" x:Name="ProgressBar" Height="20" Minimum="0" Maximum="100" Value="0"/>
-                        <TextBlock x:Name="DetailText" Text="0 / 0" Foreground="#cccccc" FontSize="12" TextAlignment="Center" Margin="0,10,0,0"/>
-                    </Grid>
-                </Grid>
-            </MenuItem>
-        </Menu>
-
         <Grid Grid.Row="1" >
+            
             <Grid IsHitTestVisible="True" Panel.ZIndex="0" >
                 <Grid.RowDefinitions>
                     <RowDefinition />
@@ -705,7 +709,7 @@
                                                  ShowDefaultAddButton="True"
                                                  SnapsToDevicePixels="True"
                                                  AdjacentHeaderItemOffset="0"
-                                                 TabStripPlacement="Top"                      
+                                                 TabStripPlacement="Top"
                                                  ConsolidateOrphanedItems="True"
                                                  FixedHeaderCount="0"    
                                                  ItemsSource="{Binding Tabs, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
@@ -795,4 +799,5 @@
 
         </Grid>
     </Grid>
+    
 </mah:MetroWindow>

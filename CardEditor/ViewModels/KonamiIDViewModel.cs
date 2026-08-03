@@ -1,14 +1,11 @@
 ﻿using System;
+using System.Data.SQLite;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Data.SQLite;
 
 namespace CardEditor.ViewModels
 {
@@ -33,8 +30,8 @@ namespace CardEditor.ViewModels
         {
             if (IsLoaded) return (true, string.Empty);
 
-            string dbFilePath = System.IO.Path.Combine(CardEditor.Models.AppContext.Instance.DataFolderPath, $@"CardData\KonamiID\GetKonamiID.cdb");
-            if (!System.IO.File.Exists(dbFilePath)) return (false, $"{CMess.fileNotExit.ToText()} GetKonamiID.cdb");
+            string dbFilePath = System.IO.Path.Combine(CardEditor.Models.AppContext.Instance.DataFolderPath, $@"CardData\KonamiID\KonamiID.cdb");
+            if (!System.IO.File.Exists(dbFilePath)) return (false, $"{CMess.fileNotExit.ToText()} KonamiID.cdb");
 
             try
             {

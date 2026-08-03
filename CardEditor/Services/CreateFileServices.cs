@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Data.SQLite;
 using System.Text.RegularExpressions;
+using CardEditor.Models;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Text;
-using CardEditor.Models;
 
 namespace CardEditor.Services
 {
@@ -355,7 +355,11 @@ namespace CardEditor.Services
                 {
                     if (newScript && Regex.IsMatch(Path.GetFileName(filePath), @"^c\d+\.lua$", RegexOptions.IgnoreCase))
                     {
-                        string safeLuaContent = luaContent.Replace("--", "").Replace("\n", " ");
+                        string safeLuaContent = (luaContent ?? "")
+                            .Replace("--", "")
+                            .Replace("\n", " ")
+                            .Replace("\r", "");
+
                         string ocgComment = (Area == LanguageArea.OCG || Area == LanguageArea.Mixed) ? $"--{safeLuaContent}" : "-- add OCG card name";
                         string tcgComment = (Area == LanguageArea.TCG || Area == LanguageArea.Mixed) ? $"--{safeLuaContent}" : "-- add TCG card name";
 

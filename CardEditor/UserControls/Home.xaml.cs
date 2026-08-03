@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Reflection;
 using System.Windows.Media.Imaging;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
+using CardEditor.Services;
+using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
+
 namespace CardEditor.UserControls
 {
     /// <summary>
@@ -12,11 +16,36 @@ namespace CardEditor.UserControls
     /// </summary>
     public partial class Home : UserControl, INotifyPropertyChanged
     {
+        private IMainWindowService MainWindowService;
+        private string _mainWindowTitle = string.Empty;
+        public string MainWindowTitle
+        {
+            get => _mainWindowTitle;
+            set
+            {
+                if (_mainWindowTitle != value)
+                {
+                    _mainWindowTitle = value;
+                    OnPropertyChanged(nameof(MainWindowTitle));
+                    UpdateWindowTitle();
+                }
+            }
+        }
+
         public bool IsSaved { get; set; } = true;
         public Home()
         {
             InitializeComponent();
             this.DataContext = this;
+        }
+        public Home(IMainWindowService service) : this()
+        {
+            MainWindowService = service;
+        }
+
+        public void LoadConfig()
+        {
+            MainWindowTitle = CMess.Home.ToText();
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -42,11 +71,28 @@ namespace CardEditor.UserControls
             }
             bitmap.Freeze();
             imgmainbg.Source = bitmap;
-        }
 
+            MainWindowTitle = CMess.Home.ToText();
+        }
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void UpdateWindowTitle()
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowTitle(MainWindowTitle);
+                MainWindowService.UpdateTabItemHeader(MainWindowTitle);
+            }
+        }
+        private void UpdateWindowSavedFlag()
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowSavedFlag(IsSaved);
+            }
         }
 
         #region Event

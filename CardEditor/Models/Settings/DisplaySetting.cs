@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using CardEditor.Collections;
-using CardEditor.Models;
-using CardEditor.Manager;
-using CardEditor.Helpers;
-using CardEditor.Commands;
-using CardEditor.Behaviors;
-using CardEditor.Localization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows.Media;
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using System.Text.Json;
+using System.Runtime.CompilerServices;
+using System.ComponentModel;
+using CardEditor.Collections;
 
 namespace CardEditor.Models.Settings
 {
@@ -260,7 +249,7 @@ namespace CardEditor.Models.Settings
             }
         }
 
-        private string _buttonChat = "45,45";
+        private string _buttonChat = "2,2";
         public string ButtonChat
         {
             get => _buttonChat;

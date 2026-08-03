@@ -1,30 +1,23 @@
 ﻿using System;
 using System.IO;
+using System.Web.UI.WebControls;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.Animation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Web.UI.WebControls;
-using System.Linq.Dynamic.Core;
+using System.ComponentModel;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Commands;
@@ -43,6 +36,21 @@ namespace CardEditor.UserControls
     {
         #region Variable
         private IMainWindowService MainWindowService;
+        private string _mainWindowTitle = string.Empty;
+        public string MainWindowTitle
+        {
+            get => _mainWindowTitle;
+            set
+            {
+                if (_mainWindowTitle != value)
+                {
+                    _mainWindowTitle = value;
+                    OnPropertyChanged(nameof(MainWindowTitle));
+                    UpdateWindowTitle();
+                }
+            }
+        }
+
         private bool _isSaved = true;
         public bool IsSaved
         {
@@ -54,7 +62,7 @@ namespace CardEditor.UserControls
                     _isSaved = value;
                     OnPropertyChanged(nameof(IsSaved));
                     SaveDeckCommand.RaiseCanExecuteChanged();
-                    UpdateWindowTitle();
+                    UpdateWindowSavedFlag();
                 }
             }
         }
@@ -240,7 +248,7 @@ namespace CardEditor.UserControls
                     NewFolderPath = (string.IsNullOrEmpty(CurrentDeckPath) || !System.IO.File.Exists(CurrentDeckPath))
                         ? string.Empty : System.IO.Path.GetDirectoryName(CurrentDeckPath);
                     NewNameDeck = CurrentDeckName;
-                    UpdateWindowTitle();
+                    MainWindowTitle = CurrentDeckPath;
                     IsSaved = true;
                     DeleteDeckCommand.RaiseCanExecuteChanged();
                     ReNameDeckCommand.RaiseCanExecuteChanged();
@@ -443,6 +451,7 @@ namespace CardEditor.UserControls
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             LoadConfig();
+            InitializeContentMenu();
             UpdateCardListItemSize();
             AlternateRule = (ulong)(CardRule.Anime | CardRule.Illegal | CardRule.VideoGame |
                 CardRule.Custom | CardRule.SpeedDuel | CardRule.NA1 | CardRule.Rush |
@@ -457,6 +466,23 @@ namespace CardEditor.UserControls
             await LoadCardList();
             await LoadDeck();
             IconCopy.Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentCopy;
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtid);
+            ControlContextMenuService.Attach(txtLvRk);
+            ControlContextMenuService.Attach(txtLinkRating);
+            ControlContextMenuService.Attach(txtGPoint);
+
+            ControlContextMenuService.Attach(txtATK);
+            ControlContextMenuService.Attach(txtDEF);
+            ControlContextMenuService.Attach(txtLeftScale);
+            ControlContextMenuService.Attach(txtRightScale);
+            ControlContextMenuService.Attach(txtdesc);
+
+            ControlContextMenuService.Attach(txtReName);
+            ControlContextMenuService.Attach(txtNewPath);
+            ControlContextMenuService.Attach(txtYDKEString);
         }
         private async Task LoadBanList()
         {
@@ -1301,6 +1327,13 @@ namespace CardEditor.UserControls
                 MainWindowService.UpdateTabItemHeader(CurrentDeckName);
             }
         }
+        private void UpdateWindowSavedFlag()
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowSavedFlag(IsSaved);
+            }
+        }
 
         #endregion
 
@@ -1417,6 +1450,7 @@ namespace CardEditor.UserControls
         {
             return !IsSaved;
         }
+
         public async Task<bool> Save()
         {
             if (DeckViewModel.Instance.Decks == null) return false;
@@ -1463,6 +1497,13 @@ namespace CardEditor.UserControls
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {messageFile}", new[] { CMess.ok.ToText() });
                 return false;
             }
+            var (resultArchi, messArchi) = await CurrentDeck.SaveToArchive(filePath);
+            if (!resultArchi)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
+                return false;
+            }
+
             CurrentDeck.Path = filePath;
             var (resultMemory, messageMemory) = DeckViewModel.Instance.SaveDeckMemory(CurrentDeck);
             if (!resultMemory)

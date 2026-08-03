@@ -56,6 +56,20 @@ namespace CardEditor
 
         private RareEditor _rareEditor;
         private GenesysEditor _genesysEditor;
+
+        private bool _isSaved = true;
+        public bool IsSaved
+        {
+            get => _isSaved;
+            set
+            {
+                if (_isSaved != value)
+                {
+                    _isSaved = value;
+                    OnPropertyChanged(nameof(IsSaved));
+                }
+            }
+        }
         #endregion
 
         #region Property
@@ -156,6 +170,8 @@ namespace CardEditor
             Tabs = new ObservableCollection<CardEditor.Models.TabContent>();
             //DataContext = UIConfigViewModel.Instance;
             DataContext = this;
+
+            ((App)Application.Current).RegisterWindow(this);
         }
         public MainWindow(string[] args)
         {
@@ -165,6 +181,8 @@ namespace CardEditor
             Tabs = new ObservableCollection<CardEditor.Models.TabContent>();
             //DataContext = UIConfigViewModel.Instance;
             DataContext = this;
+
+            ((App)Application.Current).RegisterWindow(this);
 
             if (args.Length > 0 && File.Exists(args[0]))
             {
@@ -182,6 +200,8 @@ namespace CardEditor
             this.InputBindings.Add(new KeySequenceBinding(CustomCommands.NewBanList,
                 new OptimizedKeySequenceGesture(new KeyGesturePart(Key.N, ModifierKeys.Control), new KeyGesturePart(Key.B, ModifierKeys.Control))));
 
+            this.InputBindings.Add(new KeySequenceBinding(CustomCommands.OpenArchive,
+                new OptimizedKeySequenceGesture(new KeyGesturePart(Key.O, ModifierKeys.Control), new KeyGesturePart(Key.A, ModifierKeys.Control))));
             this.InputBindings.Add(new KeySequenceBinding(CustomCommands.OpenDatabase,
                 new OptimizedKeySequenceGesture(new KeyGesturePart(Key.O, ModifierKeys.Control), new KeyGesturePart(Key.D, ModifierKeys.Control))));
             this.InputBindings.Add(new KeySequenceBinding(CustomCommands.OpenScript,
@@ -195,29 +215,52 @@ namespace CardEditor
             this.InputBindings.Add(new KeyBinding(CardEditor.Commands.CustomCommands.SaveAs, Key.S, ModifierKeys.Control | ModifierKeys.Shift));
             this.InputBindings.Add(new KeyBinding(CardEditor.Commands.CustomCommands.Setting, Key.S, ModifierKeys.Alt));
         }
-        private async void HandleFileOpen(string filePath)
+        public async void HandleFileOpen(string filePath)
         {
             if (!System.IO.File.Exists(filePath)) return;
+
+            if (filePath.EndsWith(".lflist.conf", StringComparison.OrdinalIgnoreCase))
+            {
+                await OpenBanListCommand(filePath);
+                return;
+            }
+
             string extension = System.IO.Path.GetExtension(filePath).ToLower();
-            if (extension == ".cdb" || extension == ".db" || extension == "sqlite" ||
-                extension == ".ceds" || extension == ".xlsx")
+
+            switch (extension.ToLowerInvariant())
             {
-                await OpenDataBase(filePath);
+                case ".zip":
+                case ".ypk":
+                    await OpenArchiveCommand(filePath);
+                    break;
+
+                case ".cdb":
+                case ".db":
+                case ".sqlite":
+                case ".ceds":
+                case ".xlsx":
+                    await OpenDatabaseCommand(filePath);
+                    break;
+
+                case ".lua":
+                case ".txt":
+                case ".md":
+                case ".log":
+                case ".yml":
+                case ".conf":
+                    await OpenScriptCommand(filePath);
+                    break;
+
+                case ".ydk":
+                    await OpenDeckCommand(filePath);
+                    break;
+
+                default: CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
+                    $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())} {filePath}",
+                    new[] { CMess.ok.ToText() });
+                    break;
+
             }
-            else if (extension == ".ydk")
-            {
-                await OpenDeck(filePath);
-            }
-            else if (extension == ".lflist.conf")
-            {
-                await OpenBanList(filePath);
-            }
-            else if (extension == ".lua" || extension == ".txt" || extension == ".md" || extension == ".log" ||
-                extension == ".yml" || extension == ".conf")
-            {
-                await OpenScript(filePath);
-            }
-            else return;
         }
         private void Instance_ThemeChanged(object sender, string newTheme)
         {
@@ -246,6 +289,12 @@ namespace CardEditor
             await CardDataViewModel.Instance.LoadData();
             await this.Dispatcher.BeginInvoke(new Action(LoadChatButton), System.Windows.Threading.DispatcherPriority.Loaded);
 
+            var (resultChar, messageChar) = await SpecialCharViewModel.Instance.LoadChar();
+            if (!resultChar)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {messageChar}", new[] { CMess.ok.ToText() });
+            }
             var (resultRare, messageRare) = await RareRawDataViewModel.Instance.LoadData();
             if (!resultRare)
             {
@@ -400,20 +449,43 @@ namespace CardEditor
         {
             Point position = ParsePoint(ConfigViewModel.Instance.displaySetting.ButtonChat);
 
-            double canvasW = canvas.ActualWidth;
-            double canvasH = canvas.ActualHeight;
-
-            Canvas.SetLeft(ChatIcon, canvasW - position.X);
-            Canvas.SetTop(ChatIcon, canvasH - position.Y);
+            Canvas.SetLeft(ChatIcon, canvas.ActualWidth - ChatIcon.ActualWidth - position.X);
+            Canvas.SetTop(ChatIcon, position.Y);
         }
         private void LoadRecentMenuItems()
         {
+            menuRecentArchive.Items.Clear();
             menuRecentDatabases.Items.Clear();
             menuRecentScripts.Items.Clear();
             menuRecentDeck.Items.Clear();
             menuRecentBanList.Items.Clear();
-            /////////////////
-            var recentDatabases = OpenHistoryViewModel.Instance.GetRecentItems(0);
+
+            // Archive
+            var recentArchive = OpenHistoryViewModel.Instance.GetRecentItems(0);
+            foreach (var item in recentArchive)
+            {
+                var menuItem = new MenuItem
+                {
+                    Header = System.IO.Path.GetFileName(item.Url),
+                    ToolTip = $"{item.Url}\n({CMess.Open.ToText()}: {item.Time})",
+                    Command = Commands.CustomCommands.OpenArchive,
+                    CommandParameter = item.Url
+                };
+                menuRecentArchive.Items.Add(menuItem);
+            }
+            if (recentArchive.Count > 0)
+            {
+                menuRecentArchive.Items.Add(new Separator());
+                var clearArchiveItem = new MenuItem
+                {
+                    Header = CMess.ClearHistory.ToText(),
+                };
+                clearArchiveItem.Click += ClearArchiveItem_Click;
+                menuRecentArchive.Items.Add(clearArchiveItem);
+            }
+
+            // Card Database
+            var recentDatabases = OpenHistoryViewModel.Instance.GetRecentItems(1);
             foreach (var item in recentDatabases)
             {
                 var menuItem = new MenuItem
@@ -435,8 +507,8 @@ namespace CardEditor
                 clearDBItem.Click += ClearDBItem_Click;
                 menuRecentDatabases.Items.Add(clearDBItem);
             }
-            /////////////////
-            var recentScripts = OpenHistoryViewModel.Instance.GetRecentItems(1);
+            // Card Script
+            var recentScripts = OpenHistoryViewModel.Instance.GetRecentItems(2);
             foreach (var item in recentScripts)
             {
                 var menuItem = new MenuItem
@@ -458,8 +530,8 @@ namespace CardEditor
                 clearScriptItem.Click += ClearScriptItem_Click;
                 menuRecentScripts.Items.Add(clearScriptItem);
             }
-            /////////////////
-            var recentDecks = OpenHistoryViewModel.Instance.GetRecentItems(2);
+            // Deck
+            var recentDecks = OpenHistoryViewModel.Instance.GetRecentItems(3);
             foreach (var item in recentDecks)
             {
                 var menuItem = new MenuItem
@@ -481,8 +553,8 @@ namespace CardEditor
                 clearDeckItem.Click += ClearDeckItem_Click;
                 menuRecentDeck.Items.Add(clearDeckItem);
             }
-            /////////////////
-            var recentBanLists = OpenHistoryViewModel.Instance.GetRecentItems(3);
+            // Banlist
+            var recentBanLists = OpenHistoryViewModel.Instance.GetRecentItems(4);
             foreach (var item in recentBanLists)
             {
                 var menuItem = new MenuItem
@@ -507,41 +579,29 @@ namespace CardEditor
 
             /////////////////
             menuRecentOpen.Visibility = (
+                menuRecentArchive.Items.Count > 0 ||
                 menuRecentDatabases.Items.Count > 0 ||
                 menuRecentScripts.Items.Count > 0 ||
                 menuRecentDeck.Items.Count > 0 ||
                 menuRecentBanList.Items.Count > 0)
                 ? Visibility.Visible : Visibility.Collapsed;
         }
+
         private async void LoadImagesCache()
         {
             var progress = new Progress<(int current, int total, string status)>(report =>
             {
-                // Update UI
-                UpdateProgress(report.current, report.total, report.status);
+
             });
 
             try
             {
-                // Preload images
                 await CardImageCacheViewModel.Instance.PreloadImagesAsync(progress);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading images: {ex.Message}", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-        }
-        public void UpdateProgress(int current, int total, string status)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (total > 0)
-                {
-                    ProgressBar.Value = (double)current / total * 100;
-                    DetailText.Text = $"{current} / {total}";
-                }
-                StatusText.Text = status;
-            });
         }
 
         private Point ParsePoint(string pointString)
@@ -643,7 +703,6 @@ namespace CardEditor
                                 currentTab.Header = System.IO.Path.GetFileName(dbFilePath);
                             }
                             await currentDataEditor.LoadDatabase(dbFilePath);
-                            UpdateWindowTitle(dbFilePath);
                         }
                         else
                         {
@@ -659,7 +718,6 @@ namespace CardEditor
                                 TabControlMain.SelectedItem = newTab;
                                 await newDataEditor.LoadDatabase(dbFilePath);
                             }), System.Windows.Threading.DispatcherPriority.Render);
-                            UpdateWindowTitle(dbFilePath);
                         }
                     }
                     catch (Exception ex)
@@ -742,20 +800,22 @@ namespace CardEditor
                             }
                             currentCodeEditor.luaFilePath = createdScriptPath;
                             await currentCodeEditor.LoadLuaFile();
-                            UpdateWindowTitle(createdScriptPath);
                         }
                         else
                         {
-                            var newcodeEditor = new CodeEditor
+                            var newcodeEditor = new CodeEditor(this)
                             {
                                 luaFileName = scriptFileName,
                                 luaFilePath = createdScriptPath,
                             };
                             var newTab = new TabContent { Header = scriptFileName, Content = newcodeEditor };
                             Tabs.Add(newTab);
-                            TabControlMain.SelectedItem = newTab;
-                            newcodeEditor.luaFilePath = createdScriptPath;
-                            UpdateWindowTitle(createdScriptPath);
+                            await Dispatcher.BeginInvoke(new Func<Task>(async () =>
+                            {
+                                TabControlMain.SelectedItem = newTab;
+                                newcodeEditor.luaFilePath = createdScriptPath;
+                                await newcodeEditor.LoadLuaFile();
+                            }), System.Windows.Threading.DispatcherPriority.Render);
                         }
                     }
                     catch (Exception ex)
@@ -924,17 +984,50 @@ namespace CardEditor
         #endregion
 
         #region Open
-        public (bool, string) SelectFileToOpen(IReadOnlyList<string> listFilePath, string rootFolder1, string rootFolder2 = null)
+        public (bool, List<CardEditor.Models.FileItem>) SelectFileToOpen(IReadOnlyList<(string fullPath, string archiveFilePath, string archiveEntryName)> entries)
         {
-            var selectFileWindow = new SelectFileWindow(listFilePath, rootFolder1, rootFolder2) { ShowInTaskbar = false, Owner = this };
+            var selectFileWindow = new SelectFileWindow(entries) { ShowInTaskbar = false, Owner = this };
             bool? result = selectFileWindow.ShowDialog();
-            if (result == true) // User chọn Select
-            {
-                if (string.IsNullOrEmpty(selectFileWindow.ResultPath)) return (true, string.Empty); // User chọn All File
-                return (true, selectFileWindow.ResultPath); // User chọn một file cụ thể
-            }
-            else return (false, string.Empty); // User chọn Cancel
+            return result == true
+                ? (true, selectFileWindow.Result)
+                : (false, new List<CardEditor.Models.FileItem>());
         }
+        public (bool, List<CardEditor.Models.FileItem>) SelectFileToOpen(IReadOnlyList<string> filePaths)
+        {
+            var entries = filePaths?.Select(p => (p, (string)null, (string)null)).ToList()
+                ?? new List<(string, string, string)>();
+            return SelectFileToOpen(entries);
+        }
+
+        public void UpdateArchiveRecentItem(string url = null)
+        {
+            if (string.IsNullOrEmpty(url) || !System.IO.File.Exists(url)) return;
+            OpenHistoryViewModel.Instance.UpdateRecentItem(url, 0);
+            LoadRecentMenuItems();
+        }
+        private async Task OpenArchiveCommand(string url = null)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                string filePath = FileDiaLogHelper.OpenCardPack();
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    url = filePath;
+                }
+            }
+            if (!string.IsNullOrEmpty(url) && File.Exists(url))
+            {
+                OpenArchiveWindow openArchiveWindow = new OpenArchiveWindow(url);
+                openArchiveWindow.ShowInTaskbar = false;
+                openArchiveWindow.Owner = this;
+                openArchiveWindow.MainWindowReference = this;
+                openArchiveWindow.ShowDialog();
+
+                openArchiveWindow.ArchiveFilePath = url;
+                await openArchiveWindow.LoadArchiveFile();
+            }
+        }
+
         private async Task OpenDatabaseCommand(string url = null)
         {
             if (string.IsNullOrEmpty(url))
@@ -948,11 +1041,11 @@ namespace CardEditor
             if (!string.IsNullOrEmpty(url) && File.Exists(url))
             {
                 await OpenDataBase(url);
-                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 0);
+                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 1);
                 LoadRecentMenuItems();
             }
         }
-        public async Task OpenDataBase(string selectedFilePath)
+        public async Task OpenDataBase(string selectedFilePath, string archiveFilePath = null, string archiveEntryName = null)
         {
             try
             {
@@ -972,7 +1065,6 @@ namespace CardEditor
                     };
                     if (CardList != null)
                     {
-                        Debug.WriteLine($"Imported {CardList.Count} cards from {selectedFilePath}.");
                         if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor &&
                             string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) &&
                             string.IsNullOrWhiteSpace(currentDataEditor.cedsFilePath) &&
@@ -982,10 +1074,13 @@ namespace CardEditor
                             if (currentTab != null) currentTab.Header = System.IO.Path.GetFileName(selectedFilePath);
                             if (CardList != null)
                             {
+                                currentDataEditor.archiveFilePath = archiveFilePath;
+                                currentDataEditor.archiveEntryName = archiveEntryName;
+                                if (Path.GetExtension(selectedFilePath)?.ToLowerInvariant() == ".ceds") currentDataEditor.cedsFilePath = selectedFilePath;
+                                else currentDataEditor.xlsxFilePath = selectedFilePath;
+
                                 currentDataEditor.ImportCreateNew(CardList);
-                                currentDataEditor.cedsFilePath = selectedFilePath;
                             }
-                            UpdateWindowTitle(selectedFilePath);
                         }
                         else
                         {
@@ -1003,10 +1098,14 @@ namespace CardEditor
                             }), System.Windows.Threading.DispatcherPriority.Render);
 
                             await Task.Yield();
+                            if (Path.GetExtension(selectedFilePath)?.ToLowerInvariant() == ".ceds") newDataEditor.cedsFilePath = selectedFilePath;
+                            else newDataEditor.xlsxFilePath = selectedFilePath;
+
+                            newDataEditor.archiveFilePath = archiveFilePath;
+                            newDataEditor.archiveEntryName = archiveEntryName;
+
                             newDataEditor.ImportCreateNew(CardList);
-                            newDataEditor.cedsFilePath = selectedFilePath;
                         }
-                        UpdateWindowTitle(selectedFilePath);
                     }
                 }
                 else
@@ -1032,8 +1131,10 @@ namespace CardEditor
                         {
                             currentTab.Header = System.IO.Path.GetFileName(selectedFilePath);
                         }
+                        currentDataEditor.archiveFilePath = archiveFilePath;
+                        currentDataEditor.archiveEntryName = archiveEntryName;
+
                         await currentDataEditor.LoadDatabase(selectedFilePath);
-                        UpdateWindowTitle(selectedFilePath);
                     }
                     else
                     {
@@ -1048,20 +1149,22 @@ namespace CardEditor
                         await Dispatcher.BeginInvoke(new Func<Task>(async () =>
                         {
                             TabControlMain.SelectedItem = newTab;
+                            newDataEditor.archiveFilePath = archiveFilePath;
+                            newDataEditor.archiveEntryName = archiveEntryName;
                             await newDataEditor.LoadDatabase(selectedFilePath);
                         }), System.Windows.Threading.DispatcherPriority.Render);
-
-                        UpdateWindowTitle(selectedFilePath);
                     }
                 }
             }
             catch (FormatException ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
 
@@ -1070,7 +1173,6 @@ namespace CardEditor
             if (string.IsNullOrEmpty(url))
             {
                 string filePath = FileDiaLogHelper.OpenScript();
-
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     url = filePath;
@@ -1079,19 +1181,24 @@ namespace CardEditor
             if (!string.IsNullOrEmpty(url) && File.Exists(url))
             {
                 await OpenScript(url);
-                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 1);
+                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 2);
                 LoadRecentMenuItems();
             }
         }
-        public async Task OpenScript(string selectedFilePath)
+        public async Task OpenScript(string selectedFilePath, string archiveFilePath = null, string archiveEntryName = null)
         {
-            string fileName = System.IO.Path.GetFileName(selectedFilePath);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(selectedFilePath) || !File.Exists(selectedFilePath))
+                {
+                    throw new FileNotFoundException($"{CMess.fileNotExit.ToText()}");
+                }
 
-            if (currentUserControl != null && currentUserControl is CodeEditor currentCodeEditor &&
+                string fileName = System.IO.Path.GetFileName(selectedFilePath);
+
+                if (currentUserControl != null && currentUserControl is CodeEditor currentCodeEditor &&
                 string.IsNullOrWhiteSpace(currentCodeEditor.luaFilePath) &&
                 string.IsNullOrWhiteSpace(currentCodeEditor.luaFileName))
-            {
-                try
                 {
                     var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
                     if (currentTab != null)
@@ -1099,20 +1206,15 @@ namespace CardEditor
                         currentTab.Header = fileName;
                     }
                     currentCodeEditor.luaFilePath = selectedFilePath;
+                    currentCodeEditor.luaFileName = fileName;
+                    currentCodeEditor.archiveFilePath = archiveFilePath;
+                    currentCodeEditor.archiveEntryName = archiveEntryName;
+
                     await currentCodeEditor.LoadLuaFile();
-                    UpdateWindowTitle(selectedFilePath);
                 }
-                catch (Exception ex)
+                else
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else
-            {
-                try
-                {
-                    var newCodeEditor = new CodeEditor();
+                    var newCodeEditor = new CodeEditor(this);
                     var newTab = new TabContent
                     {
                         Header = fileName,
@@ -1120,21 +1222,26 @@ namespace CardEditor
                     };
                     Tabs.Add(newTab);
 
-                    await Dispatcher.BeginInvoke(new Action(() =>
+                    await Dispatcher.BeginInvoke(new Func<Task>(async () =>
                     {
                         TabControlMain.SelectedItem = newTab;
+                        newCodeEditor.archiveFilePath = archiveFilePath;
+                        newCodeEditor.archiveEntryName = archiveEntryName;
+                        newCodeEditor.luaFilePath = selectedFilePath;
+                        newCodeEditor.luaFileName = fileName;
+                        await newCodeEditor.LoadLuaFile();
                     }), System.Windows.Threading.DispatcherPriority.Render);
-
-                    await Task.Yield();
-                    newCodeEditor.luaFilePath = selectedFilePath;
-                    await newCodeEditor.LoadLuaFile();
-                    UpdateWindowTitle(selectedFilePath);
                 }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
+            }
+            catch (FormatException ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
 
@@ -1152,7 +1259,7 @@ namespace CardEditor
             if (!string.IsNullOrEmpty(url) && File.Exists(url))
             {
                 await OpenDeck(url);
-                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 2);
+                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 3);
                 LoadRecentMenuItems();
             }
         }
@@ -1222,7 +1329,7 @@ namespace CardEditor
             if (!string.IsNullOrEmpty(url) && File.Exists(url))
             {
                 await OpenBanList(url);
-                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 3);
+                OpenHistoryViewModel.Instance.UpdateRecentItem(url, 4);
                 LoadRecentMenuItems();
             }
         }
@@ -1283,6 +1390,159 @@ namespace CardEditor
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
+
+        #region Open Archive
+        public async Task<(bool, string)> OpenArchiveDatabase(string archiveFilePath, IEnumerable<string> listEntryFullName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(archiveFilePath) || !System.IO.File.Exists(archiveFilePath))
+                    return (false, CMess.fileNotExit.ToText());
+                if (listEntryFullName == null || !listEntryFullName.Any())
+                    return (false, CMess.noFileFound.ToText());
+
+                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+
+                if (!extractResult.result) return (false, extractResult.message);
+                if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
+
+                foreach (var enTry in extractResult.extractedEntries)
+                {
+                    await OpenDataBase(enTry.TempPath, archiveFilePath, enTry.EntryFullName);
+                    await Dispatcher.Yield(DispatcherPriority.Background);
+                }
+
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        public async Task<(bool, string)> OpenArchiveScript(string archiveFilePath, IEnumerable<string> listEntryFullName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(archiveFilePath) || !System.IO.File.Exists(archiveFilePath))
+                    return (false, CMess.fileNotExit.ToText());
+                if (listEntryFullName == null || !listEntryFullName.Any())
+                    return (false, CMess.noFileFound.ToText());
+
+                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+
+                if (!extractResult.result) return (false, extractResult.message);
+                if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
+
+                foreach (var enTry in extractResult.extractedEntries)
+                {
+                    await OpenScript(enTry.TempPath, archiveFilePath, enTry.EntryFullName);
+                    await Dispatcher.Yield(DispatcherPriority.Background);
+                }
+
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        public async Task<(bool, string)> OpenArchiveDeck(string archiveFilePath, IEnumerable<string> listEntryFullName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(archiveFilePath) || !System.IO.File.Exists(archiveFilePath))
+                    return (false, CMess.fileNotExit.ToText());
+                if (listEntryFullName == null || !listEntryFullName.Any())
+                    return (false, CMess.noFileFound.ToText());
+
+                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+
+                if (!extractResult.result) return (false, extractResult.message);
+                if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
+
+                List<Deck> deckList = new List<Deck>();
+                foreach (var enTry in extractResult.extractedEntries)
+                {
+                    Deck deck = await DeckViewModel.Instance.LoadDeckFromFile(filePath: enTry.TempPath, archiveFilePath: archiveFilePath, archiveEntryName: enTry.EntryFullName);
+                    if (deck != null) deckList.Add(deck);
+                }
+                if (deckList.Count == 0) return (false, CMess.noFileFound.ToText());
+                DeckViewModel.Instance.Decks.AddRange(deckList);
+
+                if (currentUserControl != null && currentUserControl is DeckEditor currentDeckEditor)
+                {
+                    currentDeckEditor.CurrentDeck = deckList[deckList.Count - 1];
+                }
+                else
+                {
+                    var newDeckEditor = new DeckEditor(this);
+                    var newTab = new TabContent { Header = CMess.DeckEdit.ToText(), Content = newDeckEditor };
+                    Tabs.Add(newTab);
+
+                    await Dispatcher.BeginInvoke(new Func<Task>(async () =>
+                    {
+                        TabControlMain.SelectedItem = newTab;
+                        await Task.Yield();
+                        newDeckEditor.CurrentDeck = deckList[deckList.Count - 1];
+                    }), System.Windows.Threading.DispatcherPriority.Render);
+                }
+
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        public async Task<(bool, string)> OpenArchiveBanList(string archiveFilePath, IEnumerable<string> listEntryFullName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(archiveFilePath) || !System.IO.File.Exists(archiveFilePath))
+                    return (false, CMess.fileNotExit.ToText());
+                if (listEntryFullName == null || !listEntryFullName.Any())
+                    return (false, CMess.noFileFound.ToText());
+
+                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+
+                if (!extractResult.result) return (false, extractResult.message);
+                if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
+
+                List<BanList> banlists = new List<BanList>();
+                foreach (var entry in extractResult.extractedEntries)
+                {
+                    BanList banlist = await BanListRawDataViewModel.Instance.LoadFileBanList(filePath: entry.TempPath, archiveFilePath: archiveFilePath, archiveEntryName: entry.EntryFullName);
+                    if (banlist != null) banlists.Add(banlist);
+                }
+                if (banlists.Count == 0) return (false, CMess.noFileFound.ToText());
+                BanListRawDataViewModel.Instance.BanLists.AddRange(banlists);
+
+                if (currentUserControl != null && currentUserControl is BanListEditor currentBanlistEditor)
+                {
+                    currentBanlistEditor.SelectedBanList = banlists[banlists.Count - 1];
+                }
+                else
+                {
+                    var newBanlistEditor = new BanListEditor(this);
+                    var newTab = new TabContent { Header = CMess.BanListEdit.ToText(), Content = newBanlistEditor };
+                    Tabs.Add(newTab);
+
+                    await Dispatcher.BeginInvoke(new Func<Task>(async () =>
+                    {
+                        TabControlMain.SelectedItem = newTab;
+                        await Task.Yield();
+                        newBanlistEditor.SelectedBanList = banlists[banlists.Count - 1];
+                    }), System.Windows.Threading.DispatcherPriority.Render);
+                }
+
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        #endregion
 
         public static bool IsTextFile(string path)
         {
@@ -1351,20 +1611,50 @@ namespace CardEditor
             else if (listPath.Count == 1) await OpenDataEditorTab(listPath[0], id);
             else
             {
-                var (selectFileResult, selectFileMessage) = SelectFileToOpen(listPath, dataSource);
+                var (selectFileResult, selectedItems) = SelectFileToOpen(listPath);
                 if (selectFileResult)
                 {
-                    if (string.IsNullOrEmpty(selectFileMessage)) // User chọn All File
+                    foreach (var item in selectedItems)
                     {
-                        await OpenDataEditorTab(listPath, id);
-                    }
-                    else // User chọn một file cụ thể
-                    {
-                        if (!File.Exists(selectFileMessage)) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
-                        else await OpenDataEditorTab(selectFileMessage, id);
+                        if (!File.Exists(item.FullPath))
+                        {
+                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                                CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
+                            continue;
+                        }
+                        await OpenDataEditorTab(item.FullPath, id);
                     }
                 }
+            }
+        }
+
+        public async Task OpenDataEditorTab(IEnumerable<string> filePaths)
+        {
+            foreach (var file in filePaths)
+            {
+                if (string.IsNullOrWhiteSpace(file) || !File.Exists(file)) continue;
+                await OpenDataBase(file);
+                await Dispatcher.Yield(DispatcherPriority.Background);
+            }
+        }
+        public async Task OpenDataEditorTab(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath) || Tabs == null) return;
+
+            var existingTab = Tabs.FirstOrDefault(t => t.Content is DataEditor dataEditor && dataEditor.cdbFilePath == filePath);
+            if (existingTab != null)
+            {
+                TabControlMain.SelectedItem = existingTab;
+            }
+            else
+            {
+                var dataEditor = new DataEditor(this);
+                var newTab = new TabContent { Header = Path.GetFileName(filePath), Content = dataEditor };
+                Tabs.Add(newTab);
+                TabControlMain.SelectedItem = newTab;
+
+                await Dispatcher.Yield(DispatcherPriority.Loaded);
+                await dataEditor.LoadDatabase(filePath);
             }
         }
 
@@ -1377,26 +1667,30 @@ namespace CardEditor
                 await Dispatcher.Yield(DispatcherPriority.Background);
             }
         }
-        public async Task OpenCodeEditorTab(string filePath)
+        public async Task OpenCodeEditorTab(string filePath, string archiveFilePath = null, string archiveEntryName = null)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || Tabs == null) return;
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath) || Tabs == null) return;
             string fileName = System.IO.Path.GetFileName(filePath);
 
-            var existingTab = Tabs.FirstOrDefault(t => t.Content is CodeEditor codeEditor && codeEditor.luaFileName == fileName);
+            var existingTab = Tabs.FirstOrDefault(t => t.Content is CodeEditor codeEditor && codeEditor.luaFilePath == filePath);
             if (existingTab != null)
             {
                 TabControlMain.SelectedItem = existingTab;
             }
             else
             {
-                var newCodeEditor = new CodeEditor
+                var newCodeEditor = new CodeEditor(this)
                 {
                     luaFilePath = filePath,
-                    luaFileName = fileName
+                    luaFileName = fileName,
+                    archiveFilePath = archiveFilePath,
+                    archiveEntryName = archiveEntryName,
                 };
                 var newTab = new TabContent { Header = fileName, Content = newCodeEditor };
                 Tabs.Add(newTab);
                 TabControlMain.SelectedItem = newTab;
+
+                await newCodeEditor.LoadLuaFile();
             }
             await Dispatcher.Yield(DispatcherPriority.Render);
         }
@@ -1415,18 +1709,18 @@ namespace CardEditor
             else if (listPath.Count == 1) await OpenCodeEditorTab(listPath[0]);
             else
             {
-                var (selectFileResult, selectedFileMessage) = SelectFileToOpen(listPath, dataSource);
+                var (selectFileResult, selectedItems) = SelectFileToOpen(listPath);
                 if (selectFileResult)
                 {
-                    if (string.IsNullOrEmpty(selectedFileMessage)) // User chọn All File
+                    foreach (var item in selectedItems)
                     {
-                        await OpenCodeEditorTab(listPath);
-                    }
-                    else // User chọn một file cụ thể
-                    {
-                        if (!File.Exists(selectedFileMessage)) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
-                        else await OpenCodeEditorTab(selectedFileMessage);
+                        if (!File.Exists(item.FullPath))
+                        {
+                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                                CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
+                            continue;
+                        }
+                        await OpenCodeEditorTab(item.FullPath, item.ArchiveFilePath, item.ArchiveEntryName);
                     }
                 }
             }
@@ -1582,6 +1876,10 @@ namespace CardEditor
         #endregion
 
         #region Recently Opened
+        private void ClearArchiveItem_Click(object sender, RoutedEventArgs e)
+        {
+            ClearRecentArchive();
+        }
         private void ClearDBItem_Click(object sender, RoutedEventArgs e)
         {
             ClearRecentDatabases();
@@ -1598,7 +1896,7 @@ namespace CardEditor
         {
             ClearRecentBanList();
         }
-        private void ClearRecentDatabases()
+        private void ClearRecentArchive()
         {
             var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
                 string.Format(CMess.confirmClearHistory.ToText(), CMess.CardDB.ToText()),
@@ -1609,6 +1907,17 @@ namespace CardEditor
                 LoadRecentMenuItems();
             }
         }
+        private void ClearRecentDatabases()
+        {
+            var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                string.Format(CMess.confirmClearHistory.ToText(), CMess.CardDB.ToText()),
+                new[] { CMess.yes.ToText(), CMess.no.ToText() });
+            if (result == 0)
+            {
+                OpenHistoryViewModel.Instance.ClearRecentItems(1);
+                LoadRecentMenuItems();
+            }
+        }
         private void ClearRecentScripts()
         {
             var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
@@ -1616,7 +1925,7 @@ namespace CardEditor
                 new[] { CMess.yes.ToText(), CMess.no.ToText() });
             if (result == 0)
             {
-                OpenHistoryViewModel.Instance.ClearRecentItems(1);
+                OpenHistoryViewModel.Instance.ClearRecentItems(2);
                 LoadRecentMenuItems();
             }
         }
@@ -1627,7 +1936,7 @@ namespace CardEditor
                 new[] { CMess.yes.ToText(), CMess.no.ToText() });
             if (result == 0)
             {
-                OpenHistoryViewModel.Instance.ClearRecentItems(2);
+                OpenHistoryViewModel.Instance.ClearRecentItems(3);
                 LoadRecentMenuItems();
             }
         }
@@ -1638,7 +1947,7 @@ namespace CardEditor
                 new[] { CMess.yes.ToText(), CMess.no.ToText() });
             if (result == 0)
             {
-                OpenHistoryViewModel.Instance.ClearRecentItems(3);
+                OpenHistoryViewModel.Instance.ClearRecentItems(4);
                 LoadRecentMenuItems();
             }
         }
@@ -1716,35 +2025,32 @@ namespace CardEditor
             if (result == true)
             {
                 imgmainbg.Visibility = Visibility.Hidden;
-                string selectedOption = chooseWindow.SelectedOption;
-                if (selectedOption == "Data")
+                switch (chooseWindow.SelectedOption)
                 {
-                    newTab = new TabContent { Header = "DataEditor", Content = new DataEditor(this) };
-                }
-                else if (selectedOption == "Deck")
-                {
-                    newTab = new TabContent { Header = "DeckEditor", Content = new DeckEditor(this) };
-                }
-                else if (selectedOption == "Code")
-                {
-                    newTab = new TabContent { Header = "CodeEditor", Content = new CodeEditor() };
-                }
-                else if (selectedOption == "Image")
-                {
-                    newTab = new TabContent { Header = "ImageEditor", Content = new ImageEditor() };
-                }
-                else if (selectedOption == "BanList")
-                {
-                    newTab = new TabContent { Header = "BanListEditor", Content = new BanListEditor(this) };
-                }
-                else
-                {
-                    newTab = new TabContent { Header = "Home", Content = new Home() };
+                    case EditorType.Image:
+                        newTab = new TabContent { Header = CMess.ImageEdit.ToText(), Content = new ImageEditor(this) };
+                        break;
+                    case EditorType.Data:
+                        newTab = new TabContent { Header = CMess.DataEdit.ToText(), Content = new DataEditor(this) };
+                        break;
+                    case EditorType.Deck:
+                        newTab = new TabContent { Header = CMess.DeckEdit.ToText(), Content = new DeckEditor(this) };
+                        break;
+                    case EditorType.Code:
+                        newTab = new TabContent { Header = CMess.CodeEdit.ToText(), Content = new CodeEditor(this) };
+                        break;
+                    case EditorType.BanList:
+                        newTab = new TabContent { Header = CMess.BanListEdit.ToText(), Content = new BanListEditor(this) };
+                        break;
+
+                    default:
+                        newTab = new TabContent { Header = CMess.Home.ToText(), Content = new Home(this) };
+                        break;
                 }
             }
             else
             {
-                new TabContent { Header = "Home", Content = new Home() };
+                newTab = new TabContent { Header = CMess.Home.ToText(), Content = new Home(this) };
             }
 
             TabControlMain.SelectedItem = newTab;
@@ -1789,7 +2095,7 @@ namespace CardEditor
             else if (Tabs.Count == 1)
             {
                 Tabs.Remove(tabToClose);
-                var newHomeTab = new TabContent { Header = CMess.Home.ToText(), Content = new Home() };
+                var newHomeTab = new TabContent { Header = CMess.Home.ToText(), Content = new Home(this) };
                 Tabs.Add(newHomeTab);
                 TabControlMain.SelectedItem = newHomeTab;
 
@@ -1807,29 +2113,17 @@ namespace CardEditor
                 if (selectedTabContent != null)
                 {
                     currentUserControl = selectedTabContent.Content;
-                    if (currentUserControl is DataEditor currentDataEditor)
+
+                    switch (currentUserControl)
                     {
-                        mainTitle = currentDataEditor.cdbFilePath;
+                        case BanListEditor currentBanListEditor: UpdateWindowTitle(currentBanListEditor.MainWindowTitle); break;
+                        case CodeEditor currentCodeEditor: UpdateWindowTitle(currentCodeEditor.MainWindowTitle); break;
+                        case DataEditor currentDataEditor: UpdateWindowTitle(currentDataEditor.MainWindowTitle); break;
+                        case DeckEditor currentDeckEditor: UpdateWindowTitle(currentDeckEditor.MainWindowTitle); break;
+                        case ImageEditor currentImageEditor: UpdateWindowTitle(currentImageEditor.MainWindowTitle); break;
+                        case Home currentHome: UpdateWindowTitle(currentHome.MainWindowTitle); break;
                     }
-                    else if (currentUserControl is CodeEditor currentCodeEditor)
-                    {
-                        mainTitle = currentCodeEditor.luaFilePath;
-                    }
-                    else if (currentUserControl is DeckEditor currentDeckEditor)
-                    {
-                        mainTitle = currentDeckEditor.CurrentDeckPath;
-                    }
-                    else if (currentUserControl is BanListEditor currentBanListEditor)
-                    {
-                        mainTitle = currentBanListEditor.CurrentBanListPath;
-                    }
-                    else if (currentUserControl is ImageEditor currentImageEditor)
-                    {
-                        mainTitle = string.Empty;
-                    }
-                    else mainTitle = string.Empty;
                 }
-                UpdateWindowTitle(mainTitle);
                 UpdateMenuItem();
             }
             grHeader.Height = (Tabs.Count == 0 || currentUserControl == null) ? new GridLength(13) : new GridLength(40);
@@ -1852,17 +2146,14 @@ namespace CardEditor
         private void UpdateDataEditorTabHeader(string selectedFilePath, DataEditor currentDataEditor)
         {
             CardDataViewModel.Instance.UpdateTabHeader(currentDataEditor, System.IO.Path.GetFileName(selectedFilePath));
-            UpdateWindowTitle(selectedFilePath);
         }
         private void UpdateCodeEditorTabHeader(string selectedFilePath, CodeEditor currentCodeEditor)
         {
             CardDataViewModel.Instance.UpdateTabHeader(currentCodeEditor, System.IO.Path.GetFileName(selectedFilePath));
-            UpdateWindowTitle(selectedFilePath);
         }
         private void UpdateImageEditorTabHeader(string selectedFilePath, ImageEditor currentImageEditor)
         {
             CardDataViewModel.Instance.UpdateTabHeader(currentImageEditor, System.IO.Path.GetFileName(selectedFilePath));
-            UpdateWindowTitle(selectedFilePath);
         }
         public void UpdateMenuItem()
         {
@@ -1881,30 +2172,34 @@ namespace CardEditor
                 BanListEditVisibility = Visibility.Collapsed;
             }
         }
+
         public void UpdateWindowTitle(string title)
         {
             txtTitle.Text = title;
         }
+        public void UpdateWindowSavedFlag(bool isSaved)
+        {
+            IsSaved = isSaved;
+        }
         public void UpdateTabItemHeader(string title)
         {
             var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
-            string defaultTitle;
-            if (currentUserControl is DataEditor)
-                defaultTitle = CMess.DataEdit.ToText();
-            else if (currentUserControl is CodeEditor)
-                defaultTitle = CMess.CodeEdit.ToText();
-            else if (currentUserControl is ImageEditor)
-                defaultTitle = CMess.ImageEdit.ToText();
-            else if (currentUserControl is DeckEditor)
-                defaultTitle = CMess.DeckEdit.ToText();
-            else if (currentUserControl is BanListEditor)
-                defaultTitle = CMess.BanListEdit.ToText();
-            else defaultTitle = CMess.Home.ToText();
-            if (currentTab != null)
+            if (currentTab == null)
             {
-                currentTab.Header = string.IsNullOrWhiteSpace(title) ? defaultTitle : title;
+                string defaultTitle = string.Empty;
+
+                if (currentUserControl is BanListEditor) defaultTitle = CMess.BanListEdit.ToText();
+                else if (currentUserControl is CodeEditor) defaultTitle = CMess.CodeEdit.ToText();
+                else if (currentUserControl is DataEditor) defaultTitle = CMess.DataEdit.ToText();
+                else if (currentUserControl is DeckEditor) defaultTitle = CMess.DeckEdit.ToText();
+                else if (currentUserControl is ImageEditor) defaultTitle = CMess.ImageEdit.ToText();
+                else if (currentUserControl is Home) defaultTitle = CMess.Home.ToText();
+
+                currentTab.Header = defaultTitle;
             }
+            else currentTab.Header = title;
         }
+
         private void MetroWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             LoadChatButton();
@@ -1935,6 +2230,17 @@ namespace CardEditor
         #endregion
 
         #region Open
+        private async void CommandOpenArchive_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            string archivePath = e.Parameter as string ?? string.Empty;
+
+            OpenArchiveWindow openArchiveWindow = new OpenArchiveWindow(archivePath);
+            openArchiveWindow.ShowInTaskbar = false;
+            openArchiveWindow.Owner = this;
+            openArchiveWindow.MainWindowReference = this;
+            openArchiveWindow.ShowDialog();
+
+        }
         private async void CommandOpenDatabase_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             string url = e.Parameter as string;
@@ -1973,8 +2279,8 @@ namespace CardEditor
                     {
                         string dbFilePath = await CreateDatabase();
                         currentDataEditor.cdbFilePath = dbFilePath;
-                        await currentDataEditor.SaveAllCardsInCard(dbFilePath);
                         await currentDataEditor.ModifyCard();
+                        await currentDataEditor.SaveAllCardsInCard(dbFilePath);
                     }
                 }
                 else if (currentUserControl is CodeEditor currentCodeEditor)
@@ -2021,15 +2327,15 @@ namespace CardEditor
             {
                 if (!string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) && File.Exists(currentDataEditor.cdbFilePath))
                 {
-                    await currentDataEditor.SaveAllCardsInCard();
                     await currentDataEditor.ModifyCard();
+                    await currentDataEditor.SaveAllCardsInCard();
                 }
                 else
                 {
                     string dbFilePath = await CreateDatabase();
                     currentDataEditor.cdbFilePath = dbFilePath;
-                    await currentDataEditor.SaveAllCardsInCard(dbFilePath);
                     await currentDataEditor.ModifyCard();
+                    await currentDataEditor.SaveAllCardsInCard(dbFilePath);
                 }
             }
         }
@@ -2178,10 +2484,9 @@ namespace CardEditor
             {
                 double left = Canvas.GetLeft(ChatIcon);
                 double top = Canvas.GetTop(ChatIcon);
-                double canvasW = canvas.ActualWidth;
-                double canvasH = canvas.ActualHeight;
 
-                Properties.Settings.Default.ButtonChat = $"{canvasW - left},{canvasH - top}";
+                double right = canvas.ActualWidth - left - ChatIcon.ActualWidth;
+                Properties.Settings.Default.ButtonChat = $"{right},{top}";
                 Properties.Settings.Default.Save();
             }
         }
@@ -2190,7 +2495,7 @@ namespace CardEditor
         #region Windows
         private void menuimgeditor_Click(object sender, RoutedEventArgs e)
         {
-            var newimageEditor = new ImageEditor();
+            var newimageEditor = new ImageEditor(this);
             var newTab = new TabContent
             {
                 Header = CMess.ImageEdit.ToText(),
@@ -2222,7 +2527,7 @@ namespace CardEditor
         }
         private void menucodeeditor_Click(object sender, RoutedEventArgs e)
         {
-            var newcodeEditor = new CodeEditor();
+            var newcodeEditor = new CodeEditor(this);
             var newTab = new TabContent
             {
                 Header = CMess.CodeEdit.ToText(),
@@ -2880,9 +3185,9 @@ namespace CardEditor
             else return (false, null);
         }
         // Replace Card List chính bằng Card List phụ, theo từng thuộc tính được chọn. Có tùy chọn Add các Card có id không xuất hiện trong Card list chính.
-        public async Task<(bool, string)> ReplaceField(string filePath, ulong flags, bool IsAddNew)
+        public async Task<(bool Success, int ReplacedCard, int TotalCard, string Message)> ReplaceField(string filePath, ulong flags, bool IsAddNew)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
             //if (!CheckDatabase.IsDatabaseFile(filePath)) return (false, CMess.notDatabase.ToText());
 
             try
@@ -2898,18 +3203,18 @@ namespace CardEditor
                             ".cdb" or ".db" or ".sqlite" => await LoadDataServices.LoadDatabaseCard(filePath),
                             _ => throw new NotSupportedException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())),
                         };
-                        if (CardList == null) return (false, message);
+                        if (CardList == null) return (false, 0, 0, message);
 
                         return currentDataEditor.ReplaceDataCommand(CardList, flags, IsAddNew);
                     }
                     else if (currentUserControl is BanListEditor currentBanListEditor)
                     {
                         string fileName = Path.GetFileName(filePath).ToLowerInvariant();
-                        if (string.IsNullOrEmpty(fileName)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
+                        if (string.IsNullOrEmpty(fileName)) return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
                         if (fileName.EndsWith(".lflist.conf"))
                         {
                             var (Banlist, message) = await LoadDataServices.LoadFileBanList(filePath);
-                            if (Banlist == null) return (false, message);
+                            if (Banlist == null) return (false, 0, 0, message);
                             return currentBanListEditor.ReplaceDataCommand(Banlist.CardList.Values, flags, IsAddNew);
                         }
                         else
@@ -2923,17 +3228,17 @@ namespace CardEditor
 
                                 _ => throw new NotSupportedException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())),
                             };
-                            if (CardList == null) return (false, message);
+                            if (CardList == null) return (false, 0, 0, message);
                             return currentBanListEditor.ReplaceDataCommand(CardList, flags, IsAddNew);
                         }
                     }
-                    else return (false, CMess.noSelecWin.ToText());
+                    else return (false, 0, 0, CMess.noSelecWin.ToText());
                 }
-                else return (false, CMess.noSelecWin.ToText());
+                else return (false, 0, 0, CMess.noSelecWin.ToText());
             }
             catch (Exception ex)
             {
-                return (false, ex.Message);
+                return (false, 0, 0, ex.Message);
             }
         }
         #endregion
@@ -3419,31 +3724,66 @@ namespace CardEditor
 
             #endregion
         }
-        private void menuRegistry_Click(object sender, RoutedEventArgs e)
+
+        private void RegisterRegistry_Click(object sender, RoutedEventArgs e)
         {
             string filePath = FileDiaLogHelper.SaveRes();
 
-            if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
+            Debug.WriteLine(filePath);
+
+            if (string.IsNullOrWhiteSpace(filePath)) return;
+
+            var (Regresult, Regmessage) = RegistryHelper.CreateRegistry(filePath);
+            Debug.WriteLine($"Registry Result: {Regresult}, Message: {Regmessage}");
+
+            if (Regresult)
             {
-                string targetPath = filePath;
-                var Regresult = RegistryHelper.CreateRegistry(targetPath);
-                if (Regresult.Item1)
+                int result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    $"{CMess.registrySuc.ToText()}\n{Regmessage}.\n\n" +
+                    $"{CMess.registryType.ToText()}\n" +
+                    $"{CMess.openDirectly.ToText()}\n.ypk .cdb .ceds .lua .ydk\n" +
+                    $"{CMess.openWithOnly.ToText()}\n.zip .db .sqlite .xlsx .txt .md .log .yml .conf\n\n" +
+                    $"{CMess.setRegistry.ToText()}\n" +
+                    $"{CMess.QuestOpen.ToText()}",
+                new[] { CMess.yes.ToText(), CMess.no.ToText() });
+
+                if (result != 0) return;
+
+                Process.Start(new ProcessStartInfo
                 {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"{CMess.registrySuc.ToText()} {System.IO.Path.GetDirectoryName(Regresult.Item2)}.\n" +
-                    $"{CMess.setRegistry.ToText()}",
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{Regmessage}\"",
+                    UseShellExecute = true
+                });
+            }
+            else
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {Regmessage}",
                     new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {Regresult.Item2}", new[] { CMess.ok.ToText() });
-                }
             }
         }
+        private void UnregisterRegistry_Click(object sender, RoutedEventArgs e)
+        {
+            var (unRegresult, unRegmessage) = RegistryHelper.UnregisterRegistry();
+            if (unRegresult)
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    unRegmessage, new[] { CMess.ok.ToText() });
+            }
+            else
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {unRegmessage}",
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+
         private void btnAbout_Click(object sender, RoutedEventArgs e)
         {
             About about = new About();
-            about.ShowInTaskbar = true;
+            about.ShowInTaskbar = false;
+            about.Owner = this;
             about.Show();
         }
         #endregion
@@ -3456,7 +3796,8 @@ namespace CardEditor
         private void CommandBindingOpen_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             // e.CanExecute = true;
-            if (e.Command == Commands.CustomCommands.OpenDatabase ||
+            if (e.Command == Commands.CustomCommands.OpenArchive ||
+                e.Command == Commands.CustomCommands.OpenDatabase ||
                 e.Command == Commands.CustomCommands.OpenScript ||
                 e.Command == Commands.CustomCommands.OpenDeck ||
                 e.Command == Commands.CustomCommands.OpenBanList)
@@ -4021,12 +4362,13 @@ namespace CardEditor
 
         #endregion
 
-        #region Evvent
+        #region Event
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
         #endregion
 
     }

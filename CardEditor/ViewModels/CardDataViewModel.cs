@@ -4,16 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Data;
-using System.Xml.Linq;
-using System.Threading;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using CardEditor.Models;
-using CardEditor.Services;
 using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -97,8 +93,7 @@ namespace CardEditor.ViewModels
                 LoadSetCode(LanguageCode, Game),
                 LoadCategory(LanguageCode, Game),
                 LoadLinkArrow(LanguageCode),
-                LoadFlag(LanguageCode),
-                LoadSpecialCharacters(LanguageCode)
+                LoadFlag(LanguageCode)
                 // LoadImgStamp()
                 );
         }
@@ -553,48 +548,6 @@ namespace CardEditor.ViewModels
                         FlagItems.AddRange(tempList);
                     }
                 });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        private async Task LoadSpecialCharacters(string LanguageCode)
-        {
-            string speCharPath = Path.Combine(DataFolderPath, $@"CardData\Language\{LanguageCode}\SpecialCharacters.csv");
-            if (!File.Exists(speCharPath)) return;
-
-            try
-            {
-                SpecialCharacters.Clear();
-                var tempList = new List<CharacterItem>();
-                using (var stream = new FileStream(speCharPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true))
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    bool isFirstLine = true;
-                    string line;
-                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
-                    {
-                        line = line.Trim();
-                        if (string.IsNullOrEmpty(line)) continue;
-                        if (isFirstLine)
-                        {
-                            isFirstLine = false;
-                            continue;
-                        }
-                        var parts = line.Split(',');
-                        if (parts.Length >= 3)
-                        {
-                            tempList.Add(new CharacterItem
-                            {
-                                Character = parts[0].Trim(),
-                                Category = parts[1].Trim(),
-                                Description = parts[2].Trim()
-                            });
-                        }
-                    }
-                }
-                SpecialCharacters.AddRange(tempList);
             }
             catch (Exception ex)
             {

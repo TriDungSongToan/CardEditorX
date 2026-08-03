@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.Text.Json;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using LibGit2Sharp.Handlers;
+using System.ComponentModel;
 
 namespace CardEditor.Models.Settings
 {

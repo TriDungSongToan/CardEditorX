@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using CardEditor.Localization;
+using System.Diagnostics;
+using System.Configuration;
 using LibGit2Sharp;
-using CMess = CardEditor.Localization.Language;
+using CardEditor.Localization;
 using GitCommands = LibGit2Sharp.Commands;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Services
 {

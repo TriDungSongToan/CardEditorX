@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CardEditor.Services;
+using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Models
 {
@@ -41,12 +45,26 @@ namespace CardEditor.Models
         }
         public string FileName { get; set; } = string.Empty; // File Name With Extension 
         public string FilePath { get; set; } = string.Empty; // Absolute File Path
+        public string archiveFilePath;
+        public string archiveEntryName;
+
         public Dictionary<ulong, CardBanList> CardList { get; set; }
         public bool WhiteList { get; set; } = false;
         public Guid ID { get; set; } = Guid.NewGuid();
         public override string ToString()
         {
             return Name;
+        }
+
+        public async Task<(bool, string)> SaveToArchive(string targetSourcePath)
+        {
+            if (string.IsNullOrEmpty(archiveFilePath) || !System.IO.File.Exists(archiveFilePath) || string.IsNullOrEmpty(archiveEntryName))
+                return (true, string.Empty);
+
+            if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
+                return (false, CMess.fileNotExit.ToText());
+
+            return await LoadDataServices.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

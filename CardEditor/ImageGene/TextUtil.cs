@@ -1,11 +1,9 @@
 ﻿#pragma warning disable CS0618
 using System;
 using System.Linq;
-using System.Text;
-using SkiaSharp;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Diagnostics;
+using SkiaSharp;
 
 namespace CardEditor.ImageGene
 {

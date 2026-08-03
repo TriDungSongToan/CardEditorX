@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CardEditor.Localization;
+using System.Collections.Generic;
+using System.Diagnostics;
 using CardEditor.Models;
 using CardEditor.ViewModels;
+using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Services

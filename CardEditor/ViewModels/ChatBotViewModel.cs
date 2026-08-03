@@ -3,12 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Controls;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Reflection;
 using System.Data.SQLite;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -18,13 +14,10 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using CardEditor.Models;
-using CardEditor.Helpers;
 using CardEditor.Services;
-using CMess = CardEditor.Localization.Language;
-using System.Media;
 using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.ViewModels
 {

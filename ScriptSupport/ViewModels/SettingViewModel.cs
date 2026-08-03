@@ -234,7 +234,7 @@ namespace ScriptSupport.ViewModels
             {
                 Title = CMess.questi.ToText(),
                 IconType = MessageBoxIconType.Question,
-                Message = string.Format(CMess.confirmReload.ToText(), CMess.Setting.ToText()),
+                Message = string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReload.ToText(), CMess.Setting.ToText()),
                 Buttons = new[] { CMess.yes.ToText(), CMess.no.ToText() },
                 DefaultButtonIndex = 1,
                 ResponseSource = new TaskCompletionSource<int>()
@@ -267,7 +267,7 @@ namespace ScriptSupport.ViewModels
                     {
                         Title = CMess.notifi.ToText(),
                         IconType = MessageBoxIconType.Notification,
-                        Message = CMess.saveSettingSuc.ToText(),
+                        Message = string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()),
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     });

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
@@ -193,7 +193,8 @@ namespace CardEditor.Helpers
             if (isEnabled)
             {
                 textEditor.TextChanged -= TextEditor_TextChanged;
-                FoldingManager.Uninstall(foldingManager);
+                if (foldingManager != null)
+                    FoldingManager.Uninstall(foldingManager);
                 isEnabled = false;
             }
         }

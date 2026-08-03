@@ -2,19 +2,18 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Threading;
 using System.Threading.Tasks;
-using System.ComponentModel;
+using System.Diagnostics;
 using System.Collections.Generic;
 using CardEditor.Models;
 using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
-using System.Windows;
-using System.Diagnostics;
 
 namespace CardEditor.ViewModels
 {
@@ -146,7 +145,7 @@ namespace CardEditor.ViewModels
                 return (false, ex.Message);
             }
         }
-        public async Task<BanList> LoadFileBanList(string filePath)
+        public async Task<BanList> LoadFileBanList(string filePath, string archiveFilePath = null, string archiveEntryName = null)
         {
             if (!File.Exists(filePath)) return null;
 
@@ -156,7 +155,10 @@ namespace CardEditor.ViewModels
                 FileName = Path.GetFileName(filePath),
                 FilePath = filePath,
                 CardList = new Dictionary<ulong, CardBanList>(),
-                WhiteList = false
+                WhiteList = false,
+
+                archiveFilePath = archiveFilePath,
+                archiveEntryName = archiveEntryName
             };
 
             try
@@ -302,6 +304,8 @@ namespace CardEditor.ViewModels
                     banlistString.AppendLine($"{card.Id} {card.LimitedCount} --{card.Name}");
                 }
                 await writer.WriteLineAsync(banlistString.ToString()).ConfigureAwait(false);
+                var (resultArchi, messArchi) = await banList.SaveToArchive(filePath);
+                if (!resultArchi) return (false, messArchi);
 
                 await writer.FlushAsync().ConfigureAwait(false);
                 return (true, filePath);

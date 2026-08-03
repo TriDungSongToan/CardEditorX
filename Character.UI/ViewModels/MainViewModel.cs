@@ -286,7 +286,7 @@ namespace Character.UI.ViewModels
         {
             CharacterMetadata newMeta = new CharacterMetadata()
             {
-                Group = SelectedGroup != null ? SelectedGroup.Value : CharacterGroup.Other,
+                Group = SelectedGroup != null ? SelectedGroup.Value : CharacterGroup.All,
                 SubCategory = SubCategory,
                 Tags = SelectedAvailableTags.ToList()
             };
@@ -318,7 +318,7 @@ namespace Character.UI.ViewModels
             SelectedCharItem.Character = Character;
             SelectedCharItem.Description = Desc;
 
-            SelectedCharItem.Metadata.Group = SelectedGroup != null ? SelectedGroup.Value : CharacterGroup.Other;
+            SelectedCharItem.Metadata.Group = SelectedGroup != null ? SelectedGroup.Value : CharacterGroup.All;
             SelectedCharItem.Metadata.SubCategory = SubCategory;
             SelectedCharItem.Metadata.Tags = SelectedAvailableTags.ToList();
         }

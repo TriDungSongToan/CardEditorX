@@ -1,41 +1,24 @@
 ﻿using System;
 using System.IO;
-using System.Xml;
+using System.Web.UI.WebControls;
 using System.Linq;
 using System.Text;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Shapes;
-using System.Windows.Navigation;
+using System.Windows.Controls.Primitives;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Web.UI.WebControls;
-using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Folding;
+using System.ComponentModel;
 using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Rendering;
-using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using CardEditor.Tools;
 using CardEditor.Models;
-using CardEditor.Manager;
 using CardEditor.Helpers;
 using CardEditor.Services;
-using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using CardEditor.Abstract;
-using System.Windows.Controls.Primitives;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 
 namespace CardEditor.UserControls
 {
@@ -45,6 +28,38 @@ namespace CardEditor.UserControls
     public partial class CodeEditor : UserControl, INotifyPropertyChanged, IDisposable, ISaveable
     {
         #region Variable
+        private IMainWindowService MainWindowService;
+        private string _mainWindowTitle = string.Empty;
+        public string MainWindowTitle
+        {
+            get => _mainWindowTitle;
+            set
+            {
+                if (_mainWindowTitle != value)
+                {
+                    _mainWindowTitle = value;
+                    OnPropertyChanged(nameof(MainWindowTitle));
+                    if (MainWindowService == null) return;
+                    MainWindowService.UpdateWindowTitle(MainWindowTitle);
+                    string header = string.IsNullOrWhiteSpace(archiveFilePath)
+                        ? System.IO.Path.GetFileName(MainWindowTitle)
+                        : archiveEntryName;
+                    MainWindowService.UpdateTabItemHeader(header);
+                }
+            }
+        }
+        private void RebuildWindowTitle()
+        {
+            string display = string.Empty;
+            if (string.IsNullOrWhiteSpace(archiveFilePath))
+            {
+                if (!string.IsNullOrEmpty(luaFilePath)) display = luaFilePath;
+            }
+            else display = Path.Combine(archiveFilePath, archiveEntryName.Replace('/', Path.DirectorySeparatorChar));
+
+            MainWindowTitle = display;
+        }
+
         private bool _isSaved = true;
         public bool IsSaved
         {
@@ -55,6 +70,7 @@ namespace CardEditor.UserControls
                 {
                     _isSaved = value;
                     OnPropertyChanged(nameof(IsSaved));
+                    UpdateWindowSavedFlag();
                 }
             }
         }
@@ -106,6 +122,9 @@ namespace CardEditor.UserControls
 
         public string luaFilePath { get; set; }
         public string luaFileName { get; set; }
+        public string archiveFilePath;
+        public string archiveEntryName;
+
         private TextDocument _sharedDocument;
         public TextDocument SharedDocument
         {
@@ -133,6 +152,10 @@ namespace CardEditor.UserControls
             codePaneTop.DataContext = this;
             codePaneBottom.DataContext = this;
         }
+        public CodeEditor(IMainWindowService service) : this()
+        {
+            MainWindowService = service;
+        }
         #endregion
 
         #region Load
@@ -152,7 +175,7 @@ namespace CardEditor.UserControls
                 SelectedNewLineOption = 0;
             else SelectedNewLineOption = 1;
 
-            await LoadLuaFile();
+            // await LoadLuaFile();
 
             UpdateThumbPosition();
         }
@@ -192,32 +215,33 @@ namespace CardEditor.UserControls
         }
         public async Task LoadLuaFile()
         {
-            if (!string.IsNullOrWhiteSpace(luaFilePath) && File.Exists(luaFilePath))
+            if (string.IsNullOrWhiteSpace(luaFilePath) || !System.IO.File.Exists(luaFilePath)) return;
+            Debug.WriteLine($"Lua File path: {luaFilePath}");
+            try
             {
-                
-                try
+                string text = string.Empty;
+                using (var stream = new FileStream(luaFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true))
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
                 {
-                    string text = string.Empty;
-                    using (var stream = new FileStream(luaFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true))
-                    using (var reader = new StreamReader(stream, Encoding.UTF8))
-                    {
-                        text = await reader.ReadToEndAsync();
-                    }
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        SharedDocument.Text = text;
-                    });
-                    codePaneTop.ResetSavedMarker();
-                    codePaneBottom.ResetSavedMarker();
+                    text = await reader.ReadToEndAsync();
                 }
-                catch (Exception ex)
+                await Dispatcher.InvokeAsync(() =>
                 {
-                    throw new IOException($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}");
-                }
-                finally
-                {
-                    IsSaved = true;
-                }
+                    SharedDocument.Text = text;
+                });
+                codePaneTop.ResetSavedMarker();
+                codePaneBottom.ResetSavedMarker();
+
+                RebuildWindowTitle();
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            finally
+            {
+                IsSaved = true;
             }
         }
         #endregion
@@ -234,15 +258,11 @@ namespace CardEditor.UserControls
 
                     if (!string.IsNullOrEmpty(filePath)) tempPath = filePath;
                     else return false;
+
+                    UpdateWindowTitle(filePath);
                 }
                 else tempPath = luaFilePath;
-                if (await SaveCodeCommand(tempPath))
-                {
-                    codePaneTop.MarkAsSaved();
-                    codePaneBottom.MarkAsSaved();
-                    return true;
-                }
-                else return false;
+                return await SaveCodeCommand(tempPath);
             }
             catch
             {
@@ -277,9 +297,17 @@ namespace CardEditor.UserControls
                     writer.NewLine = GetNewLineString(SelectedNewLineOption);
                     await writer.WriteAsync(SharedDocument.Text);
                 }
+                var (resultArchi, messArchi) = await SaveToArchive(filePath);
+                if (!resultArchi)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
+                    return false;
+                }
+
                 IsSaved = true;
                 codePaneTop.MarkAsSaved();
                 codePaneBottom.MarkAsSaved();
+                RebuildWindowTitle();
                 return true;
             }
             catch (Exception ex)
@@ -288,6 +316,16 @@ namespace CardEditor.UserControls
                     $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Script.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
                 return false;
             }
+        }
+        public async Task<(bool, string)> SaveToArchive(string targetSourcePath)
+        {
+            if (string.IsNullOrEmpty(archiveFilePath) || !System.IO.File.Exists(archiveFilePath) || string.IsNullOrEmpty(archiveEntryName))
+                return (true, string.Empty);
+
+            if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
+                return (false, CMess.fileNotExit.ToText());
+
+            return await LoadDataServices.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
         }
 
         private string ConvertLineEndings(string text, int newLineOption)
@@ -484,6 +522,23 @@ namespace CardEditor.UserControls
                         SharedDocument.Replace(line.Offset, line.Length, newLeadingPart + remainingPart);
                     }
                 }
+            }
+        }
+
+        private void UpdateWindowTitle(string tempPath = null)
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowTitle(string.IsNullOrEmpty(tempPath) ? luaFilePath : tempPath);
+                MainWindowService.UpdateTabItemHeader(string.IsNullOrEmpty(tempPath) ? luaFileName : System.IO.Path.GetFileName(tempPath));
+                MainWindowTitle = string.IsNullOrEmpty(tempPath) ? luaFilePath : tempPath;
+            }
+        }
+        private void UpdateWindowSavedFlag()
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowSavedFlag(IsSaved);
             }
         }
         #endregion

@@ -1,13 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using CardEditor.Models;
-using CardEditor.Localization;
-
-namespace CardEditor.Services
+﻿namespace CardEditor.Services
 {
     public static class PropertiesSettingService
     {

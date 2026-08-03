@@ -8,6 +8,24 @@ namespace CardEditor.Helpers
     public static class FileDiaLogHelper
     {
         #region Open
+        public static string OpenCardPack()
+        {
+            CommonOpenFileDialog openFileDialog = new CommonOpenFileDialog()
+            {
+                Title = $"{CMess.Open.ToText()} {CMess.CardArchive.ToText()}",
+                EnsureFileExists = true,
+                EnsurePathExists = true,
+                Multiselect = false,
+            };
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardArchive.ToText())} (*.ypk; *.zip; *.rar)", "*.ypk;*.zip;*.rar"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            else return string.Empty;
+        }
         public static string OpenCardList()
         {
             CommonOpenFileDialog openFileDialog = new CommonOpenFileDialog()
@@ -549,7 +567,7 @@ namespace CardEditor.Helpers
                 EnsurePathExists = true,
                 OverwritePrompt = true,
             };
-            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())} (*.xlsx)", "*.xlsx"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
             int allFilesIndex = saveFileDialog.Filters.Count;
 

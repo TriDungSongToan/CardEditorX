@@ -4,6 +4,8 @@ using ScriptSupport.Stores;
 using ScriptSupport.Interfaces;
 using ScriptSupport.Models;
 using ScriptSupport.Helpers;
+using ScriptSupport.Localization;
+using CMess = ScriptSupport.Localization.Language;
 
 namespace ScriptSupport.Services
 {
@@ -18,7 +20,7 @@ namespace ScriptSupport.Services
         public (bool, string) OpenWeb(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
-                return (false, "URL is null or empty.");
+                return (false, string.Format(CMess.PlaceholderInva.ToText(), "URL"));
 
             string? browser = _configStore.UserSetting?.BrowserPath;
 

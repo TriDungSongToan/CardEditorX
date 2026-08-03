@@ -615,8 +615,8 @@
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Column="0" Height="43"
-                                     Padding="10,12,3,0" BorderThickness="0.7" IsReadOnly="True"
+                            <TextBox x:Name="txtReplaceFieldFilePath" Grid.Column="0" Height="43"
+                                     Padding="10,12,3,0" BorderThickness="0.7"
                                      Text="{Binding ReplaceFieldFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -760,8 +760,8 @@
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Column="0" Height="43"
-                                     Padding="10,12,3,0" BorderThickness="0.7" IsReadOnly="True"
+                            <TextBox x:Name="txtImportDataFilePath" Grid.Column="0" Height="43"
+                                     Padding="10,12,3,0" BorderThickness="0.7"
                                      Text="{Binding ImportDataFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1538,7 +1538,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBox Grid.Column="0" Width="80" Height="39"
+                                    <TextBox x:Name="txtIdText" Grid.Column="0" Width="80" Height="39"
                                              Padding="8,10,3,0" BorderThickness="0.7"
                                              Text="{Binding IdText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1559,7 +1559,7 @@
                                              materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                              materialDesign:ThemeAssist.Theme="Dark" />
 
-                                    <TextBox Grid.Column="2" Height="39"
+                                    <TextBox x:Name="txtCreditName" Grid.Column="2" Height="39"
                                              Padding="8,10,3,0" BorderThickness="0.7"
                                              Text="{Binding CreditName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1588,7 +1588,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBox Grid.Column="0" Height="39"
+                                    <TextBox x:Name="txtCreditHeader" Grid.Column="0" Height="39"
                                              Padding="8,10,3,0" BorderThickness="0.7"
                                              Text="{Binding CreditHeader, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1609,7 +1609,7 @@
                                              materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                              materialDesign:ThemeAssist.Theme="Dark" />
 
-                                    <TextBox Grid.Column="2" Height="39"
+                                    <TextBox x:Name="txtCreditFooter" Grid.Column="2" Height="39"
                                              Padding="8,10,3,0" BorderThickness="0.7"
                                              Text="{Binding CreditFooter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1637,7 +1637,7 @@
                         </Grid>
 
                         <Grid Grid.Row="4" >
-                            <TextBox Padding="6,14,6,0" BorderThickness="0.7"
+                            <TextBox x:Name="txtCreditDesc" Padding="6,14,6,0" BorderThickness="0.7"
                                      TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"
                                      Text="{Binding CreditDesc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using CardEditor.Collections;
-using CardEditor.Commands;
+using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using CardEditor.Models;
+using CardEditor.Commands;
+using CardEditor.Collections;
 
 namespace CardEditor.Views
 {
@@ -24,84 +17,127 @@ namespace CardEditor.Views
     /// </summary>
     public partial class SelectFileWindow : Window, INotifyPropertyChanged
     {
-        private readonly string _rootFolder1;
-        private readonly string _rootFolder2;
-        private readonly IReadOnlyList<string> _absolutePaths;
-        public string ResultPath { get; private set; }
+        #region Property
+        private readonly IReadOnlyList<(string fullPath, string archiveFilePath, string archiveEntryName)> _entries;
+        public List<CardEditor.Models.FileItem> Result { get; private set; } = new();
 
-        private BulkObservableCollection<CardEditor.Models.FileItem> _fileLists;
-        public BulkObservableCollection<CardEditor.Models.FileItem> FileLists
+        public BulkObservableCollection<CardEditor.Models.FileItem> FileList { get; set; } = new();
+        private BulkObservableCollection<CardEditor.Models.FileItem> _selectedFiles = new();
+        public BulkObservableCollection<CardEditor.Models.FileItem> SelectedFiles
         {
-            get => _fileLists;
+            get => _selectedFiles;
             set
             {
-               if (!ReferenceEquals(_fileLists, value))
+                if (!ReferenceEquals(_selectedFiles, value))
                 {
-                    _fileLists = value ?? new BulkObservableCollection<Models.FileItem>();
-                    OnPropertyChanged(nameof(FileLists));
+                    if (_selectedFiles != null) _selectedFiles.CollectionChanged -= SelectedFiles_CollectionChanged;
+                    _selectedFiles = value ?? new BulkObservableCollection<FileItem>();
+                    _selectedFiles.CollectionChanged += SelectedFiles_CollectionChanged;
+                    OnPropertyChanged(nameof(SelectedFiles));
                 }
             }
         }
-        private CardEditor.Models.FileItem _selectedFile;
-        public CardEditor.Models.FileItem SelectedFile
-        {
-            get => _selectedFile;
-            set
-            {
-                if (!ReferenceEquals(_selectedFile, value))
-                {
-                    _selectedFile = value;
-                    OnPropertyChanged(nameof(SelectedFile));
-                    SelectCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-        public RelayCommand SelectCommand { get; set; }
+        #endregion
+
+        #region Commands
+        public RelayCommand OpenCommand { get; set; }
+        public RelayCommand OpenAllCommand { get; set; }
         public RelayCommand CancelCommand { get; set; }
+        #endregion
 
-        public SelectFileWindow(IReadOnlyList<string> filePaths, string RootFolder1, string RootFolder2 = null)
+        #region Constructor
+        public SelectFileWindow(IReadOnlyList<string> filePaths)
+            : this(filePaths?.Select(p => (p, (string)null, (string)null)).ToList()) { }
+        public SelectFileWindow(IReadOnlyList<(string fullPath, string archiveFilePath, string archiveEntryName)> fileEntries)
         {
-            _absolutePaths = filePaths;
-            _rootFolder1 = RootFolder1;
-            _rootFolder2 = RootFolder2;
-
-            FileLists = new BulkObservableCollection<Models.FileItem>();
-            SelectCommand = new CardEditor.Commands.RelayCommand(_ => SelectFileCommand(), _ => SelectedFile != null);
-            CancelCommand = new CardEditor.Commands.RelayCommand(_ => CancelFileCommand());
-
             InitializeComponent();
             this.DataContext = this;
+
+            _entries = fileEntries ?? Array.Empty<(string, string, string)>();
+
+            InitializeCommand();
+            InitializeEvent();
 
             LoadData();
         }
 
+        private void InitializeCommand()
+        {
+            OpenCommand = new CardEditor.Commands.RelayCommand(_ => OpenFileCommand(), _ => CanOpenFileCommand());
+            OpenAllCommand = new CardEditor.Commands.RelayCommand(_ => OpenAllFileCommand(), _ => CanOpenAllFileCommand());
+            CancelCommand = new CardEditor.Commands.RelayCommand(_ => CancelFileCommand());
+        }
+        private void InitializeEvent()
+        {
+            FileList.CollectionChanged += FileList_CollectionChanged;
+            _selectedFiles.CollectionChanged += SelectedFiles_CollectionChanged;
+        }
+        #endregion
+
+        #region Load
         private void LoadData()
         {
-            List<CardEditor.Models.FileItem> items = new List<Models.FileItem>()
-            {
-                new CardEditor.Models.FileItem(_rootFolder1, string.Empty, _rootFolder2)
-            };
-
-            foreach (var path in _absolutePaths)
-            {
-                items.Add(new CardEditor.Models.FileItem(_rootFolder1, path, _rootFolder2));
-            }
-            FileLists.AddRange(items);
+            var items = _entries
+                .Select(e => new CardEditor.Models.FileItem(e.fullPath, e.archiveFilePath, e.archiveEntryName))
+                .ToList();
+            FileList.AddRange(items);
         }
+        #endregion
 
-        private void SelectFileCommand()
+        #region Command Functions
+        private void OpenFileCommand()
         {
-            if (SelectedFile == null) return;
-            ResultPath = SelectedFile.FullPath;
+            Result.Clear();
+            Result.AddRange(SelectedFiles);
             DialogResult = true;
             this.Close();
         }
+        private bool CanOpenFileCommand()
+        {
+            return SelectedFiles != null && SelectedFiles.Count > 0;
+        }
+        private void OpenAllFileCommand()
+        {
+            Result.Clear();
+            Result.AddRange(FileList);
+            DialogResult = true;
+            this.Close();
+        }
+        private bool CanOpenAllFileCommand()
+        {
+            return FileList!= null && FileList.Count > 0;
+        }
         private void CancelFileCommand()
         {
-            ResultPath = string.Empty;
+            Result.Clear();
             DialogResult = false;
             this.Close();
         }
+        #endregion
+
+        #region Event
+        private void FileList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OpenAllCommand?.RaiseCanExecuteChanged();
+        }
+        private void SelectedFiles_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            OpenCommand?.RaiseCanExecuteChanged();
+        }
+
+        private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is CardEditor.Models.FileItem item)
+            {
+                // Double-click luôn ưu tiên item được click, bỏ qua SelectedFiles hiện tại
+                // (kể cả khi user đang multi-select item khác)
+                Result.Clear();
+                Result.Add(item);
+                DialogResult = true;
+                this.Close();
+            }
+        }
+
         private void blHeader_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -114,5 +150,7 @@ namespace CardEditor.Views
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        #endregion
+
     }
 }

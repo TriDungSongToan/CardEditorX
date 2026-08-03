@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Windows.Input;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+﻿using System.Windows.Input;
 
 namespace CardEditor.Commands
 {
@@ -14,6 +9,7 @@ namespace CardEditor.Commands
         public static readonly RoutedCommand NewScript = new RoutedCommand("NewScript", typeof(CustomCommands));
         public static readonly RoutedCommand NewBanList = new RoutedCommand("NewBanList", typeof(CustomCommands));
 
+        public static readonly RoutedCommand OpenArchive = new RoutedCommand("OpenArchive", typeof(CustomCommands));
         public static readonly RoutedCommand OpenDatabase = new RoutedCommand("OpenDatabase", typeof(CustomCommands));
         public static readonly RoutedCommand OpenDeck = new RoutedCommand("OpenDeck", typeof(CustomCommands));
         public static readonly RoutedCommand OpenScript = new RoutedCommand("OpenScript", typeof(CustomCommands));

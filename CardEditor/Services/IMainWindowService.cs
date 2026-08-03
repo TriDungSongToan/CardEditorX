@@ -1,9 +1,5 @@
-﻿using CardEditor.Models;
-using System;
+﻿using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CardEditor.Services
 {
@@ -13,14 +9,14 @@ namespace CardEditor.Services
     }
     public interface IMainWindowService
     {
-        (bool, string) SelectFileToOpen(IReadOnlyList<string> listFilePath, string rootFolder1, string rootFolder2 = null);
+        (bool, List<CardEditor.Models.FileItem>) SelectFileToOpen(IReadOnlyList<(string fullPath, string archiveFilePath, string archiveEntryName)> entries);
 
         Task OpenDataEditorTab(IEnumerable<string> filePaths, ulong id);
         Task OpenDataEditorTab(string filePath, ulong id);
         Task OpenDataEditorTab(ulong id);
 
         Task OpenCodeEditorTab(IEnumerable<string> filePaths);
-        Task OpenCodeEditorTab(string filePath);
+        Task OpenCodeEditorTab(string filePath, string archiveFilePath = null, string archiveEntryName = null);
         Task OpenCodeEditorTab(ulong id);
 
         void OpenFinterSetting();
@@ -29,6 +25,8 @@ namespace CardEditor.Services
         void OpenFileLocation(string ImageUrl);
 
         void UpdateWindowTitle(string title);
+        void UpdateWindowSavedFlag(bool isSaved);
+
         void UpdateTabItemHeader(string title);
 
         void ImportDataCreateNewDataEdit(IEnumerable<CardEditor.Models.Card> importedCards);

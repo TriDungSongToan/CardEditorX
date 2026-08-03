@@ -99,7 +99,7 @@
       <Value Profile="(Default)">User</Value>
     </Setting>
     <Setting Name="ButtonChat" Type="System.String" Scope="User">
-      <Value Profile="(Default)">45,45</Value>
+      <Value Profile="(Default)">2,2</Value>
     </Setting>
     <Setting Name="FlowDirectionC" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>

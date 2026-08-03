@@ -1,9 +1,8 @@
 ﻿#nullable enable
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 
@@ -74,8 +73,8 @@ namespace CardEditor.Models
 
     public class PenScale
     {
-        public int LeftScale { get; set; }
-        public int RightScale { get; set; }
+        public int LeftScale { get; set; } = 0;
+        public int RightScale { get; set; } = 0;
     }
 
     public class PenDescProcessSummary

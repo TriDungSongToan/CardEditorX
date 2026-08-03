@@ -266,7 +266,7 @@
 0x36b	Đường dẫn tệp thay thế
 0x36c	Thêm Thẻ mới
 
-0x36d	Import dữ liệu
+0x36d	Nhập dữ liệu
 0x36e	Đường dẫn tệp Import
 0x36f	Chọn các trường để ghi đè
 
@@ -352,6 +352,8 @@
 0x540	Mở thẻ trên trang web Yugipedia
 0x541	Mở thẻ trên trang web YGO Resources
 
+0x545	Chọn Tệp để mở:
+
 0x54a	Thẻ phải đáp ứng tất cả các điều kiện lọc.
 0x54b	Thẻ chỉ cần đáp ứng một trong các điều kiện lọc.
 0x54c	Áp dụng AND giữa các nhóm và OR trong từng nhóm.
@@ -366,27 +368,28 @@
 0x5a2	Lưu {0}
 0x5a3	Chọn {0}
 
-0x5a4	Cơ Sở Dữ Liệu Thẻ
-0x5a5	Cơ Sở Dữ Liệu Thẻ Hiếm
-0x5a6	Cơ Sở Dữ Liệu Độ Hiếm
-0x5a7	Cơ Sở Dữ Liệu Genesys
-0x5a8	Cơ Sở Dữ Liệu Credit
-0x5a9	Tập lệnh Thẻ
-0x5aa	Tập lệnh
-0x5ab	Hình Ảnh
-0x5ac	Ceds
-0x5ad	Bộ Bài
-0x5ae	Danh sách cấm
-0x5af	Tài liệu văn bản
-0x5b0	Markdown
-0x5b1	Nhật ký
-0x5b2	YAML
-0x5b3	Zip
-0x5b4	Excel
-0x5b5	Video
-0x5b6	Tất cả
-0x5b7	Không xác định
-0x5b8	Thư mục
+0x5a4	Kho Lưu Trữ Thẻ
+0x5a5	Cơ Sở Dữ Liệu Thẻ
+0x5a6	Cơ Sở Dữ Liệu Thẻ Hiếm
+0x5a7	Cơ Sở Dữ Liệu Độ Hiếm
+0x5a8	Cơ Sở Dữ Liệu Genesys
+0x5a9	Cơ Sở Dữ Liệu Credit
+0x5aa	Tập lệnh Thẻ
+0x5ab	Tập lệnh
+0x5ac	Hình Ảnh
+0x5ad	Ceds
+0x5ae	Bộ Bài
+0x5af	Danh sách cấm
+0x5b0	Tài liệu văn bản
+0x5b1	Markdown
+0x5b2	Nhật ký
+0x5b3	YAML
+0x5b4	Zip
+0x5b5	Excel
+0x5b6	Video
+0x5b7	Tất cả
+0x5b8	Không xác định
+0x5b9	Thư mục
 
 0x5ba	Đường dẫn
 0x5bb	Định dạng
@@ -473,8 +476,8 @@
 0x63b	Lỗi {0} {1} {2} {3}:
 
 0x63c	{0} không hợp lệ:
-0x63d	{0} {1} không hợp lệ:
-0x63e	{0} {1} {2} không hợp lệ:
+0x63d	{1} {0} không hợp lệ:
+0x63e	{2} {1} {0} không hợp lệ:
 
 0x63f	Quá trình này đã bị hủy bỏ theo yêu cầu.
 0x640	Đã xảy ra lỗi nghiêm trọng; mọi thay đổi đã được hoàn tác.
@@ -529,8 +532,12 @@
 
 0x6a1	Tệp Zip đã được xuất thành công tại:
 0x6a2	Tệp Excel đã được xuất thành công tại:
-0x6a3	Khóa đăng ký đã được tạo thành công tại:
-0x6a4	Nhấp đúp vào tệp này để thiết lập Khóa đăng ký.
+0x6a3	Tệp Khóa đăng ký (.reg) đã được tạo thành công tại:
+0x6a4	Tệp này sẽ đăng ký CardEditorX làm trình xử lý cho các loại tệp sau:
+0x6a5	Mở trực tiếp khi double-click:
+0x6a6	Xuất hiện trong menu Open With:
+0x6a7	Nhấp đúp vào tệp để áp dụng. Windows sẽ yêu cầu xác nhận trước khi ghi vào Registry.
+0x6a8	Hủy đăng ký Registry thành công!
 
 0x6aa	Trích xuất dữ liệu hàm thành công!
 0x6ab	Trích xuất dữ liệu hằng số thành công!
@@ -568,11 +575,12 @@
 0x70c	Bạn có chắc chắn muốn khôi phục cài đặt mặc định không? Mọi thay đổi sẽ bị mất.
 0x70d	Bạn có chắc chắn muốn xóa lịch sử {0} đã mở gần đây không?
 0x70e	Bạn có chắc chắn muốn lưu tệp trống?
-0x70f	Đã có bản cập nhật, tải xuống ngay?
-0x710	Nguồn dữ liệu bị thiếu hoặc không hợp lệ, hãy tải xuống ngay?
-0x711	Bạn muốn xử lý dữ liệu đã chọn như thế nào?
-0x712	Không tìm thấy bản cập nhật nào.
-0x713	Cập nhật hoàn tất!
+0x70f	Bạn có chắc chắn muốn hủy đăng ký các loại tệp CardEditorX khỏi Registry của Windows không?
+0x710	Đã có bản cập nhật, tải xuống ngay?
+0x711	Nguồn dữ liệu bị thiếu hoặc không hợp lệ, hãy tải xuống ngay?
+0x712	Bạn muốn xử lý dữ liệu đã chọn như thế nào?
+0x713	Không tìm thấy bản cập nhật nào.
+0x714	Cập nhật hoàn tất!
 
 0x725	Không thể xóa tệp hiện có sau nhiều lần thử.
 0x726	Không tìm thấy đường dẫn git.exe, hãy đảm bảo Git được cài đặt và sử dụng đường dẫn chính xác trong cấu hình ứng dụng.

@@ -389,6 +389,8 @@ namespace CardEditor.Localization
         toolOpenYugipedia = 0x540,      //Open Card in Yugipedia Website
         toolOpenYGOResources = 0x541,   //Open Card in YGO Resources Website
 
+        selectOpenFile = 0x545,         //Select File to Open:
+
         toolPureAND = 0x54a,    //The card must satisfy all filter conditions.
         toolPureOR = 0x54b,     //The card only needs to satisfy any one of the filter conditions.
         toolMixedANDOR = 0x54c, //Applies AND between groups and OR within each group.
@@ -405,27 +407,28 @@ namespace CardEditor.Localization
         PlaceholderSave = 0x5a2,    //Save {0}
         PlaceholderSelect = 0x5a3,  //Select {0}
 
-        CardDB = 0x5a4,     //Card Database
-        CardRareDB = 0x5a5, //Card Rare Database
-        ListRareDB = 0x5a6, //List Rare Database
-        GenesysDB = 0x5a7,  //Genesys Card Database
-        CreditDB = 0x5a8,   //Credit Database
-        CardScript = 0x5a9, //Card Script
-        Script = 0x5aa,     //Script
-        Image = 0x5ab,      //Image
-        Ceds = 0x5ac,       //Ceds
-        Deck = 0x5ad,       //Deck
-        BanList = 0x5ae,    //Banlist
-        Text = 0x5af,       //Text Documents
-        Md = 0x5b0,         //Markdown
-        Log = 0x5b1,        //Log
-        Yaml = 0x5b2,       //YAML
-        Zip = 0x5b3,        //Zip
-        Excel = 0x5b4,      //Excel
-        Video = 0x5b5,      //Video
-        All = 0x5b6,        //All
-        UnknownFile = 0x5b7,//Unknown
-        Folder = 0x5b8,     //Folder
+        CardArchive = 0x5a4,//Card Archive
+        CardDB = 0x5a5,     //Card Database
+        CardRareDB = 0x5a6, //Card Rare Database
+        ListRareDB = 0x5a7, //List Rare Database
+        GenesysDB = 0x5a8,  //Genesys Card Database
+        CreditDB = 0x5a9,   //Credit Database
+        CardScript = 0x5aa, //Card Script
+        Script = 0x5ab,     //Script
+        Image = 0x5ac,      //Image
+        Ceds = 0x5ad,       //Ceds
+        Deck = 0x5ae,       //Deck
+        BanList = 0x5af,    //Banlist
+        Text = 0x5b0,       //Text Documents
+        Md = 0x5b1,         //Markdown
+        Log = 0x5b2,        //Log
+        Yaml = 0x5b3,       //YAML
+        Zip = 0x5b4,        //Zip
+        Excel = 0x5b5,      //Excel
+        Video = 0x5b6,      //Video
+        All = 0x5b7,        //All
+        UnknownFile = 0x5b8,//Unknown
+        Folder = 0x5b9,     //Folder
 
         Path = 0x5ba,       //Path
         Format = 0x5bb,     //Format
@@ -500,7 +503,7 @@ namespace CardEditor.Localization
 
         dataSourceErr = 0x62a,      //Data Source Error
         dataSourceMiss = 0x62b,     //Data source is missing or does not exist, Check Update and restart application.
-        errorOcc = 0x62c,           //An error has occurred
+        errorOcc = 0x62c,           //An error has occurred:
 
         TwoPlaceholder = 0x631,     //{0} {1}:
         ThreePlaceholder = 0x632,   //{0} {1} {2}:
@@ -572,8 +575,12 @@ namespace CardEditor.Localization
 
         expoZIPSuc = 0x6a1,     //Zip file exported successfully at:
         expoExcelSuc = 0x6a2,   //Excel file exported successfully at:
-        registrySuc = 0x6a3,    //Registry Key created successfully at:
-        setRegistry = 0x6a4,    //Double Click this file to set Registry Key.
+        registrySuc = 0x6a3,    //Registry Key File (.reg) created successfully at:
+        registryType = 0x6a4,   //This file registers CardEditorX as a handler for the following file types:
+        openDirectly = 0x6a5,   //Opens directly on double-click:
+        openWithOnly = 0x6a6,   //Appears in Open With menu:
+        setRegistry = 0x6a7,    //Double-click it to apply — Windows will ask for confirmation before writing to the Registry.
+        unRegistrySuc = 0x6a8,  //Unregister Registry successfully!
 
         expoFunSuc = 0x6aa,     //Extract functions data successfully!
         expoConsSuc = 0x6ab,    //Extract constants data successfully!
@@ -612,11 +619,12 @@ namespace CardEditor.Localization
         confirmResetSetting = 0x70c,    //Are you sure you want to reset settings to default? All changes will be lost.
         confirmClearHistory = 0x70d,    //Are you sure you want to clear the recently opened {0} history?
         confirmSaveBlank = 0x70e,       //Are you sure you want to save a blank file?
-        quesDownloadUpdate = 0x70f,     //Update Available, dowload it now?
-        quesDownloadCardData = 0x710,   //Data source is missing or invalid, download now?
-        confirmWriteData = 0x711,       //How would you like to handle the selected data?
-        noUpdate = 0x712,               //No updates found.
-        updateCompe = 0x713,            //Update Complete!
+        confirmUnregisterReg = 0x70f,   //Are you sure you want to unregister the CardEditorX file types from the Windows Registry?
+        quesDownloadUpdate = 0x710,     //Update Available, dowload it now?
+        quesDownloadCardData = 0x711,   //Data source is missing or invalid, download now?
+        confirmWriteData = 0x712,       //How would you like to handle the selected data?
+        noUpdate = 0x713,               //No updates found.
+        updateCompe = 0x714,            //Update Complete!
 
         unableDelete = 0x725,           //Unable to delete existing file after multiple attempts.
         gitNotFound = 0x726,            //git.exe path not found, make sure Git is installed and using correct path in application configuration.
@@ -742,21 +750,5 @@ namespace CardEditor.Localization
         //errorImport = 0x53b,        //Error importing data:
         //errorDownload = 0x53c,      //Error downloading data:
         //errorUpdate = 0x53d,        //Error updating data:
-    }
-
-    public static class LanguageExtensions
-    {
-        // Phương thức mở rộng thông thường thay vì toán tử chuyển đổi
-        public static string ToText(this Language language)
-        {
-            return LanguageManager.GetText((uint)language);
-        }
-    }
-    public static class UIntExtensions
-    {
-        public static string ToLanguageString(this uint code)
-        {
-            return LanguageManager.GetText(code);
-        }
     }
 }

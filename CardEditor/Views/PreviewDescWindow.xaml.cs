@@ -7,8 +7,10 @@ using MaterialDesignThemes.Wpf;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Commands;
-using CardEditor.Localization;
+using CardEditor.Services;
 using CardEditor.ViewModels;
+using CardEditor.Localization;
+
 using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Views
@@ -278,6 +280,21 @@ namespace CardEditor.Views
             RightScale = scale.RightScale;
 
             CardDescription = BuildCardDesc();
+        }
+        #endregion
+
+        #region Load
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            InitializeContentMenu();
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtLeftScale);
+            ControlContextMenuService.Attach(txtRightScale);
+            ControlContextMenuService.Attach(txtPendulumEffect);
+            ControlContextMenuService.Attach(txtMonsterEffect);
+            ControlContextMenuService.Attach(txtCardDescription);
         }
         #endregion
 

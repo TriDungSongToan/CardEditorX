@@ -1,39 +1,24 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 using System.ComponentModel;
-using CardEditor.Helpers;
 using CardEditor.Localization;
-using CardEditor.Models;
-using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Models
 {
     public class FileItem : INotifyPropertyChanged
     {
-        private readonly string _rootFolder1;
-        private readonly string _rootFolder2;
-        private string _fullPath;
-        public string FullPath
-        {
-            get => _fullPath;
-            set
-            {
-                if (_fullPath != value)
-                {
-                    _fullPath = value;
-                    OnPropertyChanged(nameof(FullPath));
-                    UpdateDisplayName();
-                }
-            }
-        }
-        private string _displayName;
+        public string FullPath { get; }          // physical path (Temp nếu từ archive)
+        public string ArchiveFilePath { get; }    // null nếu là file độc lập
+        public string ArchiveEntryName { get; }   // FullName của entry trong archive, null nếu là file độc lập
+
+        public bool IsArchiveEntry => !string.IsNullOrEmpty(ArchiveFilePath);
+
+        private string _displayName = string.Empty;
         public string DisplayName
         {
             get => _displayName;
-            private set
+            set
             {
                 if (_displayName != value)
                 {
@@ -42,42 +27,80 @@ namespace CardEditor.Models
                 }
             }
         }
-
-        public FileItem(string FullPath, string RootFolder1, string RootFolder2 = null)
+        private string _primaryText = string.Empty;
+        public string PrimaryText
         {
-            _rootFolder1 = NormalizeRoot(RootFolder1);
-            _rootFolder2 = string.IsNullOrWhiteSpace(RootFolder2) ? null : NormalizeRoot(RootFolder2);
-            _fullPath = FullPath;
+            get => _primaryText;
+            set
+            {
+                if (_primaryText != value)
+                {
+                    _primaryText = value;
+                    OnPropertyChanged(nameof(PrimaryText));
+                }
+            }
         }
-        private void UpdateDisplayName()
+        private string _secondaryText = string.Empty;
+        public string SecondaryText
         {
-            if (string.IsNullOrWhiteSpace(FullPath))
+            get => _secondaryText;
+            set
             {
-                DisplayName = string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText());
-                return;
+                if (_secondaryText != value)
+                {
+                    _secondaryText = value;
+                    OnPropertyChanged(nameof(SecondaryText));
+                }
             }
-            if (!File.Exists(FullPath))
+        }
+        private string _tooltipText = string.Empty;
+        public string TooltipText
+        {
+            get => _tooltipText;
+            set
             {
-                DisplayName = CardEditor.Localization.Language.fileNotExit.ToText();
+                if (_tooltipText != value)
+                {
+                    _tooltipText = value;
+                    OnPropertyChanged(nameof(TooltipText));
+                }
+            }
+        }
+
+        public FileItem(string fullPath, string archiveFilePath = null, string archiveEntryName = null)
+        {
+            FullPath = fullPath;
+            ArchiveFilePath = archiveFilePath;
+            ArchiveEntryName = archiveEntryName;
+            Build();
+        }
+
+        private void Build()
+        {
+            if (IsArchiveEntry)
+            {
+                PrimaryText = string.IsNullOrEmpty(ArchiveEntryName)
+                    ? Path.GetFileName(FullPath)
+                    : ArchiveEntryName.Replace('/', Path.DirectorySeparatorChar);
+                SecondaryText = ArchiveFilePath;
+                TooltipText = $"{ArchiveFilePath}  ›  {ArchiveEntryName}";
+                DisplayName = PrimaryText;
                 return;
             }
 
-            string normalizedFull = Path.GetFullPath(FullPath);
-            if (normalizedFull.StartsWith(_rootFolder1, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(FullPath) || !File.Exists(FullPath))
             {
-                DisplayName = FilePathHelper.GetRelativePath(_rootFolder1, normalizedFull);
+                PrimaryText = CardEditor.Localization.Language.fileNotExit.ToText();
+                SecondaryText = FullPath ?? string.Empty;
+                TooltipText = SecondaryText;
+                DisplayName = PrimaryText;
                 return;
             }
-            if (_rootFolder2 != null && normalizedFull.StartsWith(_rootFolder2, StringComparison.OrdinalIgnoreCase))
-            {
-                DisplayName = FilePathHelper.GetRelativePath(_rootFolder2, normalizedFull);
-                return;
-            }
-            DisplayName = CardEditor.Localization.Language.fileNotExit.ToText();
-        }
-        private static string NormalizeRoot(string root)
-        {
-            return Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+
+            PrimaryText = Path.GetFileName(FullPath);
+            SecondaryText = Path.GetDirectoryName(FullPath) ?? string.Empty;
+            TooltipText = FullPath;
+            DisplayName = PrimaryText;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -85,5 +108,19 @@ namespace CardEditor.Models
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+    }
+
+    public class ArchiveFileList
+    {
+        public List<string> DatabaseEntries { get; } = new();
+        public List<string> ScriptEntries { get; } = new();
+        public List<string> DeckEntries { get; } = new();
+        public List<string> BanlistEntries { get; } = new();
+    }
+
+    public class ExtractedEntry
+    {
+        public string EntryFullName { get; set; }
+        public string TempPath { get; set; }
     }
 }

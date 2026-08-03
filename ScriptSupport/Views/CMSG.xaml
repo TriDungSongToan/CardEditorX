@@ -61,14 +61,14 @@
                            Visibility="{Binding IconVisibility, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Grid>
 
-                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" >
-                    <TextBox Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True"
-                             Foreground="{Binding UIConfig.Foreground}"
-                             FontFamily="{Binding UIConfig.FontFamily}"
-                             FontSize="{Binding UIConfig.FontSize}"
-                             Text="{Binding Message, RelativeSource={RelativeSource AncestorType=Window}}"
-                             materialDesign:TextFieldAssist.UnderlineBrush="Transparent" />
-                </ScrollViewer>
+                <TextBox Grid.Column="1" TextWrapping="Wrap" IsReadOnly="True"
+                         VerticalAlignment="Center" TextAlignment="Left" AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled"
+                         Foreground="{Binding UIConfig.Foreground}"
+                         FontFamily="{Binding UIConfig.FontFamily}"
+                         FontSize="{Binding UIConfig.FontSize}"
+                         Text="{Binding Message, RelativeSource={RelativeSource AncestorType=Window}}"
+                         materialDesign:TextFieldAssist.UnderlineBrush="Transparent" />
             </Grid>
 
             <ItemsControl Grid.Row="2" HorizontalAlignment="Center" Margin="10,0,10,10"

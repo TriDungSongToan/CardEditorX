@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-using System.Text;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Windows.Media.Animation;
+using System.Drawing;
+using System.Runtime.Serialization;
+using System.Runtime.CompilerServices;
+using System.ComponentModel;
 using CardEditor.Collections;
-using System.Text.Json;
 
 namespace CardEditor.Models.Settings
 {

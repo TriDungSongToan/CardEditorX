@@ -1,22 +1,8 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Configuration;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media.Imaging;
-using CardEditor.Models;
-using CardEditor.Helpers;
-using CardEditor.Manager;
 using CardEditor.Services;
-using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -33,27 +19,19 @@ namespace CardEditor
         {
             InitializeComponent();
             DataContext = UIConfigViewModel.Instance;
-            LoadTheme();
-        }
-
-        private void LoadTheme()
-        {
-            string[] itemstheme = new string[] { "Amber", "Blue", "BlueGrey", "Brown", "Cyan", "DeepOrange", "DeepPurple", "Green", "Grey", "Indigo", "LightBlue", "LightGreen", "Lime", "Orange", "Pink", "Purple", "Red", "Teal", "Yellow" };
-            string themeSet = ConfigViewModel.Instance.displaySetting.Theme;
-            if (!Array.Exists(itemstheme, theme => theme.Equals(themeSet, StringComparison.OrdinalIgnoreCase)))
-            {
-                themeSet = "DeepPurple";
-            }
-            Uri themeUri = new Uri($"pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.{themeSet}.xaml", UriKind.Absolute);
-            ResourceDictionary resourceDict = new ResourceDictionary();
-            resourceDict.Source = themeUri;
-            this.Resources.MergedDictionaries.Add(resourceDict);
         }
 
         #region Load
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            InitializeContentMenu();
             LoadSetting();
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtUserName);
+            ControlContextMenuService.Attach(txtApiEndpoint);
+            ControlContextMenuService.Attach(txtApiKey);
         }
         private void LoadSetting()
         {

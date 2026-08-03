@@ -990,123 +990,115 @@
                                     </Grid>
 
                                     <Grid Grid.Row="2" >
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="2" />
-                                            <ColumnDefinition Width="auto" />
-                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="auto" />
+                                            <RowDefinition Height="2" />
+                                            <RowDefinition Height="auto" />
+                                        </Grid.RowDefinitions>
 
-                                        <Grid Grid.Column="0" >
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="auto" />
-                                                <RowDefinition Height="2" />
-                                                <RowDefinition Height="auto" />
-                                            </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="2" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="2" />
+                                                <ColumnDefinition Width="auto" />
+                                            </Grid.ColumnDefinitions>
 
-                                            <Grid Grid.Row="0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="2" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="2" />
-                                                    <ColumnDefinition Width="auto" />
-                                                </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="txtatk" Grid.Column="0" Height="47" Padding="5,15,5,0" Margin="0"
+                                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
+                                                     TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize cardatk}"
+                                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                                     TextOptions.TextFormattingMode="Display"
+                                                     TextOptions.TextRenderingMode="ClearType"
+                                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
+                                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                                     materialDesign:ThemeAssist.Theme="Dark" />
 
-                                                <TextBox x:Name="txtatk" Grid.Column="0" Height="47" Padding="5,15,5,0" Margin="0"
-                                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
-                                                         TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         materialDesign:HintAssist.Hint="{Lag:Localize cardatk}"
-                                                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         TextOptions.TextFormattingMode="Display"
-                                                         TextOptions.TextRenderingMode="ClearType"
-                                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
-                                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                                         materialDesign:ThemeAssist.Theme="Dark" />
-
-                                                <TextBox x:Name="txtdef" Grid.Column="2" Height="47" Padding="5,15,5,0" Margin="0"
-                                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
-                                                         TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         materialDesign:HintAssist.Hint="{Lag:Localize carddef}"
-                                                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         TextOptions.TextFormattingMode="Display"
-                                                         TextOptions.TextRenderingMode="ClearType"
-                                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
-                                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                                         materialDesign:ThemeAssist.Theme="Dark" />
-
-                                                <TextBox x:Name="txtSupport" Grid.Column="4" Height="47" Width="100" Padding="5,15,5,0" Margin="0"
-                                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" BorderThickness="0.7"
-                                                         TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         materialDesign:HintAssist.Hint="{Lag:Localize Support}"
-                                                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         TextOptions.TextFormattingMode="Display"
-                                                         TextOptions.TextRenderingMode="ClearType"
-                                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
-                                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                                         materialDesign:ThemeAssist.Theme="Dark" />
+                                            <TextBox x:Name="txtdef" Grid.Column="2" Height="47" Padding="5,15,5,0" Margin="0"
+                                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
+                                                     TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize carddef}"
+                                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                                     TextOptions.TextFormattingMode="Display"
+                                                     TextOptions.TextRenderingMode="ClearType"
+                                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
+                                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                                     materialDesign:ThemeAssist.Theme="Dark" />
+                                            
+                                            <TextBox x:Name="txtSupport" Grid.Column="4" Height="47" Width="100" Padding="5,15,5,0" Margin="0"
+                                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch" BorderThickness="0.7"
+                                                     TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize Support}"
+                                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                                     TextOptions.TextFormattingMode="Display"
+                                                     TextOptions.TextRenderingMode="ClearType"
+                                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
+                                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                                     materialDesign:ThemeAssist.Theme="Dark" />
                                             </Grid>
 
-                                            <Grid Grid.Row="2" >
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="2" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBox x:Name="txtid" Grid.Column="0" Height="47" Padding="5,15,5,0" Margin="0"
-                                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
-                                                         TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         materialDesign:HintAssist.Hint="{Lag:Localize cardID}"
-                                                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         Behaviors:NumericOnlyBehavior.Enable="True"
-                                                         TextOptions.TextFormattingMode="Display"
-                                                         TextOptions.TextRenderingMode="ClearType"
-                                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
-                                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                                         materialDesign:ThemeAssist.Theme="Dark"
-                                                         TextChanged="txtid_TextChanged" />
+                                        <Grid Grid.Row="2" >
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="2" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="txtid" Grid.Column="0" Height="47" Padding="5,15,5,0" Margin="0"
+                                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
+                                                     TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize cardID}"
+                                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                                     Behaviors:NumericOnlyBehavior.Enable="True"
+                                                     TextOptions.TextFormattingMode="Display"
+                                                     TextOptions.TextRenderingMode="ClearType"
+                                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
+                                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                                     materialDesign:ThemeAssist.Theme="Dark"
+                                                     TextChanged="txtid_TextChanged" />
 
-                                                <TextBox x:Name="txtalias" Grid.Column="2" Height="47" Padding="5,15,5,0" Margin="0"
-                                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
-                                                         TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         materialDesign:HintAssist.Hint="{Lag:Localize cardAlias}"
-                                                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         Behaviors:NumericOnlyBehavior.Enable="True"
-                                                         TextOptions.TextFormattingMode="Display"
-                                                         TextOptions.TextRenderingMode="ClearType"
-                                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
-                                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                                         materialDesign:ThemeAssist.Theme="Dark" />
-                                            </Grid>
+                                            <TextBox x:Name="txtalias" Grid.Column="2" Height="47" Padding="5,15,5,0" Margin="0"
+                                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
+                                                     TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize cardAlias}"
+                                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                                     Behaviors:NumericOnlyBehavior.Enable="True"
+                                                     TextOptions.TextFormattingMode="Display"
+                                                     TextOptions.TextRenderingMode="ClearType"
+                                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
+                                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                                     materialDesign:ThemeAssist.Theme="Dark" />
                                         </Grid>
                                     </Grid>
                                 </Grid>

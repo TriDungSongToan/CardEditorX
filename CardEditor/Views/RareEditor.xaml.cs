@@ -1,21 +1,8 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Controls;
-using System.Windows.Documents;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using MaterialDesignThemes.Wpf;
-using CardEditor.Models;
-using CardEditor.Manager;
 using CardEditor.Services;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
@@ -45,7 +32,7 @@ namespace CardEditor
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             LoadConfig();
-
+            InitializeContentMenu();
             rareViewModel.LoadDataCallFromView();
 
             txtHeader.Text = CMess.RarityCardManager.ToText();
@@ -56,10 +43,21 @@ namespace CardEditor
             rareViewModel.OpenFileRequested += RareViewModel_OpenFileRequested;
             rareViewModel.OnSettingSaved += LoadConfig;
         }
-
-        private void RareViewModel_OnSettingSaved()
+        private void InitializeContentMenu()
         {
-            throw new NotImplementedException();
+            ControlContextMenuService.Attach(txtCardName);
+            ControlContextMenuService.Attach(txtCardId);
+
+            ControlContextMenuService.Attach(txtIdRare);
+            ControlContextMenuService.Attach(txtRareName);
+            ControlContextMenuService.Attach(txtRareCode);
+            ControlContextMenuService.Attach(txtImgPath);
+
+            ControlContextMenuService.Attach(txtOriginalFolder);
+            ControlContextMenuService.Attach(txtOutPutFolder);
+            ControlContextMenuService.Attach(txtImageSize);
+            ControlContextMenuService.Attach(txtStampSize);
+            ControlContextMenuService.Attach(txtStampMargin);
         }
 
         private void LoadConfig()

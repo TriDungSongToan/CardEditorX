@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CardEditor.Models;
 using System.Windows;
+using CardEditor.Models;
 using CardEditor.Editor.Hover;
-using CardEditor.UserControls;
 using CardEditor.ViewModels;
+using CardEditor.UserControls;
 
 namespace CardEditor.Editor.Analysis
 {

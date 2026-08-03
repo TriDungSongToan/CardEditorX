@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Text;
+using System.IO;
+using System.Xml;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using CardEditor.Theming;
-using CardEditor.Services;
+using System.ComponentModel;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
-using System.IO;
-using System.Xml;
-using CMess = CardEditor.Localization.Language;
+using CardEditor.Theming;
+using CardEditor.Services;
 using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.ViewModels
 {

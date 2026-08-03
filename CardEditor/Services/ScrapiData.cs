@@ -1,18 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Reflection;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
-using System.Collections.Generic;
-using YamlDotNet.RepresentationModel;
-using CardEditor.Models;
-using CardEditor.Helpers;
-using CardEditor.ImageGene;
-using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 

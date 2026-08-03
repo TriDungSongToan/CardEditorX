@@ -1,21 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Data.SQLite;
-using System.Collections;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Windows.Interop;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
 using CardEditor.Models;
-using CardEditor.Helpers;
+using CardEditor.Services;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
-using CardEditor.Services;
 
 namespace CardEditor.ViewModels
 {

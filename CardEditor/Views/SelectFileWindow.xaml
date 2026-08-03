@@ -13,8 +13,8 @@
         xmlns:Lag="clr-namespace:CardEditor.Localization"
         xmlns:Controls="clr-namespace:CardEditor.Controls"
         xmlns:Behaviors="clr-namespace:CardEditor.Behaviors"
-        xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
         xmlns:Converter="clr-namespace:CardEditor.Converter"
+        xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Medium"
         Style="{StaticResource MaterialDesignWindow}"
@@ -30,6 +30,12 @@
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
         Title="Setting" Height="auto" Width="auto" >
+
+    <Window.Resources>
+        <Converter:EmptyToCollapsedConverter x:Key="EmptyToCollapsedConverter"/>
+    </Window.Resources>
+
+
     <materialDesign:Card UniformCornerRadius="5" d:FlowDirection="LeftToRight"
                          FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -46,74 +52,127 @@
                     BorderThickness="0,0,0,0" Padding="5,3,5,3"
                     MouseLeftButtonDown="blHeader_MouseLeftButtonDown" >
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="pack://application:,,,/Images/Setting/setting.ico" Width="auto" Height="23" Margin="0,0,7,0"
-                           IsHitTestVisible="False" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-                    <TextBlock Text="{Lag:Localize Config}" FontWeight="Medium" IsHitTestVisible="False"
-                               HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                    <TextBlock Text="{Lag:Localize Open}" FontWeight="Medium" IsHitTestVisible="False"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,0,0"
+                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    <TextBlock Text="{Lag:Localize File}" FontWeight="Medium" IsHitTestVisible="False"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,0,0"
                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                 </StackPanel>
             </Border>
 
-            <Grid Grid.Row="1" Margin="10,10,10,10" >
+            <Grid Grid.Row="1" Height="300" Width="400" Margin="10,5,10,5" >
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="5" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="5" />
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid Grid.Column="0" >
-                        <Image x:Name="MessageIcon" Width="50" Height="50" Source="/Images/Message/Question.png" />
-                    </Grid>
-
-                    <Grid Grid.Column="2" Width="250" >
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0" >
-                            <TextBlock Text="Select File to Open:"
-                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                        </Grid>
-
-                        <ComboBox x:Name="cmbFileList" Grid.Row="1" Height="43" Margin="0,10,0,10"
-                                  BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
-                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                  ItemsSource="{Binding FileLists}"
-                                  SelectedItem="{Binding SelectedFile}"
-                                  DisplayMemberPath="DisplayName"
-                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                  materialDesign:ColorZoneAssist.Mode="Custom"
-                                  Style="{StaticResource MaterialDesignFilledComboBox}"
-                                  TextOptions.TextFormattingMode="Display"
-                                  TextOptions.TextRenderingMode="ClearType"
-                                  materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-
-                    </Grid>
+                    <TextBlock Text="{Lag:Localize selectOpenFile}"
+                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                 </Grid>
 
-                <Grid Grid.Row="1" >
+                <Border Grid.Row="2" BorderThickness="0.9" CornerRadius="3"
+                        BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                    <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                             HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                             ItemsSource="{Binding FileList}" SelectionMode="Extended"
+                             Behaviors:ListBoxSelectedItemsBehavior.SelectedItems="{Binding SelectedFiles}" >
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="8,6"/>
+                                <Setter Property="ToolTip" Value="{Binding TooltipText}"/>
+                                <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding PrimaryText}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding SecondaryText}" FontSize="11" Foreground="Gray" TextTrimming="CharacterEllipsis"
+                                               Visibility="{Binding SecondaryText, Converter={StaticResource EmptyToCollapsedConverter}}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+                
+                <Grid Grid.Row="4" >
                     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" >
-                        <Button Content="Select" Width="80" Margin="0,0,10,0" Command="{Binding SelectCommand}" />
-                        <Button Content="Cancel" Width="80" Command="{Binding CancelCommand}" />
+                        
+                        <Button Width="auto" Height="30"
+                                BorderThickness="0" Padding="15,5,15,5"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                materialDesign:ButtonAssist.CornerRadius="5"
+                                Style="{StaticResource ButtonSuccess}"
+                                Command="{Binding OpenCommand}" >
+                            <Viewbox Stretch="Uniform" StretchDirection="Both" Width="auto" >
+                                <TextBlock Text="{Lag:Localize Open}" FontSize="15"
+                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Viewbox>
+                        </Button>
+
+                        <Button Width="auto" Height="30"
+                                BorderThickness="0" Padding="10,5,10,5" Margin="10,0,10,0"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                materialDesign:ButtonAssist.CornerRadius="5"
+                                Style="{StaticResource ButtonSuccess}"
+                                Command="{Binding OpenAllCommand}" >
+                            <Viewbox Stretch="Uniform" StretchDirection="Both" Width="auto" >
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Lag:Localize Open}" FontSize="15"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Lag:Localize All}" FontSize="15" Margin="5,0,0,0"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                </StackPanel>
+
+                            </Viewbox>
+                        </Button>
+
+                        <Button Width="auto" Height="30"
+                                BorderThickness="0" Padding="10,5,10,5"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                materialDesign:ButtonAssist.CornerRadius="5"
+                                Style="{StaticResource ButtonSuccess}"
+                                Command="{Binding CancelCommand}" >
+                            <Viewbox Stretch="Uniform" StretchDirection="Both" Width="auto" >
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Lag:Localize cancel}" FontSize="15"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                </StackPanel>
+
+                            </Viewbox>
+                        </Button>
+                        
                     </StackPanel>
                 </Grid>
+                
             </Grid>
         </Grid>
     </materialDesign:Card>

@@ -1,33 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media.Imaging;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using MaterialDesignThemes.Wpf;
 using CardEditor.Models;
 using CardEditor.Manager;
 using CardEditor.Helpers;
-using CardEditor.Theming;
 using CardEditor.Services;
-using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using TextBox = System.Windows.Controls.TextBox;
 using CMess = CardEditor.Localization.Language;
-using CardAppContext = CardEditor.Models.AppContext;
-using MediaColor = System.Windows.Media.Color;
-using MessageBox = System.Windows.MessageBox;
-using MediaColorConverter = System.Windows.Media.ColorConverter;
 
 namespace CardEditor
 {
@@ -64,7 +51,34 @@ namespace CardEditor
         #region Load
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            InitializeContentMenu();
             this.Opacity = 1;
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtUserName);
+            ControlContextMenuService.Attach(txtdatasource);
+
+            ControlContextMenuService.Attach(txtbackground);
+            ControlContextMenuService.Attach(txtforeground);
+            ControlContextMenuService.Attach(txtfontsize);
+
+            ControlContextMenuService.Attach(txtArtWorkPath);
+            ControlContextMenuService.Attach(txtOutPutPath);
+            ControlContextMenuService.Attach(txtOriginalPath);
+            ControlContextMenuService.Attach(txtDownloadPath);
+
+            ControlContextMenuService.Attach(txtimgsize);
+            ControlContextMenuService.Attach(txtstampsize);
+            ControlContextMenuService.Attach(txtstampmargin);
+
+            ControlContextMenuService.Attach(txtColumnRuler);
+            ControlContextMenuService.Attach(txtIndentationSize);
+            ControlContextMenuService.Attach(txtWordWrapIndentation);
+
+            ControlContextMenuService.Attach(txtMaxMainDeck);
+            ControlContextMenuService.Attach(txtMaxExtraDeck);
+            ControlContextMenuService.Attach(txtMaxSideDeck);
         }
         private void LoadDev()
         {
@@ -93,6 +107,7 @@ namespace CardEditor
         }
         #endregion
 
+        #region Event
         private void SettingViewModel_CallConfigChanged()
         {
             ConfigChanged?.Invoke();
@@ -122,8 +137,6 @@ namespace CardEditor
                 return (false, ex.Message);
             }
         }
-
-        #region Event
         private void blsetting_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -131,10 +144,6 @@ namespace CardEditor
                 this.DragMove();
             }
         }
-
-        
-        
-        
         private void txtSize_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             if (!e.Text.All(c => char.IsDigit(c) || c == ','))
@@ -156,7 +165,6 @@ namespace CardEditor
                 }
             }
         }
-
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (gridrowsave)
@@ -444,313 +452,6 @@ namespace CardEditor
             {
                 // Xác thực thất bại
                 ErrorMessage.Visibility = Visibility.Visible;
-            }
-        }
-        #endregion
-
-        #region Save
-        private void btnsave_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                #region User Setting
-                if (string.IsNullOrWhiteSpace(txtUserName.Text))
-                    throw new ArgumentNullException($"{CMess.UserName.ToText()} {CMess.cannotEmpty.ToText()}");
-                if (cmblanguage.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Language");
-
-                #region datasource
-                if (string.IsNullOrWhiteSpace(txtdatasource.Text))
-                {
-                    throw new ArgumentNullException($"{CMess.DataSource.ToText()} {CMess.cannotEmpty.ToText()}");
-                }
-                if (!System.IO.Path.IsPathRooted(txtdatasource.Text))
-                {
-                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Path.ToText()));
-                }
-                if(txtdatasource.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0)
-                {
-                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
-                }
-                if (!Directory.Exists(txtdatasource.Text))
-                {
-                    throw new DirectoryNotFoundException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
-                }
-                if(!HasReadWritePermission(txtdatasource.Text))
-                {
-                    throw new UnauthorizedAccessException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()));
-                }
-                #endregion
-
-                if (cmbgame.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Game");
-                #endregion
-
-                #region Display Setting
-                if (string.IsNullOrWhiteSpace(txtbackground.Text))
-                    throw new ArgumentNullException($"{CMess.Background.ToText()} {CMess.cannotEmpty.ToText()}");
-                if (string.IsNullOrWhiteSpace(txtforeground.Text))
-                    throw new ArgumentNullException($"{CMess.Foreground.ToText()} {CMess.cannotEmpty.ToText()}");
-                if (!IsValidColor(txtbackground.Text))
-                    throw new ArgumentException(CMess.invaBackground.ToText());
-                if (!IsValidColor(txtforeground.Text))
-                    throw new ArgumentException(CMess.invaForeground.ToText());
-
-                if (cmbtheme.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Theme");
-
-                if (cmbfontfamily.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Font Family");
-                if (int.TryParse(txtfontsize.Text, out int fontsizechk))
-                {
-                    if (fontsizechk <= 0 || fontsizechk > 50)
-                    {
-                        //throw new ArgumentOutOfRangeException(CMess.invaFontSize.ToText());
-                    }
-                }
-                else
-                {
-                    //throw new FormatException(CMess.invaFontSize.ToText());
-                }
-                if (slifontsize.Value <= 0 || slifontsize.Value > 50)
-                {
-                    //throw new ArgumentOutOfRangeException(CMess.invaFontSize.ToText());
-                }
-
-                if (cmbcodehighlight.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - High Light");
-
-                if (cmbFlowDirection.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - FlowDirection");
-                if (cmbTextAlignment.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - TextAlignment");
-
-                if (cmbArrange.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Arrange");
-                #endregion
-
-                #region Image Setting
-
-                #region Out Put Folder
-                if (string.IsNullOrWhiteSpace(txtOutPutPath.Text))
-                {
-                    throw new ArgumentNullException($"{CMess.OutPutFolder.ToText()} {CMess.cannotEmpty.ToText()}");
-                }
-                if (!System.IO.Path.IsPathRooted(txtOutPutPath.Text))
-                {
-                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Path.ToText()));
-                }
-                if (txtOutPutPath.Text.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0)
-                {
-                    throw new ArgumentException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
-                }
-                if (!Directory.Exists(txtOutPutPath.Text))
-                {
-                    throw new DirectoryNotFoundException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
-                }
-                if (!HasReadWritePermission(txtOutPutPath.Text))
-                {
-                    throw new UnauthorizedAccessException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()));
-                }
-                #endregion
-
-                string pattern = @"^\d+,\d+$";
-                if (!Regex.IsMatch(txtimgsize.Text, pattern))
-                {
-                    //throw new FormatException(CMess.invaImgSize.ToText());
-                }
-                if (!Regex.IsMatch(txtstampsize.Text, pattern))
-                {
-                    //throw new FormatException(CMess.invaStampSize.ToText());
-                }
-                if (!Regex.IsMatch(txtstampmargin.Text, pattern))
-                {
-                    //throw new FormatException(CMess.invaStampMargin.ToText());
-                }
-                //if (int.TryParse(txtdpi.Text, out int DPIchk))
-                //{
-                //    if (DPIchk <= 0 || DPIchk > 100)
-                //    {
-                //        //throw new ArgumentOutOfRangeException(CMess.invaImgDPI.ToText());
-                //    }
-                //}
-                else
-                {
-                    //throw new FormatException(CMess.invaImgDPI.ToText());
-                }
-
-                if (cmbstampposition.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Stamp Position");
-
-                if (cmbFoild.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Foild Art");
-                if (cmbSecret.SelectedItem == null)
-                    throw new ArgumentException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()) + " - Secret Art");
-                if (tbtnIncludeStamp.IsChecked == null)
-                    throw new InvalidOperationException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
-                #endregion
-
-                #region Deck Editor
-                if (tbtnAlternateFormats.IsChecked == null ||
-                    tbtnCardListViewMode.IsChecked == null ||
-                    tbtnDisplayID.IsChecked == null ||
-                    tbtnDisplayArchetype.IsChecked == null ||
-                    tbtnDisplayScope.IsChecked == null ||
-                    tbtnSaveCardName.IsChecked == null ||
-                    tbtnConfirmClear.IsChecked == null ||
-                    tbtnConfirmDelete.IsChecked == null ||
-                    tbtnIgnoreSize.IsChecked == null ||
-                    tbtnIgnoreContent.IsChecked == null)
-                    throw new ArgumentNullException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
-                #endregion
-
-                #region Toggle
-                if (
-                    //tbtnwordwrap.IsChecked == null ||
-                   // tbtnfoldcode.IsChecked == null ||
-                    tbtnIncludeStamp.IsChecked == null ||
-                    tbtndeveloper.IsChecked == null)
-                {
-                    throw new InvalidOperationException(string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText()));
-                }
-                #endregion
-
-                var (saveSuccess, errorMessage) = Savedata();
-                if (saveSuccess)
-                {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()),
-                        new[] { CMess.ok.ToText() });
-                    ConfigChanged?.Invoke();
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText())}\n{errorMessage}", new[] { CMess.ok.ToText() });
-                }
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    ex.Message, new[] { CMess.ok.ToText() });
-            }
-            catch (ArgumentNullException ex)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    ex.Message, new[] { CMess.ok.ToText() });
-            }
-            catch (ArgumentException ex)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    ex.Message, new[] { CMess.ok.ToText() });
-            }
-            catch (DirectoryNotFoundException ex)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    ex.Message, new[] { CMess.ok.ToText() });
-            }
-            catch (NullReferenceException ex)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            catch (FormatException ex)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            catch (InvalidOperationException ex) 
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        private bool HasReadWritePermission(string folderPath)
-        {
-            string tempFilePath = System.IO.Path.Combine(folderPath, System.IO.Path.GetRandomFileName());
-            try
-            {
-                using (var stream = new FileStream(tempFilePath, FileMode.CreateNew, FileAccess.Write))
-                {
-                    stream.WriteByte(0x0);
-                }
-                using (var stream = new FileStream(tempFilePath, FileMode.Open, FileAccess.Read))
-                {
-                    int b = stream.ReadByte();
-                }
-                File.Delete(tempFilePath);
-
-                return true;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-        private (bool, string) Savedata()
-        {
-            try
-            {
-                return (true, string.Empty);
-            }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
-            }
-        }
-        private bool IsValidColor(string color)
-        {
-            if (string.IsNullOrEmpty(color))
-                return false;
-            try
-            {
-                System.Windows.Media.ColorConverter.ConvertFromString(color);
-                return true;
-                // Kiểm tra xem màu có thể chuyển đổi thành màu hợp lệ không
-                //var c = (MediaColor)MediaColorConverter.ConvertFromString(color);
-                //return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        private void ChangeColor()
-        {
-            if (!string.IsNullOrWhiteSpace(txtbackground.Text) && IsValidColor(txtbackground.Text) &&
-                !string.IsNullOrWhiteSpace(txtforeground.Text) && IsValidColor(txtforeground.Text) &&
-                cmbtheme.SelectedItem != null)
-            {
-                MediaColor backgroundColor = (MediaColor)MediaColorConverter.ConvertFromString(txtbackground.Text);
-                MediaColor foregroundColor = (MediaColor)MediaColorConverter.ConvertFromString(txtforeground.Text);
-
-                System.Windows.Media.Brush backgroundBrush = new SolidColorBrush(backgroundColor);
-                System.Windows.Media.Brush foregroundBrush = new SolidColorBrush(foregroundColor);
-
-                ColorDictionary colorDict = new ColorDictionary();
-                string hexCode = colorDict.GetHexCode(cmbtheme.SelectedItem.ToString());
-                System.Windows.Media.Brush themeColor;
-                try
-                {
-                    MediaColor color = (MediaColor)MediaColorConverter.ConvertFromString(hexCode);
-                    themeColor = new SolidColorBrush(color);
-                }
-                catch
-                {
-                    MediaColor defaultColor = (MediaColor)MediaColorConverter.ConvertFromString("#673AB7");
-                    themeColor = new SolidColorBrush(defaultColor);
-                }
-
-                // _themeService.SetTheme(backgroundBrush, foregroundBrush, themeColor);
             }
         }
         #endregion

@@ -352,6 +352,8 @@
 0x540	Open Card in Yugipedia Website
 0x541	Open Card in YGO Resources Website
 
+0x545	Select File to Open:
+
 0x54a	The card must satisfy all filter conditions.
 0x54b	The card only needs to satisfy any one of the filter conditions.
 0x54c	Applies AND between groups and OR within each group.
@@ -366,27 +368,28 @@
 0x5a2	Save {0}
 0x5a3	Select {0}
 
-0x5a4	Card Database
-0x5a5	Card Rare Database
-0x5a6	List Rare Database
-0x5a7	Genesys Card Database
-0x5a8	Credit Database
-0x5a9	Card Script
-0x5aa	Script
-0x5ab	Image
-0x5ac	Ceds
-0x5ad	Deck
-0x5ae	Banlist
-0x5af	Text Documents
-0x5b0	Markdown
-0x5b1	Log
-0x5b2	YAML
-0x5b3	Zip
-0x5b4	Excel
-0x5b5	Video
-0x5b6	All
-0x5b7	Unknown
-0x5b8	Folder
+0x5a4	Card Archive
+0x5a5	Card Database
+0x5a6	Card Rare Database
+0x5a7	List Rare Database
+0x5a8	Genesys Card Database
+0x5a9	Credit Database
+0x5aa	Card Script
+0x5ab	Script
+0x5ac	Image
+0x5ad	Ceds
+0x5ae	Deck
+0x5af	Banlist
+0x5b0	Text Documents
+0x5b1	Markdown
+0x5b2	Log
+0x5b3	YAML
+0x5b4	Zip
+0x5b5	Excel
+0x5b6	Video
+0x5b7	All
+0x5b8	Unknown
+0x5b9	Folder
 
 0x5ba	Path
 0x5bb	Format
@@ -457,7 +460,7 @@
 
 0x62a	Data Source Error
 0x62b	Data source is missing or does not exist, Check Update and restart application.
-0x62c	An error has occurred
+0x62c	An error has occurred:
 
 0x631	{0} {1}:
 0x632	{0} {1} {2}:
@@ -529,8 +532,12 @@
 
 0x6a1	Zip file exported successfully at:
 0x6a2	Excel file exported successfully at:
-0x6a3	Registry Key created successfully at:
-0x6a4	Double Click this file to set Registry Key.
+0x6a3	Registry Key File (.reg) created successfully at:
+0x6a4	This file will register CardEditorX as a handler for the following file types:
+0x6a5	Opens directly on double-click:
+0x6a6	Appears in Open With menu:
+0x6a7	Double-click the file to apply. Windows will ask for confirmation before writing to the Registry.
+0x6a8	Unregister Registry successfully!
 
 0x6aa	Extract functions data successfully!
 0x6ab	Extract constants data successfully!
@@ -568,11 +575,12 @@
 0x70c	Are you sure you want to reset settings to default? All changes will be lost.
 0x70d	Are you sure you want to clear the recently opened {0} history?
 0x70e	Are you sure you want to save a blank file?
-0x70f	Update Available, dowload it now?
-0x710	Data source is missing or invalid, download now?
-0x711	How would you like to handle the selected data?
-0x712	No updates found.
-0x713	Update Complete!
+0x70f	Are you sure you want to unregister the CardEditorX file types from the Windows Registry?
+0x710	Update Available, dowload it now?
+0x711	Data source is missing or invalid, download now?
+0x712	How would you like to handle the selected data?
+0x713	No updates found.
+0x714	Update Complete!
 
 0x725	Unable to delete existing file after multiple attempts.
 0x726	git.exe path not found, make sure Git is installed and using correct path in application configuration.

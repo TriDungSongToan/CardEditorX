@@ -1,10 +1,6 @@
 ﻿#nullable enable
 using System;
-using System.Text;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -86,7 +82,7 @@ namespace CardEditor.Collections
         public void ReplaceAll(IEnumerable<T> items)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));
-            if (items is ICollection<T> collection && collection.Count == 0) return;
+            // if (items is ICollection<T> collection && collection.Count == 0) return;
             CheckReentrancy();
             _suppressLevel++;
 

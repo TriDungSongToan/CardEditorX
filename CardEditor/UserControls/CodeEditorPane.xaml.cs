@@ -1,42 +1,19 @@
 ﻿using System;
-using System.IO;
-using System.Xml;
+using System.Web.UI.WebControls;
 using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Navigation;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Collections.Generic;
-using ICSharpCode.AvalonEdit;
+using System.ComponentModel;
 using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Highlighting.Xshd;
-using ICSharpCode.AvalonEdit.Folding;
 using ICSharpCode.AvalonEdit.Rendering;
-using CardEditor.Events;
-using CardEditor.Helpers;
+using CardEditor.Editor.Hover;
+using CardEditor.Editor.Completion;
 using CardEditor.Manager;
 using CardEditor.Abstract;
 using CardEditor.Services;
 using CardEditor.ViewModels;
-using CardEditor.Localization;
-using CMess = CardEditor.Localization.Language;
-using ICSharpCode.AvalonEdit.Editing;
-using System.ComponentModel;
-using Microsoft.Build.Tasks;
-using System.Security.Policy;
-using System.Web.UI.WebControls;
-using CardEditor.Editor.Completion;
-using System.Runtime.Remoting.Contexts;
-using CardEditor.Editor.Hover;
 
 namespace CardEditor.UserControls
 {
@@ -74,14 +51,18 @@ namespace CardEditor.UserControls
         #region Load
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            
+            InitializeContentMenu();
             LoadCompletion();
-            CreateContextMenu(textEditorPane);
+            ControlContextMenuService.Attach(textEditorPane);
             InitializeMiniMap();
             InitializeHighLight();
             if (!isChangeTrackingInitialized) InitializeChangeTracking();
             InitializeEvent();
             InitializeFooter();
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(textEditorPane);
         }
         public void LoadConfig()
         {
@@ -118,173 +99,6 @@ namespace CardEditor.UserControls
             textEditorPane.Options.WordWrapIndentation = ConfigViewModel.Instance.codeEditSetting.WordWrapIndentation; //Độ thụt lề cho các dòng bị ngắt(word wrap), trừ dòng đầu tiên.
             textEditorPane.Options.InheritWordWrapIndentation = ConfigViewModel.Instance.codeEditSetting.InheritWordWrapIndentation; //Các dòng ngắt dòng có kế thừa thụt lề của dòng đầu tiên hay không.
             // textEditorPane.Options.GetIndentationString(); //Phương thức trả về chuỗi thụt lề phù hợp (tab hoặc số lượng space) tùy theo cấu hình.
-        }
-        #endregion
-
-        #region ContextMenu
-        private void CreateContextMenu(FrameworkElement control)
-        {
-            var contextMenu = new ContextMenu
-            {
-                Background = UIConfigViewModel.Instance.Background,
-                Foreground = UIConfigViewModel.Instance.Foreground,
-                FontFamily = UIConfigViewModel.Instance.FontFamily,
-                FontSize = UIConfigViewModel.Instance.FontSize,
-                Tag = control
-            };
-            control.ContextMenu = contextMenu;
-
-            contextMenu.Opened += (s, e) =>
-            {
-                var target = contextMenu.Tag as FrameworkElement;
-                Debug.WriteLine($"ContextMenu opened for control: {target?.GetType().Name} (Name: {(target as Control)?.Name})");
-            };
-
-            contextMenu.Items.Add(new System.Windows.Controls.MenuItem { Header = "Cut", Height = 25, Command = ApplicationCommands.Cut });
-            contextMenu.Items.Add(new System.Windows.Controls.MenuItem { Header = "Copy", Height = 25, Command = ApplicationCommands.Copy });
-            contextMenu.Items.Add(new System.Windows.Controls.MenuItem { Header = "Paste", Height = 25, Command = ApplicationCommands.Paste });
-
-            var fullWidthItem = new System.Windows.Controls.MenuItem { Header = "To FullWidth", Height = 25 };
-            fullWidthItem.Click += (s, e) => MenuConvertWidth_Click(control, true);
-            contextMenu.Items.Add(fullWidthItem);
-
-            var halfWidthItem = new System.Windows.Controls.MenuItem { Header = "To HalfWidth", Height = 25 };
-            halfWidthItem.Click += (s, e) => MenuConvertWidth_Click(control, false);
-            contextMenu.Items.Add(halfWidthItem);
-
-            var toSuperScriptItem = new System.Windows.Controls.MenuItem { Header = "To SuperScript", Height = 25 };
-            toSuperScriptItem.Click += (s, e) => MenuConvertSuper_Click(control, true);
-            contextMenu.Items.Add(toSuperScriptItem);
-
-            var fromSuperScriptItem = new System.Windows.Controls.MenuItem { Header = "From SuperScript", Height = 25 };
-            fromSuperScriptItem.Click += (s, e) => MenuConvertSuper_Click(control, false);
-            contextMenu.Items.Add(fromSuperScriptItem);
-
-            var toSubScriptItem = new System.Windows.Controls.MenuItem { Header = "To SubScript", Height = 25 };
-            toSubScriptItem.Click += (s, e) => MenuConvertSub_Click(control, true);
-            contextMenu.Items.Add(toSubScriptItem);
-
-            var fromSubScriptItem = new System.Windows.Controls.MenuItem { Header = "From SubScript", Height = 25 };
-            fromSubScriptItem.Click += (s, e) => MenuConvertSub_Click(control, false);
-            contextMenu.Items.Add(fromSubScriptItem);
-
-            var specialCharactersItem = new System.Windows.Controls.MenuItem
-            {
-                Header = "Special Characters",
-                Height = 25,
-                Background = UIConfigViewModel.Instance.Background,
-                Foreground = UIConfigViewModel.Instance.Foreground,
-                FontFamily = UIConfigViewModel.Instance.FontFamily,
-                FontSize = UIConfigViewModel.Instance.FontSize
-            };
-            specialCharactersItem.Click += (s, e) =>
-            {
-                var targetControl = contextMenu.Tag as FrameworkElement ?? contextMenu.PlacementTarget as FrameworkElement;
-                Debug.WriteLine($"Opening SpecialCharactersWindow for control: {targetControl?.GetType().Name} (Name: {(targetControl as Control)?.Name})");
-                if (targetControl != null)
-                {
-                    var window = new SpecialCharactersWindow(targetControl);
-                    window.ShowDialog();
-                }
-                else
-                {
-                    Debug.WriteLine("Target control is null");
-                }
-            };
-            contextMenu.Items.Add(specialCharactersItem);
-        }
-        private void MenuConvertWidth_Click(FrameworkElement control, bool toFullWidth)
-        {
-            switch (control)
-            {
-                case RichTextBox richTextBox:
-                    TextRange selectedText = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
-                    if (!string.IsNullOrEmpty(selectedText.Text))
-                    {
-                        string convertedText = toFullWidth ? ConvertString.ConvertToFullWidth(selectedText.Text) : ConvertString.ConvertToHalfWidth(selectedText.Text);
-                        selectedText.Text = convertedText;
-                    }
-                    break;
-                case System.Windows.Controls.TextBox textBox:
-                    if (!string.IsNullOrEmpty(textBox.SelectedText))
-                    {
-                        string convertedText = toFullWidth ? ConvertString.ConvertToFullWidth(textBox.SelectedText) : ConvertString.ConvertToHalfWidth(textBox.SelectedText);
-                        int selectionStart = textBox.SelectionStart;
-                        textBox.Text = textBox.Text.Remove(selectionStart, textBox.SelectionLength).Insert(selectionStart, convertedText);
-                        textBox.SelectionStart = selectionStart;
-                        textBox.SelectionLength = convertedText.Length;
-                    }
-                    break;
-                case ICSharpCode.AvalonEdit.TextEditor textEditor:
-                    if (!string.IsNullOrEmpty(textEditor.SelectedText))
-                    {
-                        string convertedText = toFullWidth ? ConvertString.ConvertToFullWidth(textEditor.SelectedText) : ConvertString.ConvertToHalfWidth(textEditor.SelectedText);
-                        textEditor.Document.Replace(textEditor.SelectionStart, textEditor.SelectionLength, convertedText);
-                    }
-                    break;
-            }
-        }
-        private void MenuConvertSuper_Click(FrameworkElement control, bool ToSuper)
-        {
-            switch (control)
-            {
-                case RichTextBox richTextBox:
-                    TextRange selectedText = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
-                    if (!string.IsNullOrEmpty(selectedText.Text))
-                    {
-                        string convertedText = ToSuper ? ConvertString.ConvertToSuperscript(selectedText.Text) : ConvertString.ConvertFromSuperscript(selectedText.Text);
-                        selectedText.Text = convertedText;
-                    }
-                    break;
-                case System.Windows.Controls.TextBox textBox:
-                    if (!string.IsNullOrEmpty(textBox.SelectedText))
-                    {
-                        string convertedText = ToSuper ? ConvertString.ConvertToSuperscript(textBox.SelectedText) : ConvertString.ConvertFromSuperscript(textBox.SelectedText);
-                        int selectionStart = textBox.SelectionStart;
-                        textBox.Text = textBox.Text.Remove(selectionStart, textBox.SelectionLength).Insert(selectionStart, convertedText);
-                        textBox.SelectionStart = selectionStart;
-                        textBox.SelectionLength = convertedText.Length;
-                    }
-                    break;
-                case ICSharpCode.AvalonEdit.TextEditor textEditor:
-                    if (!string.IsNullOrEmpty(textEditor.SelectedText))
-                    {
-                        string convertedText = ToSuper ? ConvertString.ConvertToSuperscript(textEditor.SelectedText) : ConvertString.ConvertFromSuperscript(textEditor.SelectedText);
-                        textEditor.Document.Replace(textEditor.SelectionStart, textEditor.SelectionLength, convertedText);
-                    }
-                    break;
-            }
-        }
-        private void MenuConvertSub_Click(FrameworkElement control, bool ToSub)
-        {
-            switch (control)
-            {
-                case RichTextBox richTextBox:
-                    TextRange selectedText = new TextRange(richTextBox.Selection.Start, richTextBox.Selection.End);
-                    if (!string.IsNullOrEmpty(selectedText.Text))
-                    {
-                        string convertedText = ToSub ? ConvertString.ConvertToSubscript(selectedText.Text) : ConvertString.ConvertFromSubscript(selectedText.Text);
-                        selectedText.Text = convertedText;
-                    }
-                    break;
-                case System.Windows.Controls.TextBox textBox:
-                    if (!string.IsNullOrEmpty(textBox.SelectedText))
-                    {
-                        string convertedText = ToSub ? ConvertString.ConvertToSubscript(textBox.SelectedText) : ConvertString.ConvertFromSubscript(textBox.SelectedText);
-                        int selectionStart = textBox.SelectionStart;
-                        textBox.Text = textBox.Text.Remove(selectionStart, textBox.SelectionLength).Insert(selectionStart, convertedText);
-                        textBox.SelectionStart = selectionStart;
-                        textBox.SelectionLength = convertedText.Length;
-                    }
-                    break;
-                case ICSharpCode.AvalonEdit.TextEditor textEditor:
-                    if (!string.IsNullOrEmpty(textEditor.SelectedText))
-                    {
-                        string convertedText = ToSub ? ConvertString.ConvertToSubscript(textEditor.SelectedText) : ConvertString.ConvertFromSubscript(textEditor.SelectedText);
-                        textEditor.Document.Replace(textEditor.SelectionStart, textEditor.SelectionLength, convertedText);
-                    }
-                    break;
-            }
         }
         #endregion
 

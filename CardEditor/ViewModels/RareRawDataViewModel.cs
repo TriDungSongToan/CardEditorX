@@ -6,25 +6,20 @@ using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Data.SQLite;
 using System.Windows.Data;
-using System.Windows.Shell;
-using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using SkiaSharp;
 using OfficeOpenXml;
-using System.Xml.Linq;
-using System.Web.Script.Serialization;
 using System.Runtime.CompilerServices;
 using CardEditor.Models;
-using CardEditor.Helpers;
 using CardEditor.Services;
 using CardEditor.Collections;
 using CardEditor.Localization;
-using CardEditor.ImagesConfig;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
-using System.Diagnostics;
+
 
 namespace CardEditor.ViewModels
 {

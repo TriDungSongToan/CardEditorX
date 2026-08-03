@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using System.Text;
-using System.Windows;
+using System.Reflection;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 

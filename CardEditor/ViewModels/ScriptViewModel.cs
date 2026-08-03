@@ -1,13 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CardEditor.Editor.Analysis;
 using CardEditor.Models;
 using CardEditor.Services;
-using HandyControl.Controls;
 
 namespace CardEditor.ViewModels
 {

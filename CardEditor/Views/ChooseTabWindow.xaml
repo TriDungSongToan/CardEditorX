@@ -9,6 +9,7 @@
         xmlns:hc="clr-namespace:HandyControl.Controls;assembly=HandyControl"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
+        xmlns:Lag="clr-namespace:CardEditor.Localization"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Medium"
         Style="{StaticResource MaterialDesignWindow}"
@@ -22,12 +23,10 @@
         ResizeMode="NoResize" 
         SizeToContent="WidthAndHeight"
         WindowStyle="None"
-        xmlns:local="clr-namespace:CardEditor"
-        DataContext="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
         ShowInTaskbar="False"
         Title="Select Tab" Height="auto" Width="auto">
 
-    <materialDesign:Card UniformCornerRadius="5" BorderThickness="1" Width="auto" d:FlowDirection="LeftToRight"
+    <materialDesign:Card UniformCornerRadius="5" BorderThickness="2" Width="auto" d:FlowDirection="LeftToRight"
                          FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
@@ -36,191 +35,144 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="5" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="5" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="5" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <Button Grid.Row="0" Width="auto" Height="25" Margin="0" Padding="0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    BorderThickness="1" Cursor="Hand"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    Style="{StaticResource ButtonSuccess}"
+                    Command="{Binding ImageEditorCommand}" >
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="25" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Width="20" Height="20" Margin="0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Source="pack://application:,,,/Images/Menu/Win/Imageditor.ico"  />
+                        <TextBlock Grid.Column="1" Padding="0" Margin="3,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Text="{Lag:Localize ImageEdit}" FontSize="16"
+                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    </Grid>
+                </Button.Content>
+            </Button>
 
-                <Button x:Name="btndata" Grid.Column="0" Width="75" Height="25" Margin="0" Padding="0"
-                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                        FontSize="{Binding FontSize}" Click="btndata_Click"
-                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
-                    <Button.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#FFff8400" Offset="0"/>
-                            <GradientStop Color="#FFff8400" Offset="0.2"/>
-                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
-                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
-                        </LinearGradientBrush>
-                    </Button.Background>
-                    <Button.Content>
-                        <Grid Width="75" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="2" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="1" >
-                                <materialDesign:PackIcon Width="15" Height="15" Kind="DatabasePlusOutline"
-                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </Grid>
-                            <Grid Grid.Column="2" >
-                                <TextBlock Text="Data" Padding="0" Margin="0"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontFamily="{Binding FontFamily}" FontSize="16" />
-                            </Grid>
-                        </Grid>
-                    </Button.Content>
-                </Button>
-                
-                <Button x:Name="btndeck" Grid.Column="2" Width="75" Height="25" Margin="0" Padding="0"
-                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                        FontSize="{Binding FontSize}" Click="btndeck_Click"
-                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
-                    <Button.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#FFff8400" Offset="0"/>
-                            <GradientStop Color="#FFff8400" Offset="0.2"/>
-                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
-                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
-                        </LinearGradientBrush>
-                    </Button.Background>
-                    <Button.Content>
-                        <Grid Width="75" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="2" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="1" >
-                                <materialDesign:PackIcon Width="15" Height="15" Kind="Cards"
-                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </Grid>
-                            <Grid Grid.Column="2" >
-                                <TextBlock Text="Deck" Padding="0" Margin="0"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontFamily="{Binding FontFamily}" FontSize="16" />
-                            </Grid>
-                        </Grid>
-                    </Button.Content>
-                </Button>
-                
-                <Button x:Name="btncode" Grid.Column="4" Width="75" Height="25" Margin="0" Padding="0"
-                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                        FontSize="{Binding FontSize}" Click="btncode_Click"
-                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
-                    <Button.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#FFff8400" Offset="0"/>
-                            <GradientStop Color="#FFff8400" Offset="0.2"/>
-                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
-                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
-                        </LinearGradientBrush>
-                    </Button.Background>
-                    <Button.Content>
-                        <Grid Width="75" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="2" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="1" >
-                                <materialDesign:PackIcon Width="15" Height="15" Kind="ScriptTextOutline"
-                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </Grid>
-                            <Grid Grid.Column="2" >
-                                <TextBlock Text="Code" Padding="0" Margin="0"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontFamily="{Binding FontFamily}" FontSize="16" />
-                            </Grid>
-                        </Grid>
-                    </Button.Content>
-                </Button>
-            </Grid>
+            <Button Grid.Row="2" Width="auto" Height="25" Margin="0" Padding="0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    BorderThickness="1" Cursor="Hand"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    Style="{StaticResource ButtonSuccess}"
+                    Command="{Binding DataEditorCommand}" >
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="25" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Width="20" Height="20" Margin="0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Source="pack://application:,,,/Images/Menu/Win/Dataeditor.ico"  />
+                        <TextBlock Grid.Column="1" Padding="0" Margin="3,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Text="{Lag:Localize DataEdit}" FontSize="16"
+                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    </Grid>
+                </Button.Content>
+            </Button>
 
-            <Grid Grid.Row="2" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="5" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <Button Grid.Row="4" Width="auto" Height="25" Margin="0" Padding="0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    BorderThickness="1" Cursor="Hand"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    Style="{StaticResource ButtonSuccess}"
+                    Command="{Binding DeckEditorCommand}" >
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="25" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Width="20" Height="20" Margin="0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Source="pack://application:,,,/Images/Menu/Win/Deckeditor.ico"  />
+                        <TextBlock Grid.Column="1" Padding="0" Margin="3,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Text="{Lag:Localize DeckEdit}" FontSize="16"
+                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    </Grid>
+                </Button.Content>
+            </Button>
 
-                <Button x:Name="btnimage" Grid.Column="0" Width="100" Height="25" Margin="0" Padding="0"
-                        HorizontalAlignment="Right" VerticalAlignment="Stretch"
-                        FontSize="{Binding FontSize}" Click="btnimage_Click"
-                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
-                    <Button.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#FFff8400" Offset="0"/>
-                            <GradientStop Color="#FFff8400" Offset="0.2"/>
-                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
-                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
-                        </LinearGradientBrush>
-                    </Button.Background>
-                    <Button.Content>
-                        <Grid Width="100" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="2" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="1" >
-                                <materialDesign:PackIcon Width="15" Height="15" Kind="ImagePlusOutline"
-                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </Grid>
-                            <Grid Grid.Column="2" >
-                                <TextBlock Text="Image" Padding="0" Margin="0"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontFamily="{Binding FontFamily}" FontSize="16" />
-                            </Grid>
-                        </Grid>
-                    </Button.Content>
-                </Button>
+            <Button Grid.Row="6" Width="auto" Height="25" Margin="0" Padding="0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    BorderThickness="1" Cursor="Hand"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    Style="{StaticResource ButtonSuccess}"
+                    Command="{Binding CodeEditorCommand}" >
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="25" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Width="20" Height="20" Margin="0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Source="pack://application:,,,/Images/Menu/Win/Codeditor.ico"  />
+                        <TextBlock Grid.Column="1" Padding="0" Margin="3,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Text="{Lag:Localize CodeEdit}" FontSize="16"
+                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    </Grid>
+                </Button.Content>
+            </Button>
 
-                <Button x:Name="btnbanlist" Grid.Column="2" Width="100" Height="25" Margin="0" Padding="0"
-                        HorizontalAlignment="Left" VerticalAlignment="Stretch"
-                        FontSize="{Binding FontSize}" Click="btnbanlist_Click"
-                        Style="{StaticResource ButtonSuccess}" BorderThickness="0" >
-                    <Button.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="#FFff8400" Offset="0"/>
-                            <GradientStop Color="#FFff8400" Offset="0.2"/>
-                            <GradientStop Color="#FFffdf01" Offset="0.8"/>
-                            <GradientStop Color="#FFffdf01" Offset="1.0"/>
-                        </LinearGradientBrush>
-                    </Button.Background>
-                    <Button.Content>
-                        <Grid Width="100" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="2" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="1" >
-                                <materialDesign:PackIcon Width="15" Height="15" Kind="Cancel"
-                                                         VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </Grid>
-                            <Grid Grid.Column="2" >
-                                <TextBlock Text="BanList" Padding="0" Margin="0"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontFamily="{Binding FontFamily}" FontSize="16" />
-                            </Grid>
-                        </Grid>
-                    </Button.Content>
-                </Button>
-                
-            </Grid>
+            <Button Grid.Row="8" Width="auto" Height="25" Margin="0" Padding="0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    BorderThickness="1" Cursor="Hand"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    Style="{StaticResource ButtonSuccess}"
+                    Command="{Binding BanListEditorCommand}" >
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="25" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Width="20" Height="20" Margin="0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Source="pack://application:,,,/Images/Menu/Win/Banlisteditor.ico"  />
+                        <TextBlock Grid.Column="1" Padding="0" Margin="3,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Text="{Lag:Localize BanListEdit}" FontSize="16"
+                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    </Grid>
+                </Button.Content>
+            </Button>
+
         </Grid>
     </materialDesign:Card>
 </Window>

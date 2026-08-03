@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
-using CardEditor.Models;
-using CardEditor.Editor.Completion;
-using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 using CardEditor.Editor.Analysis;
+using CardEditor.Models;
 
 namespace CardEditor.Editor.Completion
 {

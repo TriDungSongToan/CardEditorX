@@ -5,6 +5,8 @@ using ScriptSupport.States;
 using ScriptSupport.Stores;
 using ScriptSupport.Interfaces;
 using ScriptSupport.Environment;
+using ScriptSupport.Localization;
+using CMess = ScriptSupport.Localization.Language;
 
 namespace ScriptSupport.Services
 {
@@ -28,9 +30,9 @@ namespace ScriptSupport.Services
         public async Task<(bool Success, string Message)> LoadChar()
         {
             string lag = _config.UserSetting.Language;
-            if (string.IsNullOrWhiteSpace(lag)) return (false, "Language not specified in settings.");
+            if (string.IsNullOrWhiteSpace(lag)) return (false, $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Setting.ToText())}");
             string filePath = System.IO.Path.Combine(_aev.DataFolderPath, $@"CardData\Language\{lag}\SpecialCharacters.json");
-            if (!System.IO.File.Exists(filePath)) return (false, $"Special character file not found: {filePath}");
+            if (!System.IO.File.Exists(filePath)) return (false, $"{CMess.fileNotExit.ToText()} SpecialCharacters.json");
             try
             {
                 ICharacterInterface charInterface = new CharacterService();

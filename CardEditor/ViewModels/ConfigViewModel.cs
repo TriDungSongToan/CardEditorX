@@ -1,28 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Threading;
-using System.Reflection;
-using System.Globalization;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using CardEditor.Manager;
-using CardEditor.Services;
-using CardAppContext = CardEditor.Models.AppContext;
-using static CardEditor.Manager.SettingsManager;
-using System.Runtime.CompilerServices;
-using CardEditor.Models;
-using CardEditor.Models.Settings;
-using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Data.SQLite;
-using OfficeOpenXml.Drawing;
-using CardEditor.ImagesConfig;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.ComponentModel;
 using SkiaSharp;
-using System.Diagnostics;
+using CardEditor.Models;
+using CardEditor.Models.Settings;
+using CardEditor.Services;
+using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor.ViewModels
 {

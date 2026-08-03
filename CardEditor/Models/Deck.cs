@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using CardEditor.Services;
 using CardEditor.Collections;
+using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Models
 {
@@ -24,6 +28,8 @@ namespace CardEditor.Models
                 }
             }
         }
+        public string archiveFilePath;
+        public string archiveEntryName;
 
         public List<CardInstance> MainDeck { get; set; } = new List<CardInstance>();
         public List<CardInstance> ExtraDeck { get; set; } = new List<CardInstance>();
@@ -57,6 +63,17 @@ namespace CardEditor.Models
         public override string ToString()
         {
             return Name;
+        }
+
+        public async Task<(bool, string)> SaveToArchive(string targetSourcePath)
+        {
+            if (string.IsNullOrEmpty(archiveFilePath) || !System.IO.File.Exists(archiveFilePath) || string.IsNullOrEmpty(archiveEntryName))
+                return (true, string.Empty);
+
+            if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
+                return (false, CMess.fileNotExit.ToText());
+
+            return await LoadDataServices.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

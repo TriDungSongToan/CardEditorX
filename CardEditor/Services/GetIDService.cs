@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Data;
 using System.Text.RegularExpressions;
+using System.Data.SQLite;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Documents;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 using CardEditor.Models;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Collections.Generic;
-using System.Data;
-using System.Transactions;
-using YamlDotNet.Serialization.NamingConventions;
-using YamlDotNet.Serialization;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using YamlDotNet.Core;
 
 namespace CardEditor.Services
 {

@@ -706,6 +706,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
+                                
                                 <TextBox x:Name="txtOriginalFolder" Grid.Column="0" Height="auto" MinHeight="47"
                                          VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                          VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"

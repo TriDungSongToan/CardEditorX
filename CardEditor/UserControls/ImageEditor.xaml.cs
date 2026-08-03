@@ -1,26 +1,45 @@
 ﻿using System;
-using System.Windows;
-using CardEditor.ViewModels;
-using System.Windows.Controls;
-using CardEditor.Helpers;
 using System.IO;
-using CardEditor.Localization;
+using System.Windows;
+using System.Windows.Controls;
+using System.Runtime.CompilerServices;
+using System.ComponentModel;
+using CardEditor.Helpers;
 using CardEditor.Services;
+using CardEditor.Localization;
+using CardEditor.ViewModels;
+using CMess = CardEditor.Localization.Language;
+using System.Diagnostics;
 
 namespace CardEditor.UserControls
 {
     /// <summary>
     /// Interaction logic for ImageEditor.xaml
     /// </summary>
-    public partial class ImageEditor : UserControl
+    public partial class ImageEditor : UserControl, INotifyPropertyChanged
     {
         private IMainWindowService MainWindowService;
+        private string _mainWindowTitle = string.Empty;
+        public string MainWindowTitle
+        {
+            get => _mainWindowTitle;
+            set
+            {
+                if (_mainWindowTitle != value)
+                {
+                    _mainWindowTitle = value;
+                    OnPropertyChanged(nameof(MainWindowTitle));
+                    UpdateWindowTitle();
+                }
+            }
+        }
+
         public bool IsSaved { get; set; } = true;
         private string _currentUrl = string.Empty;
         public ImageEditor()
         {
             InitializeComponent();
-            DataContext = UIConfigViewModel.Instance;
+            this.DataContext = this;
         }
         public ImageEditor(IMainWindowService service) : this()
         {
@@ -37,6 +56,7 @@ namespace CardEditor.UserControls
             var env = await WebViewEnvironment.GetAsync();
             await WebViewControl.EnsureCoreWebView2Async(env);
             WebViewControl.CoreWebView2.DownloadStarting += CoreWebView2_DownloadStarting;
+            WebViewControl.CoreWebView2.DocumentTitleChanged += CoreWebView2_DocumentTitleChanged;
 
             LoadConfig();
         }
@@ -56,6 +76,13 @@ namespace CardEditor.UserControls
             e.ResultFilePath = Path.Combine(downloadFolder, fileName);
             e.Handled = true;
         }
+        private void CoreWebView2_DocumentTitleChanged(object sender, object e)
+        {
+            MainWindowTitle = string.IsNullOrWhiteSpace(WebViewControl.CoreWebView2.DocumentTitle)
+                ? CMess.ImageEdit.ToText()
+                : WebViewControl.CoreWebView2.DocumentTitle;
+            Debug.WriteLine($"Document Title Changed: {WebViewControl.CoreWebView2.DocumentTitle}");
+        }
 
         public void LoadConfig()
         {
@@ -73,5 +100,34 @@ namespace CardEditor.UserControls
                 MainWindowService.UpdateTabItemHeader(ConfigViewModel.Instance.imageSetting.SelectedCardMaker.DisplayName);
             }
         }
+
+        private void UpdateWindowTitle()
+        {
+            Debug.WriteLine($"ImageEditor.MainWindowTitle Changed: {MainWindowTitle}");
+            if (MainWindowService == null) Debug.WriteLine($"MainWindowService Null");
+            else Debug.WriteLine($"MainWindowService Not Null");
+
+            if (MainWindowService != null)
+            {
+                string TabHeader = TrimStringHelper.ShortenTitle(MainWindowTitle, maxLength: 30);
+                MainWindowService.UpdateWindowTitle(MainWindowTitle);
+                MainWindowService.UpdateTabItemHeader(TabHeader);
+            }
+        }
+        private void UpdateWindowSavedFlag()
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowSavedFlag(IsSaved);
+            }
+        }
+
+        #region Event
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        #endregion
     }
 }

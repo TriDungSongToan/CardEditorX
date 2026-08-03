@@ -1,21 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using MaterialDesignThemes.Wpf;
 using CardEditor.Services;
 using CardEditor.ViewModels;
-using CardEditor.Localization;
-using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor
 {
@@ -41,7 +29,7 @@ namespace CardEditor
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             LoadConfig();
-
+            InitializeContentMenu();
             genesysViewModel.MessageBoxRequested += GenesysViewModel_MessageBoxRequested;
             genesysViewModel.SnackbarRequested += GenesysViewModel_SnackbarRequested;
             genesysViewModel.ImageViewerRequested += GenesysViewModel_ImageViewerRequested;
@@ -108,6 +96,12 @@ namespace CardEditor
             //        break;
             //}
             //btnSortCard.ToolTip = $"{CMess.toolSort.ToText()} {sortType}\n{CMess.clearSort.ToText()}";
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtCardName);
+            ControlContextMenuService.Attach(txtCardId);
+            ControlContextMenuService.Attach(txtGenesysPoint);
         }
         #endregion
 

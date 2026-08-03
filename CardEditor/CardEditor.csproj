@@ -20,6 +20,7 @@
     </NuGetPackageImportStamp>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
+    <BuildTimeStamp>$([System.DateTime]::Now.ToString("yyyy-MM-ddTHH:mm:ss"))</BuildTimeStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -395,6 +396,7 @@
     <Compile Include="Behaviors\BoolToVisibilityConverter.cs" />
     <Compile Include="Behaviors\FileDropBehavior.cs" />
     <Compile Include="Behaviors\IsExternalInit.cs" />
+    <Compile Include="Behaviors\ListBoxMultiSelectBehavior.cs" />
     <Compile Include="Behaviors\ListViewDragDropBehavior.cs" />
     <Compile Include="Behaviors\NumericBehavior.cs" />
     <Compile Include="Behaviors\OpenDialogEvent.cs" />
@@ -406,6 +408,7 @@
     <Compile Include="Converter\BitToBoolConverter.cs" />
     <Compile Include="Converter\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converter\ColorWithOpacityConverter.cs" />
+    <Compile Include="Converter\EmptyToCollapsedConverter.cs" />
     <Compile Include="Converter\StringConvert.cs" />
     <Compile Include="Editor\Analysis\DescriptionPresenter.cs" />
     <Compile Include="Editor\Analysis\SymbolGraphBuilder.cs" />
@@ -430,6 +433,7 @@
     <Compile Include="Editor\Hover\SymbolDescriptionDocumentBuilder.cs" />
     <Compile Include="Editor\Hover\SymbolResolver.cs" />
     <Compile Include="Events\ScrollEventArgs.cs" />
+    <Compile Include="Helpers\BuildInfoHelper.cs" />
     <Compile Include="Helpers\FileDiaLogHelper.cs" />
     <Compile Include="Helpers\FilePathHelper.cs" />
     <Compile Include="Helpers\FindNameHelper.cs" />
@@ -437,7 +441,9 @@
     <Compile Include="Helpers\LanguageDetector.cs" />
     <Compile Include="Helpers\SearchPattern.cs" />
     <Compile Include="ImageGene\TextLayoutEngine.cs" />
+    <Compile Include="Manager\SingleInstanceManager.cs" />
     <Compile Include="Models\AppContext.cs" />
+    <Compile Include="Models\Character.cs" />
     <Compile Include="Models\CreditItem.cs" />
     <Compile Include="Models\FileItem.cs" />
     <Compile Include="Models\PendulumLanguage.cs" />
@@ -445,6 +451,7 @@
     <Compile Include="Models\KonamiID.cs" />
     <Compile Include="Models\SearchOptions.cs" />
     <Compile Include="Models\Settings\FilterSetting.cs" />
+    <Compile Include="Services\ContentMenuService.cs" />
     <Compile Include="Services\ImageCacheService.cs" />
     <Compile Include="Services\IMainWindowService.cs" />
     <Compile Include="Services\LoadDataServices.cs" />
@@ -495,6 +502,7 @@
     <Compile Include="ViewModels\ScriptViewModel.cs" />
     <Compile Include="ViewModels\SettingViewModel.cs" />
     <Compile Include="ViewModels\SortsViewModel.cs" />
+    <Compile Include="ViewModels\SpecialCharViewModel.cs" />
     <Compile Include="ViewModels\WebViewEnvironment.cs" />
     <Compile Include="Views\About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
@@ -521,7 +529,7 @@
       <DependentUpon>GenesysEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\CardImageHelper.cs" />
-    <Compile Include="Helpers\JoinStringHelper.cs" />
+    <Compile Include="Helpers\StringHelper.cs" />
     <Compile Include="Manager\GenesysID.cs" />
     <Compile Include="Manager\SettingsManager.cs" />
     <Compile Include="Models\CardGenesys.cs" />
@@ -534,7 +542,6 @@
     <Compile Include="Commands\CustomCommands.cs" />
     <Compile Include="Models\CustomInterTabClient.cs" />
     <Compile Include="ViewModels\ConfigViewModel.cs" />
-    <Compile Include="ViewModels\DataViewModel.cs" />
     <Compile Include="Views\CMSG.xaml.cs">
       <DependentUpon>CMSG.xaml</DependentUpon>
     </Compile>
@@ -591,6 +598,9 @@
     <Compile Include="Models\CardRarity.cs" />
     <Compile Include="Views\ItemsEditor.xaml.cs">
       <DependentUpon>ItemsEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OpenArchiveWindow.xaml.cs">
+      <DependentUpon>OpenArchiveWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PreviewDescWindow.xaml.cs">
       <DependentUpon>PreviewDescWindow.xaml</DependentUpon>
@@ -751,6 +761,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Views\ItemsEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OpenArchiveWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1000,7 +1014,6 @@
     <Resource Include="Images\DataEditor\Leftscale.ico" />
     <Resource Include="Images\DataEditor\Rightscale.ico" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -1023,4 +1036,18 @@
   <Import Project="..\packages\SkiaSharp.NativeAssets.Win32.3.119.0\build\net462\SkiaSharp.NativeAssets.Win32.targets" Condition="Exists('..\packages\SkiaSharp.NativeAssets.Win32.3.119.0\build\net462\SkiaSharp.NativeAssets.Win32.targets')" />
   <Import Project="..\packages\Microsoft.Web.WebView2.1.0.3650.58\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.3650.58\build\Microsoft.Web.WebView2.targets')" />
   <Import Project="..\packages\MaterialDesignThemes.5.3.0\build\MaterialDesignThemes.targets" Condition="Exists('..\packages\MaterialDesignThemes.5.3.0\build\MaterialDesignThemes.targets')" />
+  <Target Name="GenerateBuildInfo" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <CurrentBuildTimeUtc>$([System.DateTime]::UtcNow.ToString("O"))</CurrentBuildTimeUtc>
+    </PropertyGroup>
+    <ItemGroup>
+      <BuildInfoLines Include="// Auto-generated. Do not edit." />
+      <BuildInfoLines Include="using System.Reflection%3B" />
+      <BuildInfoLines Include="[assembly: AssemblyMetadata(&quot;BuildTime&quot;, &quot;$(CurrentBuildTimeUtc)&quot;)]" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(IntermediateOutputPath)BuildInfo.generated.cs" Lines="@(BuildInfoLines)" Overwrite="true" WriteOnlyWhenDifferent="false" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)BuildInfo.generated.cs" />
+    </ItemGroup>
+  </Target>
 </Project>

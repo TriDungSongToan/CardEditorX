@@ -1,16 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using CardEditor.Models;
 using CardEditor.Manager;
 using CardEditor.Collections;
 using CardAppContext = CardEditor.Models.AppContext;
-using static CardEditor.Manager.SettingsManager;
 
 namespace CardEditor.ViewModels
 {

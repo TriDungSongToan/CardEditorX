@@ -1,16 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+﻿using System.Windows;
+using CardEditor.Models;
+using CardEditor.Commands;
 
 namespace CardEditor
 {
@@ -19,46 +9,64 @@ namespace CardEditor
     /// </summary>
     public partial class ChooseTabWindow : Window
     {
-        public string SelectedOption { get; private set; }
+        public EditorType SelectedOption { get; set; }
+        public RelayCommand ImageEditorCommand { get; set; }
+        public RelayCommand DataEditorCommand { get; set; }
+        public RelayCommand DeckEditorCommand { get; set; }
+        public RelayCommand CodeEditorCommand { get; set; }
+        public RelayCommand BanListEditorCommand { get; set; }
+
         public ChooseTabWindow()
         {
             InitializeComponent();
+            InitializeCommand();
             this.WindowStyle = WindowStyle.None;
             this.ResizeMode = ResizeMode.NoResize;
             this.ShowInTaskbar = false;
 
-            Point mousePosition = Mouse.GetPosition(null);
+            var mousePosition = System.Windows.Forms.Cursor.Position;
+
             this.Left = mousePosition.X;
-            this.Top = mousePosition.Y + 40;
+            this.Top = mousePosition.Y;
+
+            this.DataContext = this;
+        }
+        private void InitializeCommand()
+        {
+            ImageEditorCommand = new RelayCommand(_ => ImageEditor());
+            DataEditorCommand = new RelayCommand(_ => DataEditor());
+            DeckEditorCommand = new RelayCommand(_ => DeckEditor());
+            CodeEditorCommand = new RelayCommand(_ => CodeEditor());
+            BanListEditorCommand = new RelayCommand(_ => BanListEditor());
         }
 
-        private void btndata_Click(object sender, RoutedEventArgs e)
+        private void ImageEditor()
         {
-            SelectedOption = "Data";
+            SelectedOption = EditorType.Image;
             this.DialogResult = true;
             this.Close();
         }
-        private void btndeck_Click(object sender, RoutedEventArgs e)
+        private void DataEditor()
         {
-            SelectedOption = "Deck";
+            SelectedOption = EditorType.Data;
             this.DialogResult = true;
             this.Close();
         }
-        private void btncode_Click(object sender, RoutedEventArgs e)
+        private void DeckEditor()
         {
-            SelectedOption = "Code";
+            SelectedOption = EditorType.Deck;
             this.DialogResult = true;
             this.Close();
         }
-        private void btnimage_Click(object sender, RoutedEventArgs e)
+        private void CodeEditor()
         {
-            SelectedOption = "Image";
+            SelectedOption = EditorType.Code;
             this.DialogResult = true;
             this.Close();
         }
-        private void btnbanlist_Click(object sender, RoutedEventArgs e)
+        private void BanListEditor()
         {
-            SelectedOption = "BanList";
+            SelectedOption = EditorType.BanList;
             this.DialogResult = true;
             this.Close();
         }

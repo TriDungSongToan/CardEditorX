@@ -1809,7 +1809,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Grid Grid.Column="0" >
-                                    <TextBox Text="{Binding ViewData.CardDesc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    <TextBox x:Name="txtdesc" Text="{Binding ViewData.CardDesc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0" Padding="5,3,0,3" BorderThickness="0.6" Panel.ZIndex="2"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

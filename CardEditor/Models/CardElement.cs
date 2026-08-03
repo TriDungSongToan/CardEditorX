@@ -1,11 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using CardEditor.Localization;
-
-namespace CardEditor.Models
+﻿namespace CardEditor.Models
 {
     public class RuleItem
     {
@@ -111,13 +104,6 @@ namespace CardEditor.Models
     {
         public ulong LinkArrowCode { get; set; }
         public bool LinkArrowValue { get; set; }
-    }
-
-    public class CharacterItem
-    {
-        public string Character { get; set; }
-        public string Category { get; set; }
-        public string Description { get; set; }
     }
 
 }

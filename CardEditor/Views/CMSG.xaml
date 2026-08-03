@@ -50,13 +50,39 @@
                            Visibility="{Binding IconVisibility, RelativeSource={RelativeSource AncestorType=Window}}" />
                 </Grid>
 
-                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" >
-                    <TextBox Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center" IsReadOnly="True"
-                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                             Text="{Binding Message, RelativeSource={RelativeSource AncestorType=Window}}"
-                             materialDesign:TextFieldAssist.UnderlineBrush="Transparent" />
-                </ScrollViewer>
+                <TextBox Grid.Column="1" TextWrapping="Wrap" IsReadOnly="True"
+                         VerticalAlignment="Center" TextAlignment="Left" AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled"
+                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         Text="{Binding Message, RelativeSource={RelativeSource AncestorType=Window}}"
+                         materialDesign:TextFieldAssist.UnderlineBrush="Transparent" />
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0,0,3,0" >
+                <Button x:Name="btnCopyLog" Grid.Column="0" Margin="0,2,0,0" Padding="0"
+                        BorderThickness="0" Background="Transparent" Width="19" Height="17"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Command="{Binding CopyLogCommand}" >
+                    <Viewbox>
+                        <materialDesign:PackIcon Kind="{Binding CopyLogIcon}"
+                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMouseOver, ElementName=btnCopyLog}" Value="True">
+                                            <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsPressed, ElementName=btnCopyLog}" Value="True">
+                                            <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+                    </Viewbox>
+                </Button>
             </Grid>
 
             <ItemsControl Grid.Row="2" HorizontalAlignment="Center" Margin="10,0,10,10"

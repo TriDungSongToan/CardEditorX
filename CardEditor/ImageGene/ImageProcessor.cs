@@ -1,25 +1,13 @@
 ﻿#pragma warning disable CS0618
 using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Threading;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using SkiaSharp;
-using CardEditor.Models;
-using CardEditor.Helpers;
-using CardEditor.Manager;
-using CardEditor.Services;
-using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
-using CardEditor.ImagesConfig;
 using CMess = CardEditor.Localization.Language;
-using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor.ImageGene
 {

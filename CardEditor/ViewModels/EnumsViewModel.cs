@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Text;
 using System.Linq;
-using System.Threading.Tasks;
-using CardEditor.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Windows;
 using CardEditor.Models;
+using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Diagnostics;
-using System.Windows;
 
 namespace CardEditor.ViewModels
 {

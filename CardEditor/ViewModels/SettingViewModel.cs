@@ -1,30 +1,21 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
-using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Markup;
+using System.Diagnostics;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Drawing.Printing;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Management.Instrumentation;
-using System.Web.Script.Serialization;
 using CardEditor.Models;
+using CardEditor.Models.Settings;
 using CardEditor.Manager;
 using CardEditor.Helpers;
 using CardEditor.Commands;
-using CardEditor.Behaviors;
-using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
-using CardEditor.Models.Settings;
-using System.Diagnostics;
 
 namespace CardEditor.ViewModels
 {

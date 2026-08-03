@@ -259,4 +259,16 @@ namespace CardEditor.Models
         Mixed = 3
     }
     #endregion
+
+    #region Windows
+    public enum EditorType
+    {
+        Home,
+        Data,
+        Deck,
+        Code,
+        Image,
+        BanList
+    }
+    #endregion
 }

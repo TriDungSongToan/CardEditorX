@@ -9,20 +9,13 @@ using System.Data.SQLite;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Collections.ObjectModel;
-using System.Web.Services.Description;
 using MaterialDesignThemes.Wpf;
 using CardEditor.Helpers;
 using CardEditor.Services;
@@ -42,7 +35,21 @@ namespace CardEditor.UserControls
     {
         #region Variable
         private IMainWindowService MainWindowService;
-        public bool IsSaved { get; set; } = true;
+        public string MainWindowTitle { get; set; }
+        private bool _isSaved = true;
+        public bool IsSaved
+        {
+            get => _isSaved;
+            set
+            {
+                if (_isSaved != value)
+                {
+                    _isSaved = value;
+                    OnPropertyChanged(nameof(IsSaved));
+                    UpdateWindowSavedFlag();
+                }
+            }
+        }
         private bool _isInternalUpdate = false;
         public string CurrentBanListPath = string.Empty;
         public string CurrentBanListName = string.Empty;
@@ -364,6 +371,7 @@ namespace CardEditor.UserControls
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             LoadConfig();
+            InitializeContentMenu();
             if (!BanListRawDataViewModel.Instance.IsLoaded)
             {
                 var(result, message) = await BanListRawDataViewModel.Instance.LoadBanLists();
@@ -373,6 +381,14 @@ namespace CardEditor.UserControls
                         $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
                 }
             }
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtBanListName);
+            ControlContextMenuService.Attach(txtCardId);
+            ControlContextMenuService.Attach(txtCardName);
+            ControlContextMenuService.Attach(txtReName);
+            ControlContextMenuService.Attach(txtNewPath);
         }
         public void LoadConfig()
         {
@@ -1339,9 +1355,9 @@ namespace CardEditor.UserControls
         #endregion
 
         #region Replace
-        public (bool, string) ReplaceDataCommand(IEnumerable<CardEditor.Models.CardBanList> cardList, ulong flags, bool isAddNew)
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataCommand(IEnumerable<CardEditor.Models.CardBanList> cardList, ulong flags, bool isAddNew)
         {
-            if (cardList == null || flags == 0) return (false, CMess.noCardReplace.ToText());
+            if (cardList == null || flags == 0) return (false, 0, 0, CMess.noCardReplace.ToText());
 
             IEnumerable<Action<CardEditor.Models.CardBanList, CardEditor.Models.CardBanList>> updaters =
                 Enumerable.Empty<Action<CardEditor.Models.CardBanList, CardEditor.Models.CardBanList>>();
@@ -1354,12 +1370,12 @@ namespace CardEditor.UserControls
 
             return ReplaceDataField(cardList, isAddNew, updaters);
         }
-        public (bool, string) ReplaceDataField(IEnumerable<CardEditor.Models.CardBanList> cardList, bool isAddNew,
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.CardBanList> cardList, bool isAddNew,
             IEnumerable<Action<CardEditor.Models.CardBanList, CardEditor.Models.CardBanList>> updaters)
         {
             if (cardList == null || ForbiddenCards == null || LimitedCards == null ||
                 SemiLimitedCards == null || UnLimitedCards == null)
-                return (false, CMess.noCardReplace.ToText());
+                return (false, 0, 0, CMess.noCardReplace.ToText());
 
             try
             {
@@ -1369,7 +1385,7 @@ namespace CardEditor.UserControls
                 var existingUnLimitedCards = UnLimitedCards.GroupBy(c => c.Id).ToDictionary(g => g.Key, g => g.First());
                 var updaterList = updaters?.ToList();
                 bool allowUpdate = updaterList?.Count > 0;
-                int count = 0;
+                int replaced = 0;
 
                 ForbiddenCards.BeginUpdate();
                 LimitedCards.BeginUpdate();
@@ -1382,47 +1398,80 @@ namespace CardEditor.UserControls
                         case <= 0:
                             if (existingForbiddenCards.TryGetValue(newCard.Id, out var existingForbidden))
                             {
-                                if (allowUpdate) existingForbidden.UpdateFrom(newCard, updaterList);
+                                if (allowUpdate)
+                                {
+                                    existingForbidden.UpdateFrom(newCard, updaterList);
+                                    replaced++;
+                                }
                             }
-                            else if (isAddNew) ForbiddenCards.Add(newCard);
+                            else if (isAddNew)
+                            {
+                                ForbiddenCards.Add(newCard);
+                                replaced++;
+                            }
                             break;
                         case 1:
                             if (existingLimitedCards.TryGetValue(newCard.Id, out var existingLimited))
                             {
-                                if (allowUpdate) existingLimited.UpdateFrom(newCard, updaterList);
+                                if (allowUpdate)
+                                {
+                                    existingLimited.UpdateFrom(newCard, updaterList);
+                                    replaced++;
+                                }
                             }
-                            else if (isAddNew) LimitedCards.Add(newCard);
+                            else if (isAddNew)
+                            {
+                                LimitedCards.Add(newCard);
+                                replaced++;
+                            }
                             break;
                         case 2:
                             if (existingSemiLimitedCards.TryGetValue(newCard.Id, out var existingSemiLimited))
                             {
-                                if (allowUpdate) existingSemiLimited.UpdateFrom(newCard, updaterList);
+                                if (allowUpdate)
+                                {
+                                    existingSemiLimited.UpdateFrom(newCard, updaterList);
+                                    replaced++;
+                                }
                             }
-                            else if (isAddNew) SemiLimitedCards.Add(newCard);
+                            else if (isAddNew)
+                            {
+                                SemiLimitedCards.Add(newCard);
+                                replaced++;
+                            }
                             break;
                         default:
                             if (existingUnLimitedCards.TryGetValue(newCard.Id, out var existingUnLimited))
                             {
-                                if (allowUpdate) existingUnLimited.UpdateFrom(newCard, updaterList);
+                                if (allowUpdate)
+                                {
+                                    existingUnLimited.UpdateFrom(newCard, updaterList);
+                                    replaced++;
+                                }
                             }
-                            else if (isAddNew) UnLimitedCards.Add(newCard);
+                            else if (isAddNew)
+                            {
+                                UnLimitedCards.Add(newCard);
+                                replaced++;
+                            }
                             break;
                     }
-                    count++;
                 }
+                return (true, replaced, ForbiddenCards.Count() + LimitedCards.Count() + SemiLimitedCards.Count() + UnLimitedCards.Count(), string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, 0, 0, ex.Message);
+            }
+            finally
+            {
                 ForbiddenCards.EndUpdate();
                 LimitedCards.EndUpdate();
                 SemiLimitedCards.EndUpdate();
                 UnLimitedCards.EndUpdate();
-
-                return (true, count.ToString());
-            }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
             }
         }
-        public (bool, string) ReplaceDataField(IEnumerable<CardEditor.Models.CardBanList> cardList, bool isAddNew,
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.CardBanList> cardList, bool isAddNew,
             params Action<CardEditor.Models.CardBanList, CardEditor.Models.CardBanList>[] updaters)
         {
             return ReplaceDataField(cardList, isAddNew, updaters.AsEnumerable());
@@ -2352,12 +2401,20 @@ namespace CardEditor.UserControls
             }
         }
 
-        public void UpdateWindowTitle()
+        private void UpdateWindowTitle()
         {
             if (MainWindowService != null)
             {
                 MainWindowService.UpdateWindowTitle(CurrentBanListPath);
                 MainWindowService.UpdateTabItemHeader(CurrentBanListName);
+                MainWindowTitle = CurrentBanListPath;
+            }
+        }
+        private void UpdateWindowSavedFlag()
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowSavedFlag(IsSaved);
             }
         }
         #endregion

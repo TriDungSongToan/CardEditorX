@@ -19,6 +19,7 @@
         TextOptions.TextRenderingMode="Auto"
         d:DataContext="{Binding RelativeSource={RelativeSource Self}}"
         mc:Ignorable="d"
+        Loaded="Window_Loaded"
         AllowsTransparency="True"
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
@@ -288,7 +289,7 @@
                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                        FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
 
-                            <TextBox Grid.Column="2" Height="35" Width="100"
+                            <TextBox x:Name="txtLeftScale" Grid.Column="2" Height="35" Width="100"
                                      Padding="5,10,3,0" BorderThickness="0.7"
                                      Text="{Binding LeftScaleText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -311,7 +312,7 @@
                                      materialDesign:TextFieldAssist.UnderlineBrush="Blue"
                                      CaretBrush="Blue" />
 
-                            <TextBox Grid.Column="3" Height="35" Width="100"
+                            <TextBox x:Name="txtRightScale" Grid.Column="3" Height="35" Width="100"
                                      Padding="5,10,3,0" BorderThickness="0.7"
                                      Text="{Binding RightScaleText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -382,7 +383,7 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Column="0" Padding="6,15,6,0" BorderThickness="0.7"
+                            <TextBox x:Name="txtPendulumEffect" Grid.Column="0" Padding="6,15,6,0" BorderThickness="0.7"
                                      TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"
                                      Text="{Binding PendulumEffect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -432,7 +433,7 @@
                                           Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           ResizeBehavior="PreviousAndNext" ResizeDirection="Columns"/>
 
-                            <TextBox Grid.Column="2" Padding="6,15,6,0" BorderThickness="0.7"
+                            <TextBox x:Name="txtMonsterEffect" Grid.Column="2" Padding="6,15,6,0" BorderThickness="0.7"
                                      TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"
                                      Text="{Binding MonsterEffect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -484,7 +485,7 @@
                                       ResizeBehavior="PreviousAndNext" ResizeDirection="Rows"/>
 
                         <Grid Grid.Row="6" >
-                            <TextBox Grid.Column="0" Padding="6,15,6,0" BorderThickness="0.7"
+                            <TextBox x:Name="txtCardDescription" Grid.Column="0" Padding="6,15,6,0" BorderThickness="0.7"
                                      TextWrapping="Wrap" AcceptsReturn="True" AcceptsTab="True"
                                      Text="{Binding CardDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

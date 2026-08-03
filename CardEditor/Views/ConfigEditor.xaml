@@ -1666,7 +1666,7 @@
 
                                                 <TextBlock Grid.Column="1" Text="Show Column Ruler" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
-                                                <TextBox Grid.Column="2" Width="50" VerticalAlignment="Stretch" BorderThickness="0.7"
+                                                <TextBox x:Name="txtColumnRuler" Grid.Column="2" Width="50" VerticalAlignment="Stretch" BorderThickness="0.7"
                                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0"
                                                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1909,7 +1909,7 @@
                                                 </Controls:TwoStateToggle.TrueContent>
                                             </Controls:TwoStateToggle>
                                             <TextBlock Grid.Row="0" Grid.Column="1" Text="Convert Tabs To Spaces" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                            <TextBox Grid.Row="1" Grid.Column="0" Width="50" VerticalAlignment="Stretch" BorderThickness="0.7"
+                                            <TextBox x:Name="txtIndentationSize" Grid.Row="1" Grid.Column="0" Width="50" VerticalAlignment="Stretch" BorderThickness="0.7"
                                                      VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0"
                                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1939,7 +1939,7 @@
                                                 </Controls:TwoStateToggle.TrueContent>
                                             </Controls:TwoStateToggle>
                                             <TextBlock Grid.Row="0" Grid.Column="3" Text="Word Wrap" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                            <TextBox Grid.Row="1" Grid.Column="2" Width="50" VerticalAlignment="Stretch" BorderThickness="0.7"
+                                            <TextBox x:Name="txtWordWrapIndentation" Grid.Row="1" Grid.Column="2" Width="50" VerticalAlignment="Stretch" BorderThickness="0.7"
                                                      VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0"
                                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

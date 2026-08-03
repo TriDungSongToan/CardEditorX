@@ -11,8 +11,8 @@ using System.Windows.Input;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 using System.Diagnostics;
-using CMess = CardEditor.Localization.Language;
 using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Manager
 {

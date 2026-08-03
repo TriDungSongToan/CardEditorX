@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ICSharpCode.AvalonEdit.CodeCompletion;
-using ICSharpCode.AvalonEdit;
-using CardEditor.ViewModels;
-using System.Windows;
 using System.Windows.Input;
+using System.Collections.Generic;
+using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 using CardEditor.Models;
 using CardEditor.Editor.Hover;
+using CardEditor.ViewModels;
 
 namespace CardEditor.Editor.Completion
 {

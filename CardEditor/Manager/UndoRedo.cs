@@ -1,11 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Collections.Generic;
-using Sdl.MultiSelectComboBox;
-using Sdl.MultiSelectComboBox.Themes.Generic;
 
 namespace CardEditor.Manager
 {

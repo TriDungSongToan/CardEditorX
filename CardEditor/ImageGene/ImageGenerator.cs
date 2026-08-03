@@ -3,26 +3,14 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Drawing.Drawing2D;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.ServiceModel.Channels;
+using System.Collections.Concurrent;
 using SkiaSharp;
 using CardEditor.Models;
-using CardEditor.Manager;
 using CardEditor.Services;
 using CardEditor.ViewModels;
-using CardEditor.ImagesConfig;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
-using System.Collections.Concurrent;
 
 namespace CardEditor.ImageGene
 {

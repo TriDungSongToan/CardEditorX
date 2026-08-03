@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Text;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace CardEditor.Behaviors

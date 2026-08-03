@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CardEditor.Models;
 using System.Windows.Data;
+using System.Globalization;
+using CardEditor.Models;
 
 namespace CardEditor.Converter
 {

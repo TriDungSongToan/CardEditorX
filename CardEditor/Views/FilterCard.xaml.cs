@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
 using CardEditor.Models;
+using CardEditor.Services;
 using CardEditor.Helpers;
 using CardEditor.Commands;
 using CardEditor.Collections;
@@ -235,6 +236,18 @@ namespace CardEditor.Views
         }
         #endregion
 
+        #region Load
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            InitializeContentMenu();
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtFilterCDBFilePath);
+            ControlContextMenuService.Attach(txtFilterYDKFilePath);
+        }
+        #endregion
+
         #region Functions
         private void BrowseCDBFilePathFunction()
         {
@@ -347,5 +360,6 @@ namespace CardEditor.Views
         void OnPropertyChanged([CallerMemberName] string p = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
         #endregion
+
     }
 }

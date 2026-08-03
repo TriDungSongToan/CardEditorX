@@ -1,0 +1,521 @@
+﻿<Window x:Class="CardEditor.Views.OpenArchiveWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:hc="clr-namespace:HandyControl.Controls;assembly=HandyControl"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:Behaviors="clr-namespace:CardEditor.Behaviors"
+        xmlns:Converter="clr-namespace:CardEditor.Converter"
+        xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
+        xmlns:Lag="clr-namespace:CardEditor.Localization"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Medium"
+        Style="{StaticResource MaterialDesignWindow}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Background="Transparent"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        d:DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        AllowsTransparency="True"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        WindowStyle="None"
+        Closing="Window_Closing"
+        WindowStartupLocation="CenterScreen"
+        Title="Replace" Height="auto" Width="auto">
+
+    <Window.Resources>
+        <Style x:Key="TextBlockStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+            <Setter Property="FontFamily" Value="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+            <Setter Property="FontSize" Value="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+    </Window.Resources>
+
+    <materialDesign:Card UniformCornerRadius="5"
+                         BorderThickness="1,0,1,1"
+                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         d:FlowDirection="LeftToRight" >
+
+        <Grid Width="450" Height="500">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border x:Name="blHeader" Grid.Row="0" BorderThickness="0,0,0,0"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    Padding="5,3,5,3" CornerRadius="5" Margin="0,0,0,0" Height="28"
+                    MouseLeftButtonDown="blHeader_MouseLeftButtonDown" >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" >
+                        <TextBlock Text="{Lag:Localize Open}" Margin="8,0,0,0" Style="{StaticResource TextBlockStyle}" />
+                        <TextBlock Text="{Lag:Localize CardArchive}" Margin="5,0,0,0" Style="{StaticResource TextBlockStyle}" />
+                        <TextBlock Text="-" Margin="5,0,0,0" Style="{StaticResource TextBlockStyle}" />
+                        <TextBlock Text="{Binding SelectedTabName}" Margin="5,0,0,0" Style="{StaticResource TextBlockStyle}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" >
+                        <Button x:Name="btnClose" Width="30" Height="30" Margin="0" Padding="0"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Background="Transparent" BorderThickness="0" BorderBrush="Transparent"
+                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                Command="{Binding CloseCommand}" >
+                            <Button.Content>
+                                <Viewbox>
+                                    <materialDesign:PackIcon Kind="WindowClose" Padding="0" Margin="0" />
+                                </Viewbox>
+                            </Button.Content>
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}" >
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFFFFF"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1" Margin="5" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="5" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="txtArchiveFilePath" Grid.Column="0" Height="38"
+                         Padding="8,14,3,0" BorderThickness="0.7" IsReadOnly="True"
+                         Text="{Binding ArchiveFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         Behaviors:FileDropBehavior.Enable="True"
+                         Behaviors:PasteSanitizerBehavior.Enable="True"
+                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                         materialDesign:HintAssist.Hint="{Lag:Localize CardArchive}"
+                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                         TextOptions.TextFormattingMode="Display"
+                         TextOptions.TextRenderingMode="ClearType"
+                         materialDesign:TextFieldAssist.HasClearButton="False"
+                         materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                         materialDesign:ThemeAssist.Theme="Dark" />
+
+                <Button Grid.Column="0" Margin="0,0,3,0" Padding="0" Width="22" Height="22"
+                        HorizontalAlignment="Right" VerticalAlignment="Top" 
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                        ToolTip="{Lag:Localize Browse}"
+                        Command="{Binding BrowserArchiveFilePathCommand}" >
+                    <Button.Content>
+                        <materialDesign:PackIcon Kind="FolderSearchOutline" Width="22" Height="22"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    </Button.Content>
+                </Button>
+
+                <Button Grid.Column="2" Height="auto" MinHeight="35" Padding="10,0,10,0"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Content="{Lag:Localize load}" Command="{Binding LoadArchiveFileCommand}"
+                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                        FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                        materialDesign:ButtonAssist.CornerRadius="5"
+                        Style="{StaticResource ButtonDanger}" />
+            </Grid>
+
+            <Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                  Panel.ZIndex="10" Margin="0" >
+                <materialDesign:Snackbar Width="auto" HorizontalAlignment="Center" VerticalAlignment="Top"
+                                         MessageQueue="{Binding MessageQueue}" BorderThickness="0.8"
+                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+            </Grid>
+
+            <TabControl Grid.Row="2" TabStripPlacement="Top"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Top"
+                        materialDesign:ColorZoneAssist.Mode="Custom"
+                        materialDesign:NavigationRailAssist.ShowSelectionBackground="True"
+                        materialDesign:NavigationRailAssist.SelectionCornerRadius="40"
+                        Style="{StaticResource MaterialDesignUniformTabControl}"
+                        Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                        Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                        SelectedIndex="{Binding SelectedIndex}">
+                
+                <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
+                    <Grid Margin="5,0,5,5" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="5" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="txtSearchDatabase" Grid.Column="0" Height="35"
+                                     Padding="10,12,3,0" BorderThickness="0.7"
+                                     Text="{Binding SearchDatabase, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Behaviors:FileDropBehavior.Enable="True"
+                                     Behaviors:PasteSanitizerBehavior.Enable="True"
+                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                     materialDesign:HintAssist.Hint="{Lag:Localize tlFilter}"
+                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                     TextOptions.TextFormattingMode="Display"
+                                     TextOptions.TextRenderingMode="ClearType"
+                                     materialDesign:TextFieldAssist.HasClearButton="False"
+                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                     materialDesign:ThemeAssist.Theme="Dark" />
+
+                            <Button Grid.Column="2" Height="35" Padding="15,5,15,5"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Content="{Lag:Localize Open}" Command="{Binding OpenDatabaseCommand}"
+                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    materialDesign:ButtonAssist.CornerRadius="5"
+                                    Style="{StaticResource ButtonDanger}" />
+                        </Grid>
+
+                        <Grid Grid.Row="4" >
+                            <TextBlock Style="{StaticResource TextBlockStyle}" >
+                                <Run Text="Result:"/>
+                                <Run Text="{Binding SearchDatabaseResult}"/>
+                            </TextBlock>
+                        </Grid>
+
+                        <Border Grid.Row="6" BorderThickness="0.7" Background="Transparent" CornerRadius="5"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                            <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                     HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     ItemsSource="{Binding DatabaseEntrysView}" SelectionMode="Extended"
+                                     Behaviors:ListBoxSelectedItemsBehavior.SelectedItems="{Binding SelectedDatabaseEntrys}" >
+                            </ListBox>
+                        </Border>
+                        
+                    </Grid>
+                    <TabItem.Header>
+                        <StackPanel Width="auto" Height="auto" Margin="0" Background="{x:Null}" >
+                            <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenDatabase.ico" Width="24" Height="24" Margin="0" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12"
+                                       Text="{Lag:Localize CardDB}" TextWrapping="Wrap" TextAlignment="Center"
+                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                
+                <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
+                    <Grid Margin="5,0,5,5" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="5" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="txtSearchScript" Grid.Column="0" Height="35"
+                                     Padding="10,12,3,0" BorderThickness="0.7"
+                                     Text="{Binding SearchScript, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Behaviors:FileDropBehavior.Enable="True"
+                                     Behaviors:PasteSanitizerBehavior.Enable="True"
+                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                     materialDesign:HintAssist.Hint="{Lag:Localize tlFilter}"
+                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                     TextOptions.TextFormattingMode="Display"
+                                     TextOptions.TextRenderingMode="ClearType"
+                                     materialDesign:TextFieldAssist.HasClearButton="False"
+                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                     materialDesign:ThemeAssist.Theme="Dark" />
+
+                            <Button Grid.Column="2" Height="35" Padding="15,5,15,5"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Content="{Lag:Localize Open}" Command="{Binding OpenScriptCommand}"
+                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    materialDesign:ButtonAssist.CornerRadius="5"
+                                    Style="{StaticResource ButtonDanger}" />
+                        </Grid>
+
+                        <Grid Grid.Row="4" >
+                            <TextBlock Style="{StaticResource TextBlockStyle}" >
+                                <Run Text="Result:"/>
+                                <Run Text="{Binding SearchScriptResult}"/>
+                            </TextBlock>
+                        </Grid>
+
+                        <Border Grid.Row="6" BorderThickness="0.7" Background="Transparent" CornerRadius="5"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                            <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                     HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     ItemsSource="{Binding ScriptEntrysView}" SelectionMode="Extended"
+                                     Behaviors:ListBoxSelectedItemsBehavior.SelectedItems="{Binding SelectedScriptEntrys}" >
+                            </ListBox>
+                        </Border>
+
+                    </Grid>
+                    <TabItem.Header>
+                        <StackPanel Width="auto" Height="auto" Margin="0" Background="{x:Null}" >
+                            <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenScript.ico" Width="24" Height="24" Margin="0" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12"
+                                       Text="{Lag:Localize CardScript}" TextWrapping="Wrap" TextAlignment="Center"
+                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                
+                <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
+                    <Grid Margin="5,0,5,5" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="5" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="txtSearchDeck" Grid.Column="0" Height="35"
+                                     Padding="10,12,3,0" BorderThickness="0.7"
+                                     Text="{Binding SearchDeck, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Behaviors:FileDropBehavior.Enable="True"
+                                     Behaviors:PasteSanitizerBehavior.Enable="True"
+                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                     materialDesign:HintAssist.Hint="{Lag:Localize tlFilter}"
+                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                     TextOptions.TextFormattingMode="Display"
+                                     TextOptions.TextRenderingMode="ClearType"
+                                     materialDesign:TextFieldAssist.HasClearButton="False"
+                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                     materialDesign:ThemeAssist.Theme="Dark" />
+
+                            <Button Grid.Column="2" Height="35" Padding="15,5,15,5"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Content="{Lag:Localize Open}" Command="{Binding OpenDeckCommand}"
+                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    materialDesign:ButtonAssist.CornerRadius="5"
+                                    Style="{StaticResource ButtonDanger}" />
+                        </Grid>
+
+                        <Grid Grid.Row="4" >
+                            <TextBlock Style="{StaticResource TextBlockStyle}" >
+                                <Run Text="Result:"/>
+                                <Run Text="{Binding SearchDeckResult}"/>
+                            </TextBlock>
+                        </Grid>
+
+                        <Border Grid.Row="6" BorderThickness="0.7" Background="Transparent" CornerRadius="5"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                            <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                     HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     ItemsSource="{Binding DeckEntrysView}" SelectionMode="Extended"
+                                     Behaviors:ListBoxSelectedItemsBehavior.SelectedItems="{Binding SelectedDeckEntrys}" >
+                            </ListBox>
+                        </Border>
+
+                    </Grid>
+                    <TabItem.Header>
+                        <StackPanel Width="auto" Height="auto" Margin="0" Background="{x:Null}" >
+                            <Image Source="pack://application:,,,/Images/Menu/Win/Deckeditor.ico" Width="24" Height="24" Margin="0" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12"
+                                       Text="{Lag:Localize Deck}" TextWrapping="Wrap" TextAlignment="Center"
+                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                
+                <TabItem HorizontalAlignment="Center" Padding="0" Margin="0" >
+                    <Grid Margin="5,0,5,5" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Height="0.5" Margin="0" HorizontalAlignment="Stretch"
+                                Background="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <Grid Grid.Row="2" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="5" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="txtSearchBanlist" Grid.Column="0" Height="35"
+                                     Padding="10,12,3,0" BorderThickness="0.7"
+                                     Text="{Binding SearchBanlist, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Behaviors:FileDropBehavior.Enable="True"
+                                     Behaviors:PasteSanitizerBehavior.Enable="True"
+                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                     VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                     materialDesign:HintAssist.Hint="{Lag:Localize tlFilter}"
+                                     Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                     TextOptions.TextFormattingMode="Display"
+                                     TextOptions.TextRenderingMode="ClearType"
+                                     materialDesign:TextFieldAssist.HasClearButton="False"
+                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                     materialDesign:ThemeAssist.Theme="Dark" />
+
+                            <Button Grid.Column="2" Height="35" Padding="15,5,15,5"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Content="{Lag:Localize Open}" Command="{Binding OpenBanListCommand}"
+                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    materialDesign:ButtonAssist.CornerRadius="5"
+                                    Style="{StaticResource ButtonDanger}" />
+                        </Grid>
+
+                        <Grid Grid.Row="4" >
+                            <TextBlock Style="{StaticResource TextBlockStyle}" >
+                                <Run Text="Result:"/>
+                                <Run Text="{Binding SearchBanlistResult}"/>
+                            </TextBlock>
+                        </Grid>
+
+                        <Border Grid.Row="6" BorderThickness="0.7" Background="Transparent" CornerRadius="5"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                            <ListBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                     HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                     ItemsSource="{Binding BanListEntrysView}" SelectionMode="Extended"
+                                     Behaviors:ListBoxSelectedItemsBehavior.SelectedItems="{Binding SelectedBanListEntrys}" >
+                            </ListBox>
+                        </Border>
+
+                    </Grid>
+                    <TabItem.Header>
+                        <StackPanel Width="auto" Height="auto" Margin="0" Background="{x:Null}" >
+                            <Image Source="pack://application:,,,/Images/Menu/Win/Banlisteditor.ico" Width="24" Height="24" Margin="0" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12"
+                                       Text="{Lag:Localize BanList}" TextWrapping="Wrap" TextAlignment="Center"
+                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        </StackPanel>
+                    </TabItem.Header>
+                </TabItem>
+                
+            </TabControl>
+        </Grid>
+    </materialDesign:Card>
+</Window>

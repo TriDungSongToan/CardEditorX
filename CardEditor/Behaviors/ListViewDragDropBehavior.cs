@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Text;
-using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using Microsoft.Xaml.Behaviors;
-using System.Collections.Generic;
 
 namespace CardEditor.Behaviors
 {

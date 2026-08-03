@@ -13,7 +13,6 @@
         Style="{StaticResource MaterialDesignWindow}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Background="Transparent"
-        Foreground="{Binding Foreground}"
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="Auto"
         mc:Ignorable="d"
@@ -21,28 +20,36 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
         WindowStyle="None"
-        Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
-        DataContext="{Binding Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
         Title="About" Height="450" Width="400">
 
-    <materialDesign:Card UniformCornerRadius="5"
-                         FlowDirection="{Binding FlowDirectionC}" d:FlowDirection="LeftToRight"
-                         BorderBrush="{Binding ThemeColor}"
-                         Background="{Binding Background}"
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+            <Setter Property="FontFamily" Value="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+            <Setter Property="FontSize" Value="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+        </Style>
+    </Window.Resources>
+
+    <materialDesign:Card UniformCornerRadius="5" d:FlowDirection="LeftToRight"
+                         FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                          BorderThickness="1,0,1,1" >
-        <Grid >
+        <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
 
-            <Border x:Name="blsetting" Grid.Row="0" CornerRadius="5"
-                    Background="{Binding ThemeColor}" BorderThickness="0,0,0,0" Padding="5,5,5,5"
+            <Border Height="30" Grid.Row="0" CornerRadius="5"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    BorderThickness="0,0,0,0" Padding="6,3,6,3"
                     MouseLeftButtonDown="blsetting_MouseLeftButtonDown" >
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <TextBlock Text="{Lag:Localize About}" FontWeight="Medium" HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Foreground="{Binding Foreground}" FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                    <TextBlock Text="{Lag:Localize About}" FontWeight="Medium"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </StackPanel>
             </Border>
 
@@ -52,72 +59,113 @@
                     <RowDefinition Height="auto" />
                 </Grid.RowDefinitions>
 
-                <Border Width="300" Height="auto" BorderBrush="{Binding ThemeColor}" BorderThickness="1"
-                        Padding="5" Margin="3" CornerRadius="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                    <Grid Grid.Row="0" >
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0" HorizontalAlignment="Center" Height="150" Width="150" Margin="0,0,0,0" >
-                            <Image x:Name="imgLogo" Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                <Border Grid.Row="0" Width="300" Height="auto"
+                        BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                        BorderThickness="1" Padding="5" Margin="3,3,3,0" CornerRadius="5"
+                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <StackPanel>
+                        <Grid HorizontalAlignment="Center"
+                              Height="150" Width="150" Margin="0,0,0,0" >
+                            <Image Source="/Images/Logo.ico"
+                                    Stretch="Uniform" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                         </Grid>
 
-                        <Grid Grid.Row="1" Margin="0" >
-                            <TextBlock Text="CardEditorX" HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" FontFamily="{Binding FontFamily}"
-                                       FontSize="30" Foreground="{Binding Foreground}" />
-                        </Grid>
-                        
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" >
-                            <TextBlock Text="{Lag:Localize Version}" Margin="0,0,10,0"
-                                       Background="{Binding Background}" Foreground="{Binding Foreground}"
-                                       FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}" />
-                            <TextBlock Text="0.0" Margin="0,0,10,0"
-                                        Background="{Binding Background}" Foreground="{Binding Foreground}"
-                                        FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}" />
+                        <TextBlock Margin="0" Text="{Binding AppName}" FontSize="30" TextAlignment="Center" />
+
+                        <StackPanel Margin="0,3,0,0" Orientation="Horizontal" HorizontalAlignment="Center" >
+                            <TextBlock Text="{Lag:Localize Version}" Margin="0,0,5,0" FontSize="14" />
+                            <TextBlock Text="{Binding Version}"  FontSize="14" />
                         </StackPanel>
 
-                        <Grid Grid.Row="3" Margin="0,15,0,5" >
-                            <TextBlock Text="{Lag:Localize Creator}" HorizontalAlignment="Center"
-                                       Background="{Binding Background}" Foreground="{Binding Foreground}"
-                                       FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}" />
-                        </Grid>
+                        <StackPanel Margin="0,15,0,0" Orientation="Horizontal" HorizontalAlignment="Center" >
+                            <TextBlock Text="{Lag:Localize Creator}" />
+                        </StackPanel>
 
-                        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="5,0,5,0" HorizontalAlignment="Center" >
-                            <Border Width="25" Height="25" CornerRadius="5" Cursor="Hand"
-                                    ClipToBounds="True" Margin="0" Padding="0"
-                                    MouseLeftButtonUp="Border_MouseLeftButtonUp">
-                                <Border.Background>
-                                    <ImageBrush x:Name="Creator" Stretch="Fill" />
-                                </Border.Background>
-                            </Border>
-                            <TextBlock Text="Trí Dũng Song Toàn" Margin="20,0,20,0" VerticalAlignment="Center"
-                                       Background="{Binding Background}" Foreground="{Binding Foreground}"
-                                       FontFamily="{Binding FontFamily}" FontSize="16" />
-                            <Button x:Name="btnGithub" Background="Transparent" ToolTip="{Lag:Localize toolGitHub}"
-                                    Width="25" Height="25" Padding="0" Margin="0"
-                                    BorderThickness="0" Click="btnGithub_Click" >
-                                <materialDesign:PackIcon Width="30" Height="30" Kind="Github" Foreground="{Binding Foreground}"
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,0" HorizontalAlignment="Center">
+                            <Button Width="25" Height="25" Background="Transparent"
+                                    BorderBrush="Transparent" BorderThickness="0"
+                                    Margin="0" Padding="0" ToolTip="Discord" Command="{Binding CreatorWebCommand}" >
+                                <Image Source="/Images/Creator.png" Stretch="UniformToFill" />
+                            </Button>
+                            <TextBlock Text="{Binding Author}" Margin="10,0,10,0"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="16" />
+                            <Button Width="25" Height="25" Background="Transparent"
+                                    BorderBrush="Transparent" BorderThickness="0"
+                                    Margin="0" Padding="0" ToolTip="Github" Command="{Binding GithubCommand}" >
+                                <materialDesign:PackIcon Width="30" Height="30" Kind="Github"
+                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Button>
                         </StackPanel>
-                    </Grid>
+
+                        <Border Height="1" Margin="10,5,10,5"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <StackPanel Margin="5,0,5,0">
+                            <TextBlock Text="{Binding License}" FontSize="12" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Copyright}" FontSize="12" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <Border Height="1" Margin="10,5,10,5"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+
+                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal" >
+                            <TextBlock Text=".NET:" FontSize="12" />
+                            <TextBlock Text="{Binding NetVersionBuild}" TextWrapping="Wrap"
+                                       FontSize="12" Margin="5,0,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal" >
+                            <TextBlock Text="OS:" FontSize="12" Margin="0,0,5,0" />
+                            <TextBlock Text="{Binding OperatingSystem}" TextWrapping="Wrap" FontSize="12" />
+                        </StackPanel>
+                        
+                        <StackPanel Margin="5,0,5,0" Orientation="Horizontal" >
+                            <TextBlock Text="Build:" FontSize="12" />
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Margin="5,0,0,0" >
+                                <Run Text="{Binding ReleaseDate, StringFormat=yyyy-MM-dd}" />
+                                <Run Text="(yyyy-MM-dd)" />
+                            </TextBlock>
+                        </StackPanel>
+
+                    </StackPanel>
                 </Border>
 
-                <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,2,0,7" >
-                    <Button x:Name="btnok" Grid.Column="0" Content="{Lag:Localize ok}" Width="auto" Height="32"
-                            BorderThickness="0" BorderBrush="{Binding ThemeColor}"
-                            FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}" Padding="15,5,15,5"
-                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,5,0,5" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Width="auto" Height="30"
+                            Margin="0" Padding="10,5,10,5"
+                            Content="{Lag:Localize CopyInfo}"
+                            Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            FontSize="15" BorderThickness="0" 
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                             materialDesign:ButtonAssist.CornerRadius="5"
-                            Style="{StaticResource ButtonPrimary}"
-                            Click="btnok_Click" />
+                            Style="{StaticResource MaterialDesignPaperSecondaryDarkButton}"
+                            Command="{Binding CopyInfoCommand}" >
+                    </Button>
+                    <Button Grid.Column="2" Width="auto" MinWidth="60" Height="30"
+                            Margin="0" Padding="10,5,10,5"
+                            Content="{Lag:Localize ok}"
+                            Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            FontSize="15" BorderThickness="0" 
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            materialDesign:ButtonAssist.CornerRadius="5"
+                            Style="{StaticResource MaterialDesignPaperSecondaryDarkButton}"
+                            Command="{Binding OKCommand}" >
+                    </Button>
                 </Grid>
                 
             </Grid>

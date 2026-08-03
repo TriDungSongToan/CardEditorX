@@ -1,25 +1,21 @@
 ﻿using System;
 using System.IO;
-using System.IO.Pipes;
-using System.Data;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
 using System.Configuration;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using LibGit2Sharp;
 using OfficeOpenXml;
-using CardEditor.Models;
 using CardEditor.Manager;
 using CardEditor.Services;
+using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
-using CardEditor.ImageGene;
 
 namespace CardEditor
 {
@@ -28,35 +24,113 @@ namespace CardEditor
     /// </summary>
     public partial class App : Application
     {
+        #region Fielda
         private readonly string DataFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "data");
+        private SingleInstanceManager _instanceManager;
+        private readonly List<MainWindow> _openWindows = new List<MainWindow>();
+        private MainWindow _activeWindow;
+        #endregion
+
+        #region Startup
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            _instanceManager = new SingleInstanceManager();
+            _instanceManager.FileReceived += OnFileReceivedFromAnotherInstance;
+            bool isFirstInstance = _instanceManager.TryStart(e.Args);
+            if (!isFirstInstance)
+            {
+                // Đã forward file (nếu có) sang instance đang chạy, thoát ngay.
+                Environment.Exit(0);
+                return;
+            }
+
             ExcelPackage.License.SetNonCommercialOrganization("CardEditorX");
             var result = await CheckDataFolder();
             await LoadSettings();
 
             // LanguageManager.Initialize();
-            MainWindow mainWindow;
-            if (e.Args.Length > 0)
-            {
-                mainWindow = new MainWindow(e.Args);
-            }
-            else
-            {
-                mainWindow = new MainWindow();
-            }
-            // MainWindow = mainWindow;
+
+            MainWindow mainWindow = e.Args.Length > 0 ? new MainWindow(e.Args) : new MainWindow();
+            RegisterWindow(mainWindow);
             mainWindow.Show();
             Application.Current.MainWindow = mainWindow;
+
             UpdateApplicationIcon();
             if (result) ShowCmdNotification();
         }
-        
+        #endregion
+
+        #region Constructor
         public App()
         {
             // PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Error;
             // PresentationTraceSources.DataBindingSource.Listeners.Add(new BindingTraceListener());
+        }
+        #endregion
+
+        #region Event
+        private void OnFileReceivedFromAnotherInstance(string filePath)
+        {
+            // Callback này chạy trên background thread (từ Named Pipe), phải marshal vào UI thread.
+            Dispatcher.Invoke(() =>
+            {
+                // Ưu tiên cửa sổ đang active; nếu vì lý do nào đó không có (đã đóng),
+                // fallback sang cửa sổ đầu tiên còn tồn tại.
+                var target = _activeWindow ?? _openWindows.FirstOrDefault();
+
+                if (target == null)
+                {
+                    // Trường hợp hiếm: tất cả cửa sổ đã đóng nhưng process vẫn sống
+                    // (chỉ xảy ra nếu bạn đổi ShutdownMode sang OnExplicitShutdown).
+                    target = new MainWindow();
+                    RegisterWindow(target);
+                    target.Show();
+                }
+
+                if (target.WindowState == WindowState.Minimized)
+                {
+                    target.WindowState = WindowState.Normal;
+                }
+                target.Activate();
+                target.Topmost = true;
+                target.Topmost = false;
+                target.Focus();
+
+                if (!string.IsNullOrWhiteSpace(filePath))
+                {
+                    target.HandleFileOpen(filePath);
+                }
+            });
+        }
+        protected override void OnExit(ExitEventArgs e)
+        {
+            Cleanup();
+            base.OnExit(e);
+        }
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            Cleanup();
+        }
+        #endregion
+
+        #region Functions
+        internal void RegisterWindow(MainWindow window)
+        {
+            _openWindows.Add(window);
+            _activeWindow = window; // cửa sổ vừa tạo mặc định coi là active
+
+            window.Activated += (s, e) => _activeWindow = window;
+            window.Closed += (s, e) =>
+            {
+                _openWindows.Remove(window);
+                if (ReferenceEquals(_activeWindow, window))
+                {
+                    // Cửa sổ active vừa đóng -> chuyển active sang cửa sổ còn lại gần nhất
+                    _activeWindow = _openWindows.LastOrDefault();
+                }
+            };
         }
 
         private async Task LoadSettings()
@@ -174,15 +248,7 @@ namespace CardEditor
         }
 
         private bool _cleaned = false;
-        protected override void OnExit(ExitEventArgs e)
-        {
-            Cleanup();
-            base.OnExit(e);
-        }
-        private void Application_Exit(object sender, ExitEventArgs e)
-        {
-            Cleanup();
-        }
+
         private void Cleanup()
         {
             if (_cleaned) return;
@@ -208,5 +274,6 @@ namespace CardEditor
             GC.WaitForPendingFinalizers();
             GC.Collect();
         }
+        #endregion
     }
 }

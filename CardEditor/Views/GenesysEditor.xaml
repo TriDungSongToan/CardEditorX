@@ -39,13 +39,13 @@
             <Converter:IntSafeConverter x:Key="IntSafeConverter" />
 
             <Style x:Key="CustomDataGridHeaderStyle" TargetType="DataGridColumnHeader"
-               BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                   BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
                             <TextBlock Text="{Binding}"
-                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                   Height="20" Margin="0" Padding="0" TextAlignment="Left" TextWrapping="Wrap"/>
+                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                       Height="20" Margin="0" Padding="0" TextAlignment="Left" TextWrapping="Wrap"/>
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
@@ -306,23 +306,23 @@
 
                     <Grid Grid.Row="0" >
                         <TextBox x:Name="txtCardName" Height="48" Padding="3,10,3,2" Margin="0"
-                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                             VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden"
-                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
-                                             TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             materialDesign:HintAssist.Hint="{Lag:Localize cardName}"
-                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                             Text="{Binding GenesysCardName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                             TextOptions.TextFormattingMode="Display"
-                                             TextOptions.TextRenderingMode="ClearType"
-                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
-                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                             materialDesign:ThemeAssist.Theme="Dark" />
+                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                 VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden"
+                                 VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
+                                 TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                 materialDesign:HintAssist.Hint="{Lag:Localize cardName}"
+                                 Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                 Text="{Binding GenesysCardName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                 TextOptions.TextFormattingMode="Display"
+                                 TextOptions.TextRenderingMode="ClearType"
+                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
+                                 materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                 materialDesign:ThemeAssist.Theme="Dark" />
                     </Grid>
 
                     <Grid Grid.Row="2" >

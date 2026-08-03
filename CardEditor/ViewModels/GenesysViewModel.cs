@@ -1,21 +1,19 @@
 ﻿using System;
 using System.IO;
+using System.Web.UI.WebControls;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Web.UI.WebControls;
-using System.Runtime.CompilerServices;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Commands;
@@ -23,7 +21,6 @@ using CardEditor.Services;
 using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Drawing;
 
 namespace CardEditor.ViewModels
 {

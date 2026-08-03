@@ -1,13 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.Data.SQLite;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using CardEditor.Models;
 using CardEditor.Services;
 using CardEditor.Localization;
@@ -84,6 +78,16 @@ namespace CardEditor.ViewModels
             IsLoadedScript = true;
         }
 
+        public void AddScriptPath(ulong id, string filePath)
+        {
+            if (!ScriptPaths.TryGetValue(id, out List<string> paths))
+            {
+                paths = new List<string>();
+                ScriptPaths[id] = paths;
+            }
+
+            paths.Add(filePath);
+        }
         public bool TryGetCard(ulong id, out CardEX card)
         {
             if (_allCards != null)

@@ -10,6 +10,7 @@ using CardEditor.Models;
 using CardEditor.Models.Settings;
 using CardEditor.Helpers;
 using CardEditor.Commands;
+using CardEditor.Services;
 using CardEditor.ViewModels;
 using CardEditor.Collections;
 using CardEditor.Localization;
@@ -557,8 +558,23 @@ namespace CardEditor.Views
         #region Load
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            InitializeContentMenu();
             // TabHeaderIndex = 0;
             filterSetting.SetValue(ConfigViewModel.Instance.dataHandlingSetting.Advanced);
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtfindwhat);
+            ControlContextMenuService.Attach(txtreplacewith);
+
+            ControlContextMenuService.Attach(txtReplaceFieldFilePath);
+            ControlContextMenuService.Attach(txtImportDataFilePath);
+
+            ControlContextMenuService.Attach(txtIdText);
+            ControlContextMenuService.Attach(txtCreditName);
+            ControlContextMenuService.Attach(txtCreditHeader);
+            ControlContextMenuService.Attach(txtCreditFooter);
+            ControlContextMenuService.Attach(txtCreditDesc);
         }
         #endregion
 
@@ -639,11 +655,13 @@ namespace CardEditor.Views
             {
                 if (!CheckDuplicateIds()) return;
 
-                var (resultReplaceField, messageReplaceField) = await MainWindowReference.ReplaceField(ReplaceFieldFilePath, ReplaceFieldFlags, IsAddNew);
-                if (resultReplaceField) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    string.Format(CMess.replaceSuc.ToText(), messageReplaceField, CMess.Card.ToText()), new[] { CMess.ok.ToText() });
+                var resultReplaceField = await MainWindowReference.ReplaceField(ReplaceFieldFilePath, ReplaceFieldFlags, IsAddNew);
+
+                if (resultReplaceField.Success) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.replaceSuc.ToText(), resultReplaceField.ReplacedCard.ToString(), resultReplaceField.TotalCard.ToString()),
+                    new[] { CMess.ok.ToText() });
                 else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {messageReplaceField}", new[] { CMess.error.ToText() });
+                    $"{CMess.errorOcc.ToText()} {resultReplaceField.Message}", new[] { CMess.error.ToText() });
             } 
         }
         private bool CanReplaceField()

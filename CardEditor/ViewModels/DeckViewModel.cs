@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using CardEditor.Models;
 using CardEditor.Collections;
@@ -75,7 +73,7 @@ namespace CardEditor.ViewModels
             IsLoadedDecksList = true;
             return true;
         }
-        public async Task<Deck> LoadDeckFromFile(string filePath)
+        public async Task<Deck> LoadDeckFromFile(string filePath, string archiveFilePath = null, string archiveEntryName = null)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return null;
 
@@ -111,7 +109,7 @@ namespace CardEditor.ViewModels
                     }
                 }
 
-                var deck = new Deck { Path = filePath };
+                var deck = new Deck { Path = filePath, archiveFilePath = archiveFilePath, archiveEntryName = archiveEntryName };
                 deck.MainDeck = new List<CardInstance>(mainIds.Select(id => CardEXDataViewModel.Instance.AllCards.TryGetValue(id, out var card) ? card : null).Where(c => c != null).Select(card => new CardInstance { Card = card }));
                 deck.ExtraDeck = new List<CardInstance>(extraIds.Select(id => CardEXDataViewModel.Instance.AllCards.TryGetValue(id, out var card) ? card : null).Where(c => c != null).Select(card => new CardInstance { Card = card }));
                 deck.SideDeck = new List<CardInstance>(sideIds.Select(id => CardEXDataViewModel.Instance.AllCards.TryGetValue(id, out var card) ? card : null).Where(c => c != null).Select(card => new CardInstance { Card = card }));

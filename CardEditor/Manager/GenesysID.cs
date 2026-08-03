@@ -1,18 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Windows;
 using System.Data.SQLite;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Collections.Generic;
-using CardEditor.Models;
 using CardEditor.Helpers;
-using CardEditor.Services;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Diagnostics;
 
 namespace CardEditor.Manager
 {

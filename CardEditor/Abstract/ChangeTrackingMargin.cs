@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Media;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Rendering;
-using static ICSharpCode.AvalonEdit.Rendering.TextViewWeakEventManager;
-using static ICSharpCode.AvalonEdit.TextEditorWeakEventManager;
-
 
 namespace CardEditor.Abstract
 {

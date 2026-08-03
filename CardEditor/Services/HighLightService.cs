@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using CardEditor.Localization;

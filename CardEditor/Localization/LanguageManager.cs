@@ -1,16 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Controls;
-using System.Threading.Tasks;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Globalization;
-using CardEditor.Models;
 using CardEditor.ViewModels;
 
 namespace CardEditor.Localization

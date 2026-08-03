@@ -24,4 +24,14 @@ namespace CardEditor.Helpers
             return sanitized.ToString();
         }
     }
+    public class TrimStringHelper
+    {
+        public static string ShortenTitle(string text, int maxLength = 30)
+        {
+            if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+                return text;
+
+            return text.Substring(0, maxLength - 3) + "...";
+        }
+    }
 }

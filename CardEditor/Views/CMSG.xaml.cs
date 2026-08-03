@@ -1,19 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Controls;
-using System.Windows.Shapes;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Windows.Documents;
-using System.ComponentModel;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using MaterialDesignThemes.Wpf;
 using CardEditor.Models;
+using CardEditor.Commands;
 using CardEditor.Services;
 
 namespace CardEditor
@@ -36,7 +31,6 @@ namespace CardEditor
                 OnPropertyChanged(nameof(Text));
             }
         }
-
         public bool IsDefault
         {
             get => _isDefault;
@@ -46,7 +40,6 @@ namespace CardEditor
                 OnPropertyChanged(nameof(IsDefault));
             }
         }
-
         public int Index
         {
             get => _index;
@@ -65,15 +58,20 @@ namespace CardEditor
     }
     public partial class CMSG : Window, INotifyPropertyChanged
     {
-        private string _titles;
-        private string _message;
-        private Visibility _iconVisibility = Visibility.Collapsed;
-        private ObservableCollection<ButtonInfo> _buttons;
-        // private string _result;
+        #region Variable
         private int? _resultIndex;
+        public enum MessageBoxIconType
+        {
+            Error,
+            Warning,
+            Notification,
+            Information,
+            Question
+        }
+        #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
+        #region Property
+        private string _titles;
         public string Titles
         {
             get => _titles;
@@ -83,6 +81,7 @@ namespace CardEditor
                 OnPropertyChanged(nameof(Titles));
             }
         }
+        private string _message;
         public string Message
         {
             get => _message;
@@ -92,6 +91,7 @@ namespace CardEditor
                 OnPropertyChanged(nameof(Message));
             }
         }
+        private Visibility _iconVisibility = Visibility.Collapsed;
         public Visibility IconVisibility
         {
             get => _iconVisibility;
@@ -101,6 +101,8 @@ namespace CardEditor
                 OnPropertyChanged(nameof(IconVisibility));
             }
         }
+
+        private ObservableCollection<ButtonInfo> _buttons;
         public ObservableCollection<ButtonInfo> Buttons
         {
             get => _buttons;
@@ -111,59 +113,64 @@ namespace CardEditor
             }
         }
 
+        private MaterialDesignThemes.Wpf.PackIconKind _copyLogIcon = PackIconKind.ContentCopy;
+        public MaterialDesignThemes.Wpf.PackIconKind CopyLogIcon
+        {
+            get => _copyLogIcon;
+            set
+            {
+                if (_copyLogIcon != value)
+                {
+                    _copyLogIcon = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
+
+        #region Commnad
+        public RelayCommand CopyLogCommand { get; set; }
+        #endregion
+
+        #region Constructor
         public CMSG()
         {
             InitializeComponent();
+            InitializeCommand();
             DataContext = this;
         }
-
-        protected void OnPropertyChanged(string name)
+        private void InitializeCommand()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            CopyLogCommand = new RelayCommand(async _ => await CopyLogExecute());
         }
+        #endregion
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        #region Command Methods
+        private async Task CopyLogExecute()
         {
-            if (e.Key == Key.Enter)
-            {
-                var defaultButton = Buttons.FirstOrDefault(b => b.IsDefault);
-                if (defaultButton != null)
-                {
-                    // _result = defaultButton.Text;
-                    _resultIndex = defaultButton.Index;
-                    DialogResult = true;
-                    Close();
-                }
-            }
-            else if (e.Key == Key.Escape)
-            {
-                DialogResult = false;
-                Close();
-            }
+            bool success = CopyLog();
+            if (!success) return;
+
+            CopyLogIcon = PackIconKind.Check;
+
+            await Task.Delay(3000);
+            CopyLogIcon = PackIconKind.ContentCopy;
         }
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private bool CopyLog()
         {
-            if (sender is Button button)
+            try
             {
-                var buttonInfo = Buttons.FirstOrDefault(b => b.Text == button.Content.ToString());
-                if (buttonInfo != null)
-                {
-                    // _result = buttonInfo.Text;
-                    _resultIndex = buttonInfo.Index;
-                    DialogResult = true;
-                    Close();
-                }
+                string log = $"{Title}\n{Message}";
+                Clipboard.SetText(log);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
+        #endregion
 
-        public enum MessageBoxIconType
-        {
-            Error,
-            Warning,
-            Notification,
-            Information,
-            Question
-        }
         public static int Show(string title, MessageBoxIconType iconType, string message, string[] buttons, int defaultButtonIndex = 0)
         {
             if (!Application.Current.Dispatcher.CheckAccess())
@@ -209,6 +216,26 @@ namespace CardEditor
             return msgBox._resultIndex ?? -1;
         }
 
+        #region Event
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var defaultButton = Buttons.FirstOrDefault(b => b.IsDefault);
+                if (defaultButton != null)
+                {
+                    // _result = defaultButton.Text;
+                    _resultIndex = defaultButton.Index;
+                    DialogResult = true;
+                    Close();
+                }
+            }
+            else if (e.Key == Key.Escape)
+            {
+                DialogResult = false;
+                Close();
+            }
+        }
         private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -216,5 +243,25 @@ namespace CardEditor
                 this.DragMove();
             }
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+                var buttonInfo = Buttons.FirstOrDefault(b => b.Text == button.Content.ToString());
+                if (buttonInfo != null)
+                {
+                    // _result = buttonInfo.Text;
+                    _resultIndex = buttonInfo.Index;
+                    DialogResult = true;
+                    Close();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged([CallerMemberName] string p = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
+        #endregion
     }
 }

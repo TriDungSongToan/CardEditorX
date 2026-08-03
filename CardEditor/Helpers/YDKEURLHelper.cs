@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms.VisualStyles;
-using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Helpers
 {

@@ -1,11 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Data.SQLite;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace CardEditor.ViewModels
 {
@@ -71,6 +67,11 @@ namespace CardEditor.ViewModels
                 using (var command = new SQLiteCommand(connection))
                 {
                     command.CommandText = @"
+                        CREATE TABLE IF NOT EXISTS archive (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            time DATETIME NOT NULL,
+                            url TEXT NOT NULL UNIQUE
+                        );
                         CREATE TABLE IF NOT EXISTS database (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             time DATETIME NOT NULL,
@@ -112,10 +113,11 @@ namespace CardEditor.ViewModels
                 {
                     string table = typeItem switch
                     {
-                        0 => "database",
-                        1 => "script",
-                        2 => "deck",
-                        3 => "banlist",
+                        0 => "archive",
+                        1 => "database",
+                        2 => "script",
+                        3 => "deck",
+                        4 => "banlist",
                         _ => "database"
                     };
 
@@ -157,10 +159,11 @@ namespace CardEditor.ViewModels
                 {
                     string table = typeItem switch
                     {
-                        0 => "database",
-                        1 => "script",
-                        2 => "deck",
-                        3 => "banlist",
+                        0 => "archive",
+                        1 => "database",
+                        2 => "script",
+                        3 => "deck",
+                        4 => "banlist",
                         _ => "database"
                     };
 
@@ -189,10 +192,11 @@ namespace CardEditor.ViewModels
                     {
                         string table = typeItem switch
                         {
-                            0 => "database",
-                            1 => "script",
-                            2 => "deck",
-                            3 => "banlist",
+                            0 => "archive",
+                            1 => "database",
+                            2 => "script",
+                            3 => "deck",
+                            4 => "banlist",
                             _ => "database"
                         };
 

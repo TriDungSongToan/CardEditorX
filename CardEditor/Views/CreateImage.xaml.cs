@@ -1,34 +1,19 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media.Imaging;
-using System.Reflection;
-using System.Diagnostics;
+using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
+using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using CardEditor.Models;
 using CardEditor.Helpers;
-using CardEditor.Manager;
 using CardEditor.Services;
+using CardEditor.Commands;
 using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
-using CardEditor.Models.Settings;
-using CardEditor.Collections;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using CardEditor.Commands;
-using System.Text.RegularExpressions;
 
 namespace CardEditor
 {
@@ -67,6 +52,7 @@ namespace CardEditor
         public RelayCommand BrowseOutPutFolder { get; private set; }
         #endregion
 
+        #region Constructor
         public CreateImage()
         {
             InitializeComponent();
@@ -83,14 +69,21 @@ namespace CardEditor
             BrowseArtWorkFolder = new CardEditor.Commands.RelayCommand(_ => BrowseArtWork());
             BrowseOutPutFolder = new CardEditor.Commands.RelayCommand(_ => BrowseOutPut());
         }
+        #endregion
 
         #region Load
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            InitializeContentMenu();
             imageSettingSource = new Models.Settings.ImageSettingSource();
             if (LoadSettingSource()) LoadSetting();
             this.Opacity = 1;
             UpdateRunnerPosition();
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtArtWorkFolder);
+            ControlContextMenuService.Attach(txtOutPutFolder);
         }
         private bool LoadSettingSource()
         {

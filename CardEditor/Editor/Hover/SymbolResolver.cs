@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using ICSharpCode.AvalonEdit.Document;
 using CardEditor.Models;
 using CardEditor.ViewModels;
-using ICSharpCode.AvalonEdit.Document;
 
 namespace CardEditor.Editor.Hover
 {

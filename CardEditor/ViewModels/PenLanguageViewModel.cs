@@ -555,6 +555,9 @@ namespace CardEditor.ViewModels
         {
             var sb = new StringBuilder();
 
+            if (rule == null || descResult == null) return sb.ToString();
+            if (scale == null) scale = new PenScale();
+
             if (rule.HasPenScalePattern && rule.ScaleLineTemplate is not null)
             {
                 var scaleLine = rule.ScaleLineTemplate

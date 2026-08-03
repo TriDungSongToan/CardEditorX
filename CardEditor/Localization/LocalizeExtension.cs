@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace CardEditor.Localization
 {
@@ -51,6 +47,22 @@ namespace CardEditor.Localization
                     new PropertyChangedEventArgs(nameof(Value)));
             }
             public event PropertyChangedEventHandler PropertyChanged;
+        }
+
+    }
+    public static class LanguageExtensions
+    {
+        // Phương thức mở rộng thông thường thay vì toán tử chuyển đổi
+        public static string ToText(this Language language)
+        {
+            return LanguageManager.GetText((uint)language);
+        }
+    }
+    public static class UIntExtensions
+    {
+        public static string ToLanguageString(this uint code)
+        {
+            return LanguageManager.GetText(code);
         }
     }
 }
