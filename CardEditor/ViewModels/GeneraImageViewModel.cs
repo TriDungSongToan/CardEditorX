@@ -197,10 +197,11 @@ namespace CardEditor.ViewModels
         public async Task<bool> LoadImageCache(int Series, int Rare)
         {
             Debug.WriteLine("Start Load Image Cache");
-            if (IsChangedSeries)
-            {
+
+            if (CurrentImageInfo == null || CurrentLinkArrowInfo == null)
                 if (!LoadImageConfig(Series)) return false;
-            }
+            if (IsChangedSeries)
+                if (!LoadImageConfig(Series)) return false;
 
             var loadTasks = new List<Task<bool>>
             {

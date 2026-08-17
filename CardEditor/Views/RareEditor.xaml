@@ -37,6 +37,60 @@
 
     <Window.Resources>
         <ResourceDictionary>
+
+            <Style TargetType="TextBox" x:Key="TextBoxBrowseStyle"
+                   BasedOn="{StaticResource CustomMaterialDesignFilledTextBox}" >
+                <Setter Property="BorderBrush" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="Background" Value="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="FontFamily" Value="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="FontSize" Value="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="TextAlignment" Value="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="BorderThickness" Value="0.7" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Padding" Value="10,12,70,2" />
+                <Setter Property="Height" Value="auto" />
+                <Setter Property="MinHeight" Value="48" />
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+                <Setter Property="materialDesign:TextFieldAssist.TextFieldCornerRadius" Value="5" />
+                <Setter Property="materialDesign:TextFieldAssist.UnderlineCornerRadius" Value="0,0,10,10" />
+                <Setter Property="materialDesign:ThemeAssist.Theme" Value="Dark" />
+            </Style>
+
+            <Style TargetType="TextBox" x:Key="TextBoxStyle"
+                   BasedOn="{StaticResource TextBoxBrowseStyle}" >
+                <Setter Property="Padding" Value="10,12,10,2" />
+            </Style>
+
+            <Style TargetType="ComboBox" x:Key="ComboboxStyle"
+                   BasedOn="{StaticResource MaterialDesignFilledComboBox}" >
+                <Setter Property="BorderBrush" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="Background" Value="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="FontFamily" Value="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="FontSize" Value="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="IsEditable" Value="False" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Padding" Value="8,18,12,5" />
+                <Setter Property="Height" Value="auto" />
+                <Setter Property="MinHeight" Value="48" />
+                <Setter Property="BorderThickness" Value="0.7" />
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+                <Setter Property="materialDesign:TextFieldAssist.TextFieldCornerRadius" Value="5" />
+                <Setter Property="materialDesign:TextFieldAssist.UnderlineCornerRadius" Value="0,0,10,10" />
+                <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="Custom" />
+            </Style>
+
             <Converter:IntSafeConverter x:Key="IntSafeConverter" />
 
             <Style x:Key="CustomDataGridHeaderStyle" TargetType="DataGridColumnHeader"
@@ -693,344 +747,296 @@
                         <Grid Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                               HorizontalAlignment="Stretch"
                               Width="{Binding ActualWidth, ElementName=RareManager}" >
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-                            
-                            <Grid Grid.Row="0" Margin="20,30,20,10" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <TextBox x:Name="txtOriginalFolder" Grid.Column="0" Height="auto" MinHeight="47"
-                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                         Margin="0" Padding="10,10,72,2" BorderThickness="0.7"
-                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         materialDesign:HintAssist.Hint="{Lag:Localize OriginalFolder}"
-                                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                         Text="{Binding OriginalImgPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}"
-                                         Behaviors:FileDropBehavior.Enable="True"
-                                         Behaviors:PasteSanitizerBehavior.Enable="True"
-                                         TextOptions.TextFormattingMode="Display"
-                                         TextOptions.TextRenderingMode="ClearType"
-                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                         materialDesign:ThemeAssist.Theme="Dark" />
+                            <Border Margin="5" Background="Transparent" BorderThickness="1" CornerRadius="5"
+                                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                    </Grid.RowDefinitions>
 
-                                <Button x:Name="btnClearOriginalFolder" Grid.Column="0" Width="17" Height="17"
-                                        HorizontalAlignment="Right" VerticalAlignment="Stretch"
-                                        Margin="0,9,50,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
-                                        Background="Transparent" Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        Command="{Binding ClearOriginalPathCommand}" >
-                                    <Button.Content>
-                                        <materialDesign:PackIcon Kind="Close" Width="17" Height="17" />
-                                    </Button.Content>
-                                </Button>
+                                    <Grid Grid.Row="0" Margin="5,5,5,0">
+                                        <TextBox x:Name="txtOriginalFolder" Grid.Column="0"
+                                                 Style="{StaticResource TextBoxBrowseStyle}"
+                                                 materialDesign:HintAssist.Hint="{Lag:Localize OriginalFolder}"
+                                                 Text="{Binding imageSetting.OriginalCardFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}"
+                                                 Behaviors:FileDropBehavior.Enable="True"
+                                                 Behaviors:PasteSanitizerBehavior.Enable="True" />
 
-                                <Button x:Name="btnBrowseOriginalFolder" Grid.Column="0" Width="40" Height="40"
-                                        HorizontalAlignment="Right" VerticalAlignment="Stretch"
-                                        Margin="0,0,5,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
-                                        Background="Transparent" Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        Command="{Binding BrowseOriginalPathCommand}" >
-                                    <Button.Content>
-                                        <materialDesign:PackIcon Kind="FolderSearch" Width="35" Height="35" />
-                                    </Button.Content>
-                                </Button>
+                                        <Button x:Name="btnClearOriginalFolder" Grid.Column="0" Width="18" Height="18"
+                                                HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                                                Margin="0,9,50,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
+                                                Background="Transparent" Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Command="{Binding ClearOriginalPathCommand}" >
+                                            <Button.Content>
+                                                <materialDesign:PackIcon Kind="Close" Width="18" Height="18" />
+                                            </Button.Content>
+                                        </Button>
 
-                            </Grid>
-
-                            <Grid Grid.Row="1" Margin="20,0,20,10" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-
-                                <TextBox x:Name="txtOutPutFolder" Grid.Column="0" Height="auto" MinHeight="47"
-                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                         VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                         Margin="0" Padding="10,10,72,2" BorderThickness="0.7"
-                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         materialDesign:HintAssist.Hint="{Lag:Localize OutPutFolder}"
-                                         Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                         Text="{Binding OutputImgPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}"
-                                         Behaviors:FileDropBehavior.Enable="True"
-                                         Behaviors:PasteSanitizerBehavior.Enable="True"
-                                         TextOptions.TextFormattingMode="Display"
-                                         TextOptions.TextRenderingMode="ClearType"
-                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                         materialDesign:ThemeAssist.Theme="Dark" />
-
-                                <Button x:Name="btnClearOutPutFolder" Grid.Column="0" Width="17" Height="17"
-                                        HorizontalAlignment="Right" VerticalAlignment="Stretch"
-                                        Margin="0,9,50,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
-                                        Background="Transparent" Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        Command="{Binding ClearOutputPathCommand}" >
-                                    <Button.Content>
-                                        <materialDesign:PackIcon Kind="Close" Width="17" Height="17" />
-                                    </Button.Content>
-                                </Button>
-
-                                <Button x:Name="btnBrowseOutPutFolder" Grid.Column="0" Width="40" Height="40"
-                                        HorizontalAlignment="Right" VerticalAlignment="Stretch"
-                                        Margin="0,0,5,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
-                                        Background="Transparent" Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        Command="{Binding BrowseOutputPathCommand}" >
-                                    <Button.Content>
-                                        <materialDesign:PackIcon Kind="FolderSearch" Width="35" Height="35" />
-                                    </Button.Content>
-                                </Button>
-                            </Grid>
-
-                            <Grid Grid.Row="2" Margin="20,0,20,10" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <Grid Grid.Column="0" >
-                                    <TextBox x:Name="txtImageSize" Height="auto" MinHeight="47"
-                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                             Margin="0" Padding="10,10,10,2" BorderThickness="0.7"
-                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             materialDesign:HintAssist.Hint="{Lag:Localize ImgSize}"
-                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                             Text="{Binding ImageSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}"
-                                             TextOptions.TextFormattingMode="Display"
-                                             TextOptions.TextRenderingMode="ClearType"
-                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                             materialDesign:ThemeAssist.Theme="Dark" />
-                                </Grid>
-
-                                <Grid Grid.Column="2" >
-                                    <TextBox x:Name="txtStampSize" Height="auto" MinHeight="47"
-                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                             Margin="0" Padding="10,10,10,2" BorderThickness="0.7"
-                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             materialDesign:HintAssist.Hint="{Lag:Localize StampSize}"
-                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                             Text="{Binding StampSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}"
-                                             TextOptions.TextFormattingMode="Display"
-                                             TextOptions.TextRenderingMode="ClearType"
-                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                             materialDesign:ThemeAssist.Theme="Dark" />
-                                </Grid>
-
-                                <Grid Grid.Column="4" >
-                                    <TextBox x:Name="txtStampMargin" Height="auto" MinHeight="47"
-                                             VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                             VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                             Margin="0" Padding="10,10,10,2" BorderThickness="0.7"
-                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             materialDesign:HintAssist.Hint="{Lag:Localize StampMargin}"
-                                             Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                             Text="{Binding StampMargin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}"
-                                             TextOptions.TextFormattingMode="Display"
-                                             TextOptions.TextRenderingMode="ClearType"
-                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
-                                             materialDesign:ThemeAssist.Theme="Dark" />
-                                </Grid>
-                            </Grid>
-
-                            <Grid Grid.Row="3" Margin="20,0,20,10" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                
-                                <Grid Grid.Column="0" >
-                                    <ComboBox x:Name="cmbstampposition" Height="auto" MinHeight="47"
-                                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                              IsEditable="False" Padding="8,18,12,5" BorderThickness="0.7"
-                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              materialDesign:ColorZoneAssist.Mode="Custom"
-                                              materialDesign:HintAssist.Hint="{Lag:Localize StampPos}"
-                                              Style="{StaticResource MaterialDesignFilledComboBox}"
-                                              ItemsSource="{Binding ListStampPosition}"
-                                              SelectedItem="{Binding SelectedStampPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                              DisplayMemberPath="DisplayName"
-                                              TextOptions.TextFormattingMode="Display"
-                                              TextOptions.TextRenderingMode="ClearType"
-                                              materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                              materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-                                </Grid>
-
-                                <Grid Grid.Column="2" >
-                                    <ComboBox x:Name="cmbArrange" Height="auto" MinHeight="47"
-                                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                              IsEditable="False" Padding="8,18,12,5" BorderThickness="0.7"
-                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              materialDesign:ColorZoneAssist.Mode="Custom"
-                                              materialDesign:HintAssist.Hint="{Lag:Localize Sort}"
-                                              Style="{StaticResource MaterialDesignFilledComboBox}"
-                                              ItemsSource="{Binding ListArrange}"
-                                              SelectedItem="{Binding SelectedArrange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                              DisplayMemberPath="DisplayName"
-                                              TextOptions.TextFormattingMode="Display"
-                                              TextOptions.TextRenderingMode="ClearType"
-                                              materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                              materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-                                </Grid>
-
-                                <Grid Grid.Column="4" >
-                                    <ComboBox x:Name="cmbOverwrite" Height="auto" MinHeight="47" 
-                                              BorderThickness="0.7" Padding="10,18,12,5" Margin="0" IsEditable="False"
-                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              ToolTip="{Binding SelectedItem.ToolTip, RelativeSource={RelativeSource Self}}"
-                                              SelectedIndex="{Binding WriteMode}"
-                                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                              materialDesign:ColorZoneAssist.Mode="Custom"
-                                              materialDesign:HintAssist.Hint="{Lag:Localize WriteMode}"
-                                              Style="{StaticResource MaterialDesignFilledComboBox}"
-                                              TextOptions.TextFormattingMode="Display"
-                                              TextOptions.TextRenderingMode="ClearType"
-                                              materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                              materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
-                                        <ComboBoxItem Content="{Lag:Localize AskMe}" />
-                                        <ComboBoxItem Content="{Lag:Localize OverwriteDupli}" />
-                                        <ComboBoxItem Content="{Lag:Localize Appendwrite}" />
-                                        <ComboBoxItem Content="{Lag:Localize CreateNew}" />
-                                    </ComboBox>
-                                </Grid>
-
-                            </Grid>
-
-                            <Grid Grid.Row="4" >
-                                <StackPanel HorizontalAlignment="Center" Panel.ZIndex="1" >
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="auto" />
-                                            <ColumnDefinition Width="5" />
-                                            <ColumnDefinition Width="auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <Grid Grid.Column="0" Margin="0,0,0,5" >
-                                            <Button x:Name="btnReloadFolder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                    Margin="0" Padding="0,3,0,3" Height="35"
-                                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                    Style="{StaticResource ButtonSuccess}" BorderThickness="0"
-                                                    Command="{Binding ReloadFolderCommand}" >
-                                                <Button.Background>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                        <GradientStop Color="#FF5DD6FF" Offset="0.0"/>
-                                                        <GradientStop Color="#FF0090FF" Offset="0.3"/>
-                                                    </LinearGradientBrush>
-                                                </Button.Background>
-                                                <Button.Content>
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="10" />
-                                                            <ColumnDefinition Width="28" />
-                                                            <ColumnDefinition Width="8" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="10" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <materialDesign:PackIcon Grid.Column="1" Kind="Reload" Padding="0"
-                                                                                 VerticalAlignment="Center" HorizontalAlignment="Center" Width="28" Height="28" />
-                                                        <Viewbox Grid.Column="3" Stretch="Uniform" StretchDirection="Both">
-                                                            <TextBlock Text="{Lag:Localize tlReload}"
-                                                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                                        </Viewbox>
-                                                    </Grid>
-                                                </Button.Content>
-                                            </Button>
-                                        </Grid>
-
-                                        <Grid Grid.Column="2" Margin="0,0,0,5" >
-                                            <Button x:Name="btnSaveFolder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                    Margin="0" Padding="0,3,0,3" Height="35"
-                                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                    Style="{StaticResource ButtonSuccess}" BorderThickness="0"
-                                                    Command="{Binding SaveFolderCommand}" >
-                                                <Button.Background>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                        <GradientStop Color="#FF5DD6FF" Offset="0.0"/>
-                                                        <GradientStop Color="#FF0090FF" Offset="0.3"/>
-                                                    </LinearGradientBrush>
-                                                </Button.Background>
-                                                <Button.Content>
-                                                    <Grid Width="118">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="10" />
-                                                            <ColumnDefinition Width="28" />
-                                                            <ColumnDefinition Width="8" />
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="10" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <materialDesign:PackIcon Grid.Column="1" Kind="ContentSaveCog" Padding="0"
-                                                                                 VerticalAlignment="Center" HorizontalAlignment="Center" Width="28" Height="28" />
-                                                        <Viewbox Grid.Column="3" Stretch="Uniform" StretchDirection="Both">
-                                                            <TextBlock Text="{Lag:Localize Save}"
-                                                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                                        </Viewbox>
-                                                    </Grid>
-                                                </Button.Content>
-                                            </Button>
-                                        </Grid>
+                                        <Button x:Name="btnBrowseOriginalFolder" Grid.Column="0" Width="35" Height="35"
+                                                HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                                                Margin="0,0,5,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
+                                                Background="Transparent"
+                                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Command="{Binding BrowseOriginalPathCommand}" >
+                                            <Button.Content>
+                                                <materialDesign:PackIcon Kind="FolderSearch" Width="35" Height="35" />
+                                            </Button.Content>
+                                        </Button>
 
                                     </Grid>
-                                </StackPanel>
-                            </Grid>
+
+                                    <Grid Grid.Row="1" Margin="5,5,5,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox x:Name="txtOutPutFolder" Grid.Column="0"
+                                                 Style="{StaticResource TextBoxBrowseStyle}"
+                                                 materialDesign:HintAssist.Hint="{Lag:Localize OutPutFolder}"
+                                                 Text="{Binding imageSetting.OutPutFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}"
+                                                 Behaviors:FileDropBehavior.Enable="True"
+                                                 Behaviors:PasteSanitizerBehavior.Enable="True" />
+
+                                        <Button x:Name="btnClearOutPutFolder" Grid.Column="0" Width="18" Height="18"
+                                                HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                                                Margin="0,9,50,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
+                                                Background="Transparent" Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Command="{Binding ClearOutputPathCommand}" >
+                                            <Button.Content>
+                                                <materialDesign:PackIcon Kind="Close" Width="18" Height="18" />
+                                            </Button.Content>
+                                        </Button>
+
+                                        <Button x:Name="btnBrowseOutPutFolder" Grid.Column="0" Width="35" Height="35"
+                                                HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                                                Margin="0,0,5,0" Padding="0" BorderThickness="0" BorderBrush="Transparent"
+                                                Background="Transparent"
+                                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Command="{Binding BrowseOutputPathCommand}" >
+                                            <Button.Content>
+                                                <materialDesign:PackIcon Kind="FolderSearch" Width="35" Height="35" />
+                                            </Button.Content>
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid Grid.Row="2" Margin="5,5,5,0" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="1.5*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid Grid.Column="0" >
+                                            <TextBox x:Name="txtImageSize"
+                                                     Style="{StaticResource TextBoxStyle}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize ImgSize}"
+                                                     Text="{Binding imageSetting.ImageSizeString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}" />
+                                        </Grid>
+
+                                        <Grid Grid.Column="2" >
+                                            <TextBox x:Name="txtStampSize"
+                                                     Style="{StaticResource TextBoxStyle}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize StampSize}"
+                                                     Text="{Binding imageSetting.StampSizeString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}" />
+                                        </Grid>
+
+                                        <Grid Grid.Column="4" >
+                                            <TextBox x:Name="txtStampMargin"
+                                                     Style="{StaticResource TextBoxStyle}"
+                                                     materialDesign:HintAssist.Hint="{Lag:Localize StampMargin}"
+                                                     Text="{Binding imageSetting.StampMarrginString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True, TargetNullValue='', FallbackValue=''}" />
+                                        </Grid>
+                                        
+                                        <Grid Grid.Column="6" >
+                                            <ComboBox x:Name="cmbstampposition"
+                                                      Style="{StaticResource ComboboxStyle}"
+                                                      materialDesign:HintAssist.Hint="{Lag:Localize StampPos}"
+                                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                      ItemsSource="{Binding StampPositionItems, Source={x:Static ViewModels:EnumsViewModel.Instance}}"
+                                                      SelectedIndex="{Binding imageSetting.StampPosition}"
+                                                      DisplayMemberPath="DisplayName" />
+                                        </Grid>
+                                    </Grid>
+
+                                    <Grid Grid.Row="3" Margin="5,5,5,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="1.5*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid Grid.Column="0" >
+                                            <ComboBox Style="{StaticResource ComboboxStyle}"
+                                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                      materialDesign:HintAssist.Hint="Secret"
+                                                      SelectedIndex="{Binding imageSetting.Secret}" >
+                                                <ComboBoxItem Content="{Lag:Localize Common}" />
+                                                <ComboBoxItem Content="Secret Rare" />
+                                                <ComboBoxItem Content="Extra Secret" />
+                                            </ComboBox>
+                                        </Grid>
+
+                                        <Grid Grid.Column="2" >
+                                            <ComboBox  Style="{StaticResource ComboboxStyle}"
+                                                       Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       materialDesign:HintAssist.Hint="Card Foild"
+                                                       ItemsSource="{Binding imageSettingSource.FoildLists}"
+                                                       SelectedItem="{Binding imageSetting.Foild}" />
+                                        </Grid>
+
+                                        <Grid Grid.Column="4" >
+                                            <ComboBox Style="{StaticResource ComboboxStyle}"
+                                                      ToolTip="{Binding SelectedItem.ToolTip, RelativeSource={RelativeSource Self}}"
+                                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                      SelectedIndex="{Binding dataHandlingSetting.WriteMode}"
+                                                      materialDesign:HintAssist.Hint="{Lag:Localize WriteMode}" >
+                                                <ComboBoxItem Content="{Lag:Localize AskMe}" />
+                                                <ComboBoxItem Content="{Lag:Localize OverwriteDupli}" />
+                                                <ComboBoxItem Content="{Lag:Localize Appendwrite}" />
+                                                <ComboBoxItem Content="{Lag:Localize CreateNew}" />
+                                            </ComboBox>
+                                        </Grid>
+
+                                        <Border Grid.Column="6" BorderThickness="0.7" CornerRadius="5"
+                                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Viewbox Grid.Column="0" HorizontalAlignment="Center"
+                                                         Margin="0,0,0,0" Stretch="None" StretchDirection="Both" >
+                                                    <TextBlock Text="{Lag:Localize IncludeRare}"
+                                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
+                                                </Viewbox>
+                                                <ToggleButton x:Name="tbtnIncludeStamp" Grid.Column="1" Panel.ZIndex="2"
+                                                              IsChecked="{Binding imageSetting.IncludeRare}"
+                                                              VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                                              Width="55" Height="28" Margin="0,0,30,0" >
+                                                    <ToggleButton.Content>
+                                                        <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
+                                                    </ToggleButton.Content>
+                                                    <materialDesign:ToggleButtonAssist.OnContent>
+                                                        <materialDesign:PackIcon Kind="CheckOutline" Width="20" Height="20" />
+                                                    </materialDesign:ToggleButtonAssist.OnContent>
+                                                    <ToggleButton.Style>
+                                                        <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignSwitchSecondaryToggleButton}" >
+                                                            <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOffBackground" Value="Red" />
+                                                            <Setter Property="Background" Value="Red" />
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsChecked" Value="True">
+                                                                    <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOnBackground" Value="Blue" />
+                                                                    <Setter Property="Background" Value="Green" />
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ToggleButton.Style>
+                                                </ToggleButton>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                    <Grid Grid.Row="4" Margin="5,5,5,0" >
+                                        <StackPanel HorizontalAlignment="Center" Panel.ZIndex="1" >
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="5" />
+                                                    <ColumnDefinition Width="auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Grid Grid.Column="0" Margin="0,0,0,5" >
+                                                    <Button x:Name="btnReloadFolder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                            Margin="0" Padding="0,3,0,3" Height="35"
+                                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                            Style="{StaticResource ButtonSuccess}" BorderThickness="0"
+                                                            Command="{Binding ReloadFolderCommand}" >
+                                                        <Button.Background>
+                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                                <GradientStop Color="#FF5DD6FF" Offset="0.0"/>
+                                                                <GradientStop Color="#FF0090FF" Offset="0.3"/>
+                                                            </LinearGradientBrush>
+                                                        </Button.Background>
+                                                        <Button.Content>
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="10" />
+                                                                    <ColumnDefinition Width="28" />
+                                                                    <ColumnDefinition Width="8" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="10" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <materialDesign:PackIcon Grid.Column="1" Kind="Reload" Padding="0"
+                                                                                         VerticalAlignment="Center" HorizontalAlignment="Center" Width="28" Height="28" />
+                                                                <Viewbox Grid.Column="3" Stretch="Uniform" StretchDirection="Both">
+                                                                    <TextBlock Text="{Lag:Localize tlReload}"
+                                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                                </Viewbox>
+                                                            </Grid>
+                                                        </Button.Content>
+                                                    </Button>
+                                                </Grid>
+
+                                                <Grid Grid.Column="2" Margin="0,0,0,5" >
+                                                    <Button x:Name="btnSaveFolder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                            Margin="0" Padding="0,3,0,3" Height="35"
+                                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                            Style="{StaticResource ButtonSuccess}" BorderThickness="0"
+                                                            Command="{Binding SaveFolderCommand}" >
+                                                        <Button.Background>
+                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                                <GradientStop Color="#FF5DD6FF" Offset="0.0"/>
+                                                                <GradientStop Color="#FF0090FF" Offset="0.3"/>
+                                                            </LinearGradientBrush>
+                                                        </Button.Background>
+                                                        <Button.Content>
+                                                            <Grid Width="118">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="10" />
+                                                                    <ColumnDefinition Width="28" />
+                                                                    <ColumnDefinition Width="8" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="10" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <materialDesign:PackIcon Grid.Column="1" Kind="ContentSaveCog" Padding="0"
+                                                                                         VerticalAlignment="Center" HorizontalAlignment="Center" Width="28" Height="28" />
+                                                                <Viewbox Grid.Column="3" Stretch="Uniform" StretchDirection="Both">
+                                                                    <TextBlock Text="{Lag:Localize Save}"
+                                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                                </Viewbox>
+                                                            </Grid>
+                                                        </Button.Content>
+                                                    </Button>
+                                                </Grid>
+
+                                            </Grid>
+                                        </StackPanel>
+                                    </Grid>
+
+                                </Grid>
+                            </Border>
                         </Grid>
                     </materialDesign:DrawerHost.LeftDrawerContent>
 
@@ -1042,7 +1048,7 @@
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Margin="0" Grid.Column="0" Padding="0" BorderThickness="1" Height="514"
+                            <Border Margin="0" Grid.Column="0" Padding="0" BorderThickness="1" Height="{Binding ElementName=grright, Path=ActualHeight}"
                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     Panel.ZIndex="0" >
@@ -1125,7 +1131,7 @@
                                 </Button>
                             </Grid>
 
-                            <Grid Grid.Column="2" Width="375" >
+                            <Grid x:Name="grright" Grid.Column="2" Width="390" >
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="auto" />
                                     <RowDefinition Height="3" />
@@ -1136,7 +1142,7 @@
                                     <RowDefinition Height="auto" />
                                 </Grid.RowDefinitions>
 
-                                <Grid Grid.Row="0" >
+                                <Grid Grid.Row="0" Height="48" >
                                     <TextBox x:Name="txtCardName" Height="48" Padding="3,10,3,2" Margin="0"
                                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                              VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden"
@@ -1157,15 +1163,17 @@
                                              materialDesign:ThemeAssist.Theme="Dark" />
                                 </Grid>
 
-                                <Grid Grid.Row="2" >
+                                <Grid Grid.Row="2" Height="48" >
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto" />
                                         <ColumnDefinition Width="3" />
                                         <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="3" />
+                                        <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <Grid Grid.Column="0" >
-                                        <TextBox x:Name="txtCardId" Width="120" Height="48" Padding="3,10,3,2" Margin="0"
+                                        <TextBox x:Name="txtCardId" Width="100" Height="48" Padding="3,10,3,0" Margin="0"
                                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
                                                  TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1204,7 +1212,7 @@
                                                                  Style="{StaticResource MultiSelectComboBox.Custom.Style}"
                                                                  ItemsSource="{Binding RareItems, Mode=OneWay}"
                                                                  SelectedItems="{Binding SelectedComboRareItems, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                                 >
+                                                                 SelectedItemsChanged="cmbrare_SelectedItemsChanged" >
                                                 <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                     <DataTemplate>
                                                         <StackPanel Orientation="Horizontal">
@@ -1223,28 +1231,19 @@
                                                     </DataTemplate>
                                                 </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                             </sdl:MultiSelectComboBox>
-                                            <TextBlock x:Name="tlRareLabel" Grid.Column="0" Opacity="0.5" Margin="0,2,26,0"
-                                                   HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                   Text="{Lag:Localize Rarity}"
-                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                            <TextBlock x:Name="tlRareLabel" Grid.Column="0" Opacity="0.5" Margin="0,0,25,9"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                                       Text="{Lag:Localize Rarity}" IsHitTestVisible="False"
+                                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                         </Grid>
                                     </Border>
-
-                                </Grid>
-
-                                <Grid Grid.Row="4" >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="3" />
-                                        <ColumnDefinition Width="auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <Grid Grid.Column="0" >
-                                        <ComboBox x:Name="cmbScope" Height="43" IsEditable="False"
-                                                  Margin="0" Padding="10,15,8,5" BorderThickness="0.7"
-                                                  materialDesign:TextFieldAssist.HasClearButton="True"
+                                    
+                                    <Grid Grid.Column="4" >
+                                        <ComboBox x:Name="cmbScope" Width="140" Height="48" IsEditable="False"
+                                                  Margin="0" Padding="3,17,5,5" BorderThickness="0.7"
+                                                  materialDesign:TextFieldAssist.HasClearButton="False"
                                                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                                   VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1266,9 +1265,20 @@
                                         </ComboBox>
                                     </Grid>
 
-                                    <Grid Grid.Column="2" Visibility="Visible" >
+                                </Grid>
+
+                                <Grid Grid.Row="4" Height="40" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="3" />
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="3" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Grid Grid.Column="0" Visibility="Visible" >
                                         <Button x:Name="btnCreateImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                Margin="0" Padding="0,3,0,3" Height="42" BorderThickness="0"
+                                                Margin="0" Padding="0,5,0,5" Height="40" BorderThickness="0"
                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
                                                 Style="{StaticResource ButtonSuccess}" 
                                                 Command="{Binding CreateImageCommand}" >
@@ -1300,9 +1310,9 @@
                                         </Button>
                                     </Grid>
                                     
-                                    <Grid Grid.Column="2" Visibility="Collapsed" >
+                                    <Grid Grid.Column="0" Visibility="Collapsed" >
                                         <Button x:Name="btnCreateImagetest" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                Margin="0" Padding="0,3,0,3" Height="42" BorderThickness="0"
+                                                Margin="0" Padding="0,3,0,3" Height="40" BorderThickness="0"
                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
                                                 Style="{StaticResource ButtonSuccess}" Click="btnCreateImagetest_Click" >
                                             <Button.Background>
@@ -1333,6 +1343,67 @@
                                         </Button>
                                     </Grid>
 
+                                    <Grid Grid.Column="2" >
+                                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                Margin="0" Padding="0" Height="40" Width="auto" MinWidth="100" BorderThickness="0"
+                                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Style="{StaticResource ButtonSuccess}" 
+                                                Command="{Binding BrowseCardListDBCommand}" >
+                                            <Button.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#FF5DD6FF" Offset="0.0"/>
+                                                    <GradientStop Color="#FF0090FF" Offset="0.3"/>
+                                                </LinearGradientBrush>
+                                            </Button.Background>
+                                            <Button.Content>
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="auto" />
+                                                        <RowDefinition Height="auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Text="{Lag:Localize Browse}" HorizontalAlignment="Center"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                    <TextBlock Grid.Row="1" Text="{Lag:Localize CardDB}" HorizontalAlignment="Center"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                </Grid>
+                                            </Button.Content>
+                                        </Button>
+                                    </Grid>
+                                    
+                                    <Grid Grid.Column="4" >
+                                        <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                Margin="0" Padding="0" Height="40" Width="auto" MinWidth="90" BorderThickness="0"
+                                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                Style="{StaticResource ButtonSuccess}" 
+                                                Command="{Binding BrowseRarityJSONFileCommand}" >
+                                            <Button.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#FF5DD6FF" Offset="0.0"/>
+                                                    <GradientStop Color="#FF0090FF" Offset="0.3"/>
+                                                </LinearGradientBrush>
+                                            </Button.Background>
+                                            <Button.Content>
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="auto" />
+                                                        <RowDefinition Height="auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock Grid.Row="0" Text="{Lag:Localize Browse}" HorizontalAlignment="Center"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                    <TextBlock Grid.Row="1" Text="{Lag:Localize Rarity}" HorizontalAlignment="Center"
+                                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                </Grid>
+                                            </Button.Content>
+                                        </Button>
+                                    </Grid>
                                 </Grid>
 
                                 <Grid Grid.Row="6" >
@@ -1486,7 +1557,7 @@
                                         </Canvas>
                                     </Grid>
 
-                                    <DockPanel Grid.Column="2" Width="120" >
+                                    <DockPanel Grid.Column="2" >
                                         <Grid DockPanel.Dock="Bottom" >
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="auto" />
@@ -1737,39 +1808,6 @@
                                             </Grid>
 
                                             <Grid Grid.Row="1" Margin="0,0,0,5" >
-                                                <Button x:Name="btnBrowseCardDatabase" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                        Margin="0" Padding="0,3,0,3" Height="35" BorderThickness="0"
-                                                        FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                        Style="{StaticResource ButtonSuccess}" 
-                                                        Command="{Binding BrowseDBCommand}" >
-                                                    <Button.Background>
-                                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                            <GradientStop Color="#FFCBFF51" Offset="0.0"/>
-                                                            <GradientStop Color="#FF19D400" Offset="0.3"/>
-                                                        </LinearGradientBrush>
-                                                    </Button.Background>
-                                                    <Button.Content>
-                                                        <Grid Width="118">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="5" />
-                                                                <ColumnDefinition Width="28" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="2" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <materialDesign:PackIcon Grid.Column="1" Kind="OpenInApp" Padding="0"
-                                                                                     VerticalAlignment="Center" HorizontalAlignment="Center" Width="28" Height="28" />
-                                                            <Viewbox Grid.Column="2" Stretch="Uniform" StretchDirection="Both">
-                                                                <TextBlock Text="{Lag:Localize Browse}"
-                                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                                            </Viewbox>
-                                                        </Grid>
-                                                    </Button.Content>
-                                                </Button>
-                                            </Grid>
-
-                                            <Grid Grid.Row="2" Margin="0,0,0,5" >
                                                 <Button x:Name="btnAddCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                         Margin="0" Padding="0,3,0,3" Height="35" BorderThickness="0"
                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1802,7 +1840,7 @@
                                                 </Button>
                                             </Grid>
 
-                                            <Grid Grid.Row="3" Margin="0,0,0,5" >
+                                            <Grid Grid.Row="2" Margin="0,0,0,5" >
                                                 <Button x:Name="btnModifyCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                         Margin="0" Padding="0,3,0,3" Height="35" BorderThickness="0"
                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1835,7 +1873,7 @@
                                                 </Button>
                                             </Grid>
 
-                                            <Grid Grid.Row="4" Margin="0,0,0,5" >
+                                            <Grid Grid.Row="3" Margin="0,0,0,5" >
                                                 <Button x:Name="btnSortCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"                                       
                                                         Margin="0" Padding="0,3,0,3" Height="35" BorderThickness="0"
                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"         
@@ -1869,7 +1907,7 @@
                                                 </Button>
                                             </Grid>
 
-                                            <Grid Grid.Row="5" Margin="0,0,0,5" >
+                                            <Grid Grid.Row="4" Margin="0,0,0,5" >
                                                 <Button x:Name="btnSaveAllCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"                                       
                                                         Margin="0" Padding="0,3,0,3" Height="35" BorderThickness="0"
                                                         FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

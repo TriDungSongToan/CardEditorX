@@ -20,7 +20,6 @@ using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
 
-
 namespace CardEditor.ViewModels
 {
     public class RareRawDataViewModel : INotifyPropertyChanged, IDisposable
@@ -57,6 +56,8 @@ namespace CardEditor.ViewModels
 
         private Dictionary<ulong, RareCard> _rareCardsData = new Dictionary<ulong, RareCard>();
         public IReadOnlyDictionary<ulong, RareCard> RareCardsData => _rareCardsData;
+
+
         #endregion
 
         private RareRawDataViewModel()
@@ -741,6 +742,30 @@ namespace CardEditor.ViewModels
         public bool IsRareCardsEmpty() => _rareCardsData.Count == 0;
         public bool IsRareItemsEmpty() => _rareItemsData.Count == 0;
 
+        public async Task<(bool, string)> SynchronizeRarityMapFromMDAPI()
+        {
+            try
+            {
+                var mapRarity = MasterDuelAPIViewModel.Instance.MapRarity;
+
+                if (mapRarity == null || mapRarity.Count == 0)
+                    return (false, "Rarity map is empty.");
+
+                foreach (var item in mapRarity)
+                {
+                    if (!_rareCardsData.TryGetValue(item.Key, out var rareCard))
+                        continue;
+
+                    rareCard.rare |= (long)item.Value;
+                }
+
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
         public async Task<(bool,string)> BrowseDataCardDataBase(string filePath, bool Overwrite)
         {
             var tempList = new List<RareCard>();
@@ -1199,38 +1224,71 @@ namespace CardEditor.ViewModels
                 System.Drawing.Point stampMargin = ConfigViewModel.Instance.imageSetting.StampMarrgin;
                 int stampPositionX, stampPositionY;
 
+                var generalVM = GeneraImageViewModel.Instance;
+
+                // ==== LOG DEBUG ====
+                Debug.WriteLine($"[SetRarityLabelRect] stampPosition = {stampPosition}");
+                Debug.WriteLine($"[SetRarityLabelRect] stampSize = {stampSize.Width}x{stampSize.Height}");
+                Debug.WriteLine($"[SetRarityLabelRect] stampMargin = X:{stampMargin.X}, Y:{stampMargin.Y}");
+                Debug.WriteLine($"[SetRarityLabelRect] generalVM == null? {generalVM == null}");
+                if (generalVM != null)
+                {
+                    Debug.WriteLine($"[SetRarityLabelRect] CurrentImageInfo == null? {generalVM.CurrentImageInfo == null}");
+                    if (generalVM.CurrentImageInfo != null)
+                    {
+                        Debug.WriteLine($"[SetRarityLabelRect] CardWidth = {generalVM.CurrentImageInfo.CardWidth}");
+                        Debug.WriteLine($"[SetRarityLabelRect] CardHeight = {generalVM.CurrentImageInfo.CardHeight}");
+                    }
+                }
+
+                if (generalVM == null)
+                {
+                    Debug.WriteLine("GeneraImageViewModel.Instance == NULL");
+                    return false;
+                }
+
+                if (generalVM.CurrentImageInfo == null)
+                {
+                    Debug.WriteLine("GeneraImageViewModel.Instance.CurrentImageInfo == NULL");
+                    return false;
+                }
+
                 switch (stampPosition)
                 {
-                    case 1:
+                    case 0: // Top-Left
                         stampPositionX = stampMargin.Y;
                         stampPositionY = stampMargin.X;
                         break;
 
-                    case 2:
+                    case 1: // Top-Right
                         stampPositionX = GeneraImageViewModel.Instance.CurrentImageInfo.CardWidth - (stampSize.Width + stampMargin.Y);
                         stampPositionY = stampMargin.X;
                         break;
 
-                    case 3:
+                    case 2: // Bottom-Left
                         stampPositionX = stampMargin.Y;
                         stampPositionY = GeneraImageViewModel.Instance.CurrentImageInfo.CardHeight - (stampSize.Height + stampMargin.X);
                         break;
 
-                    case 4:
+                    case 3: // Bottom-Right
                         stampPositionX = GeneraImageViewModel.Instance.CurrentImageInfo.CardWidth - (stampSize.Width + stampMargin.Y);
                         stampPositionY = GeneraImageViewModel.Instance.CurrentImageInfo.CardHeight - (stampSize.Height + stampMargin.X);
                         break;
 
-                    case 5:
+                    case 4: // Center
                         stampPositionX = (GeneraImageViewModel.Instance.CurrentImageInfo.CardWidth - stampSize.Width) / 2;
                         stampPositionY = (GeneraImageViewModel.Instance.CurrentImageInfo.CardHeight - stampSize.Height) / 2;
                         break;
 
-                    default:
+                    default: // 5 = Unknow, hoặc giá trị lạ
                         stampPositionX = GeneraImageViewModel.Instance.CurrentImageInfo.CardWidth - (stampSize.Width + stampMargin.Y);
                         stampPositionY = GeneraImageViewModel.Instance.CurrentImageInfo.CardHeight - (stampSize.Height + stampMargin.X);
                         break;
                 }
+
+                // ==== LOG kết quả trước khi gán ====
+                Debug.WriteLine($"[SetRarityLabelRect] RESULT => X:{stampPositionX}, Y:{stampPositionY}, Right:{stampPositionX + stampSize.Width}, Bottom:{stampPositionY + stampSize.Height}");
+                // ==== END LOG ====
 
                 GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect = new SKRect(
                     stampPositionX,
@@ -1240,14 +1298,19 @@ namespace CardEditor.ViewModels
                 IsLoadedImageRareRect = true;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                // ==== LOG lỗi ====
+                Debug.WriteLine($"[SetRarityLabelRect] EXCEPTION: {ex.GetType().Name} - {ex.Message}");
+                Debug.WriteLine($"[SetRarityLabelRect] StackTrace: {ex.StackTrace}");
+                // ==== END LOG ====
                 GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect = new SKRect(
                     GeneraImageViewModel.Instance.CurrentImageInfo.CardWidth - 350,
                     GeneraImageViewModel.Instance.CurrentImageInfo.CardHeight - 100,
                     GeneraImageViewModel.Instance.CurrentImageInfo.CardWidth,
                     GeneraImageViewModel.Instance.CurrentImageInfo.CardHeight);
                 IsLoadedImageRareRect = true;
+                Debug.WriteLine($"[SetRarityLabelRect] FALLBACK RECT USED: {GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect}");
                 return true;
             }
         }

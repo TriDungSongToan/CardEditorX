@@ -34,4 +34,24 @@ namespace CardEditor.Helpers
             return text.Substring(0, maxLength - 3) + "...";
         }
     }
+    public class SanitizeStringHelper
+    {
+        public static string SanitizeWindowsFileName(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+
+            // Xóa các ký tự Windows không cho phép trong file name
+            char[] invalidChars = System.IO.Path.GetInvalidFileNameChars();
+
+            string result = new string(
+                input.Where(c => !invalidChars.Contains(c)).ToArray()
+            );
+
+            // Windows không cho phép tên file kết thúc bằng '.' hoặc ' '
+            result = result.TrimEnd('.', ' ');
+
+            return result;
+        }
+    }
 }

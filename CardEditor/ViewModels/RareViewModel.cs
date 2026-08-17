@@ -4,27 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Threading;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.ComponentModel;
-using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Runtime.CompilerServices;
+using System.ComponentModel;
 using CardEditor.Models;
-using CardEditor.Helpers;
+using CardEditor.Models.Settings;
 using CardEditor.Services;
+using CardEditor.Helpers;
 using CardEditor.ImageGene;
-using CardEditor.Collections;
 using CardEditor.Localization;
+using CardEditor.Collections;
 using CMess = CardEditor.Localization.Language;
-using CardAppContext = CardEditor.Models.AppContext;
 using RelayCommand = CardEditor.Commands.RelayCommand;
+using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor.ViewModels
 {
@@ -430,7 +431,8 @@ namespace CardEditor.ViewModels
                 {
                     _isLoadedCardList = value;
                     OnPropertyChanged();
-                    BrowseDBCommand?.RaiseCanExecuteChanged();
+                    BrowseCardListDBCommand?.RaiseCanExecuteChanged();
+                    BrowseRarityJSONFileCommand?.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -539,133 +541,9 @@ namespace CardEditor.ViewModels
         #endregion
 
         #region Folder
-        private string _originalImgPath;
-        public string OriginalImgPath
-        {
-            get => _originalImgPath;
-            set
-            {
-                if (_originalImgPath != value)
-                {
-                    _originalImgPath = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    ClearOriginalPathCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        private string _outputImgPath;
-        public string OutputImgPath
-        {
-            get => _outputImgPath;
-            set
-            {
-                if (_outputImgPath != value)
-                {
-                    _outputImgPath = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    ClearOutputPathCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        private string _imageSize;
-        public string ImageSize
-        {
-            get => _imageSize;
-            set
-            {
-                if (_imageSize != value)
-                {
-                    _imageSize = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-        private string _stampSize;
-        public string StampSize
-        {
-            get => _stampSize;
-            set
-            {
-                if (_stampSize != value)
-                {
-                    _stampSize = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-        private string _stampMargin;
-        public string StampMargin
-        {
-            get => _stampMargin;
-            set
-            {
-                if (_stampMargin != value)
-                {
-                    _stampMargin = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        private StampPositionItem _selectedStampPosition;
-        public StampPositionItem SelectedStampPosition
-        {
-            get => _selectedStampPosition;
-            set
-            {
-                if (_selectedStampPosition != value)
-                {
-                    _selectedStampPosition = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        private SortItem _selectedArrange;
-        public SortItem SelectedArrange
-        {
-            get => _selectedArrange;
-            set
-            {
-                if (_selectedArrange != value)
-                {
-                    _selectedArrange = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
-
-        private int _writeMode;
-        public int WriteMode
-        {
-            get => _writeMode;
-            set
-            {
-                if (_writeMode != value)
-                {
-                    _writeMode = value;
-                    OnPropertyChanged();
-                    SaveFolderCommand?.RaiseCanExecuteChanged();
-                    CreateImageCommand?.RaiseCanExecuteChanged();
-                }
-            }
-        }
+        public CardEditor.Models.Settings.ImageSetting imageSetting { get; set; }
+        public CardEditor.Models.Settings.ImageSettingSource imageSettingSource { get; set; }
+        public CardEditor.Models.Settings.DataHandlingSetting dataHandlingSetting { get; set; }
         #endregion
 
         #endregion
@@ -679,7 +557,8 @@ namespace CardEditor.ViewModels
         public RelayCommand CancelCreateImageCommand { get; private set; }
         public RelayCommand LoadCardCommand { get; private set; }
         public RelayCommand CancelLoadCardCommand { get; private set; }
-        public RelayCommand BrowseDBCommand { get; private set; }
+        public RelayCommand BrowseCardListDBCommand { get; private set; }
+        public RelayCommand BrowseRarityJSONFileCommand { get; private set; }
         public RelayCommand AddCardCommand { get; private set; }
         public RelayCommand ModifyCardCommand { get; private set; }
         public RelayCommand SaveAllCommand { get; private set; }
@@ -709,8 +588,8 @@ namespace CardEditor.ViewModels
 
         #region Folder
         public RelayCommand ClearOriginalPathCommand { get; private set; }
-        public RelayCommand BrowseOriginalPathCommand { get; private set; }
         public RelayCommand ClearOutputPathCommand { get; private set; }
+        public RelayCommand BrowseOriginalPathCommand { get; private set; }
         public RelayCommand BrowseOutputPathCommand { get; private set; }
         public RelayCommand ReloadFolderCommand { get; private set; }
         public RelayCommand SaveFolderCommand { get; private set; }
@@ -728,53 +607,93 @@ namespace CardEditor.ViewModels
                 ImagecardTooltip = CMess.toolCardImg.ToText();
             }
 
-            InitializeSetting();
-            InitializeCollections();
             InitializeCommands();
+            InitializeSettingSource();
+            if (LoadSettingSource())
+            {
+                LoadSetting();
+            }
+
+            InitializeCollections();
             SubscribeToDataChanges();
 
             CancelLoadRareCard = Visibility.Collapsed;
             SelectedScope = -1;
             ProgressHeight = 0;
             IsSavedCardList = RareRawDataViewModel.Instance.IsSaveRareCardListToDB;
+
+            InitializeEvent();
         }
-        private void InitializeSetting()
+        private void InitializeSettingSource()
         {
-            OriginalImgPath = ConfigViewModel.Instance.imageSetting.OriginalCardFolder;
-            OutputImgPath = ConfigViewModel.Instance.imageSetting.OutPutFolder;
-
-            ImageSize = ConfigViewModel.Instance.imageSetting.ImageSizeString;
-            StampSize = ConfigViewModel.Instance.imageSetting.StampSizeString;
-            StampMargin = ConfigViewModel.Instance.imageSetting.StampMarrginString;
-
-            ListStampPosition = new ObservableCollection<StampPositionItem>(
-                Enum.GetValues(typeof(StampPosition)).Cast<StampPosition>()
-                .Select(pos => new StampPositionItem
-                {
-                    Position = pos,
-                    DisplayName = pos.ToFriendlyString()
-                }));
-            int savedPosition = ConfigViewModel.Instance.imageSetting.StampPosition;
-            var savedPositionEnum = Enum.IsDefined(typeof(StampPosition), savedPosition)
-                ? (StampPosition)savedPosition
-                : StampPosition.Unknown;
-            SelectedStampPosition = ListStampPosition.FirstOrDefault(item => item.Position == savedPositionEnum);
-
-            ListArrange = new ObservableCollection<SortItem>(
-                Enum.GetValues(typeof(SortType)).Cast<SortType>()
-                .Select(type => new SortItem
-                {
-                    Sort = type,
-                    DisplayName = type.ToFriendlyString()
-                }));
-            //int savedArrange = ConfigViewModel.Instance.Arrange;
-            //var savedArrangeEnum = Enum.IsDefined(typeof(SortType), savedArrange)
-            //    ? (SortType)savedArrange
-            //    : SortType.ID;
-            //SelectedArrange = ListArrange.FirstOrDefault(item => item.Sort == savedArrangeEnum);
-
-            WriteMode = ConfigViewModel.Instance.dataHandlingSetting.WriteMode;
+            dataHandlingSetting = new Models.Settings.DataHandlingSetting();
+            imageSetting = new Models.Settings.ImageSetting();
+            imageSettingSource = new Models.Settings.ImageSettingSource();
         }
+        private void InitializeEvent()
+        {
+            imageSetting.PropertyChanged += ImageSetting_PropertyChanged;
+            dataHandlingSetting.PropertyChanged += DataHandlingSetting_PropertyChanged;
+        }
+
+        private bool LoadSettingSource()
+        {
+            try
+            {
+                var (resultSeries, messageSeries) = GeneraImageViewModel.Instance.LoadSeriesList();
+
+                string FoildFolderPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath,
+                    $@"CardImage\{ConfigViewModel.Instance.imageSetting.Series}\Foild");
+                var listFoild = FindNameHelper.LoadNameArtList(FoildFolderPath);
+                imageSettingSource.FoildLists.AddRange(listFoild);
+
+                string backgroundArtFolderPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath,
+                    $@"CardImage\{ConfigViewModel.Instance.imageSetting.Series}\BackgroundArt");
+                var listBGArt = FindNameHelper.LoadNameArtList(backgroundArtFolderPath);
+                imageSettingSource.BackgroundArts.AddRange(listBGArt);
+
+                List<CardMaker> cardMakers = new List<CardMaker>();
+                string cardMakerPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, @"CardData\CardMaker\CardMaker.txt");
+                try
+                {
+                    if (File.Exists(cardMakerPath))
+                    {
+                        foreach (string cardMakerline in File.ReadLines(cardMakerPath))
+                        {
+                            if (string.IsNullOrWhiteSpace(cardMakerline)) continue;
+                            string[] cardMakerParts = cardMakerline.Split('\t');
+
+                            if (cardMakerParts.Length >= 2)
+                            {
+                                cardMakers.Add(new CardMaker
+                                {
+                                    DisplayName = cardMakerParts[0],
+                                    Link = cardMakerParts[1]
+                                });
+                            }
+                        }
+                        imageSettingSource.CardMakers.AddRange(cardMakers);
+                    }
+                }
+                catch { }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        private void LoadSetting()
+        {
+            dataHandlingSetting = ConfigViewModel.Instance.dataHandlingSetting.Clone();
+            imageSetting = ConfigViewModel.Instance.imageSetting.Clone();
+
+            var selectedCardMaker = imageSettingSource.CardMakers
+                .FirstOrDefault(cm => cm.DisplayName == imageSetting.SelectedCardMaker?.DisplayName);
+            if (selectedCardMaker != null) imageSetting.SelectedCardMaker = selectedCardMaker;
+        }
+
         private void InitializeCollections()
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -835,7 +754,8 @@ namespace CardEditor.ViewModels
             CancelCreateImageCommand = new CardEditor.Commands.RelayCommand(_ => CancelImageGeneration(), _ => CanCancelImageGeneration());
             LoadCardCommand = new CardEditor.Commands.RelayCommand(async _ => await LoadRareCardDataCommand());
             CancelLoadCardCommand = new CardEditor.Commands.RelayCommand(_ => CancelLoadRareCardCommand());
-            BrowseDBCommand = new CardEditor.Commands.RelayCommand(async _ => await BrowseData(), _ => IsLoadedCardList);
+            BrowseCardListDBCommand = new CardEditor.Commands.RelayCommand(async _ => await BrowseCardListDB(), _ => IsLoadedCardList);
+            BrowseRarityJSONFileCommand = new CardEditor.Commands.RelayCommand(async _ => await BrowseRarityJSONFile(), _ => IsLoadedCardList);
             AddCardCommand = new CardEditor.Commands.RelayCommand(async _ => await ModifyRareCard(RareCardId.Value, RareCardName, RareCardRare), _ => CanModifyRareCard());
             ModifyCardCommand = new CardEditor.Commands.RelayCommand(async _ => await ModifyRareCard(RareCardId.Value, RareCardName, RareCardRare), _ => CanModifyRareCard());
             SaveAllCommand = new CardEditor.Commands.RelayCommand(async _ => await SaveAllCard(), _ => !IsSavedCardList);
@@ -864,7 +784,7 @@ namespace CardEditor.ViewModels
             BrowseOriginalPathCommand = new CardEditor.Commands.RelayCommand(_ => BrowseOriginalPath());
             ClearOutputPathCommand = new CardEditor.Commands.RelayCommand(_ => ClearOutputPath(), _ => CanClearOutputPath());
             BrowseOutputPathCommand = new CardEditor.Commands.RelayCommand(_ => BrowseOutputPath());
-            ReloadFolderCommand = new CardEditor.Commands.RelayCommand(_ => InitializeSetting());
+            ReloadFolderCommand = new CardEditor.Commands.RelayCommand(_ => LoadSetting());
             SaveFolderCommand = new CardEditor.Commands.RelayCommand(_ => SaveFolderPath(), _ => CanSaveFolderPath());
         }
         private void SubscribeToDataChanges()
@@ -1455,8 +1375,30 @@ namespace CardEditor.ViewModels
                     else return;
                 }
 
-                if (!ImageValidate.isValid)
+                if (ImageValidate.isValid == false ||
+                    GeneraImageViewModel.Instance.IsChangedSeries == false ||
+                    GeneraImageViewModel.Instance.IsLoadedImageCache == false ||
+                    RareRawDataViewModel.Instance.IsLoadedImageRareCache == false ||
+                    RareRawDataViewModel.Instance.IsLoadedImageRareRect == false)
                 {
+                    var (resultReload, resultMessage) = await ImageValidate.ReLoadImageData();
+                    if (!resultReload)
+                    {
+                        var request = new MessageBoxRequest
+                        {
+                            Title = CMess.error.ToText(),
+                            IconType = CMSG.MessageBoxIconType.Error,
+                            Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText())} {resultMessage}",
+                            Buttons = new[] { CMess.ok.ToText() },
+                            ResponseSource = null
+                        };
+                        OnMessageBoxRequested(request);
+                        ProgressHeight = 0;
+                        IsCreateImageRunning = false;
+                        _createImgCardCTS = null;
+                        return;
+                    }
+
                     ImageValidate.MarkDirty();
 
                     var (checkResult, messResult) = await ImageValidate.CheckValidate();
@@ -1501,8 +1443,24 @@ namespace CardEditor.ViewModels
                 if (!RareRawDataViewModel.Instance.IsLoadedImageRareRect)
                     RareRawDataViewModel.Instance.SetRarityLabelRect();
 
-                ImageGenerator.outputFolderPath = OutputImgPath;
-                ImageGenerator.originalFolderPath = OriginalImgPath;
+                if (ConfigViewModel.Instance.imageSetting.Secret != 0 && !CardEXDataViewModel.Instance.IsLoadedCard)
+                {
+                    try
+                    {
+                        await CardEXDataViewModel.Instance.LoadCardsEXAsync();
+                    }
+                    catch
+                    {
+                        int chooseFailed = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            "Failed to load all cards from the data source. It will not be possible to create images with the Secret layer. Continue?",
+                            new[] { CMess.yes.ToText(), CMess.no.ToText() });
+
+                        if (chooseFailed != 0) return;
+                    }
+                }
+
+                ImageGenerator.outputFolderPath = ConfigViewModel.Instance.imageSetting.OutPutFolder;
+                ImageGenerator.originalFolderPath = ConfigViewModel.Instance.imageSetting.OriginalCardFolder;
 
                 IEnumerable<RareCard> cardsToProcess = null;
 
@@ -1572,8 +1530,8 @@ namespace CardEditor.ViewModels
                         }
                         try
                         {
-                            string result = await ImageGenerator.GenerateImageRare(cardItem);
-                            if (!string.IsNullOrEmpty(result))
+                            var (result, message) = await ImageGenerator.GenerateImageRare(cardItem);
+                            if (result)
                             {
                                 Interlocked.Increment(ref successCount);
                             }
@@ -1682,10 +1640,10 @@ namespace CardEditor.ViewModels
         private bool CanCreateImageFunction()
         {
             if (IsCreateImageRunning) return false;
-            if (string.IsNullOrWhiteSpace(OriginalImgPath) ||
-                string.IsNullOrWhiteSpace(OutputImgPath) ||
-                !Directory.Exists(OriginalImgPath) ||
-                !Directory.Exists(OutputImgPath))
+            if (string.IsNullOrWhiteSpace(ConfigViewModel.Instance.imageSetting.OriginalCardFolder) ||
+                string.IsNullOrWhiteSpace(ConfigViewModel.Instance.imageSetting.OutPutFolder) ||
+                !Directory.Exists(ConfigViewModel.Instance.imageSetting.OriginalCardFolder) ||
+                !Directory.Exists(ConfigViewModel.Instance.imageSetting.OutPutFolder))
             {
                 return false;
             }
@@ -1707,7 +1665,7 @@ namespace CardEditor.ViewModels
         {
             return IsCreateImageRunning;
         }
-        private async Task BrowseData()
+        private async Task BrowseCardListDB()
         {
             string filePath = FileDiaLogHelper.OpenRare();
             if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
@@ -1770,6 +1728,52 @@ namespace CardEditor.ViewModels
                         break;
                 }
                 IsSavedCardList = RareRawDataViewModel.Instance.IsSaveRareCardListToDB;
+            }
+        }
+        private async Task BrowseRarityJSONFile()
+        {
+            var (resultLoad, messageLoad) = await MasterDuelAPIViewModel.Instance.LoadMDRarityFile();
+            if (!resultLoad)
+            {
+                var request = new MessageBoxRequest
+                {
+                    Title = CMess.error.ToText(),
+                    IconType = CMSG.MessageBoxIconType.Error,
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.File.ToText())} {messageLoad}",
+                    Buttons = new[] { CMess.ok.ToText() },
+                    ResponseSource = null
+                };
+                OnMessageBoxRequested(request);
+                return;
+            }
+
+            var (resultSyn, messageSyn) = await RareRawDataViewModel.Instance.SynchronizeRarityMapFromMDAPI();
+            if (resultSyn)
+            {
+                var request = new MessageBoxRequest
+                {
+                    Title = CMess.notifi.ToText(),
+                    IconType = CMSG.MessageBoxIconType.Notification,
+                    Message = string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.File.ToText(), CMess.load.ToText()),
+                    Buttons = new[] { CMess.ok.ToText() },
+                    ResponseSource = null
+                };
+                OnMessageBoxRequested(request);
+
+                RareRawDataViewModel.Instance.IsSaveRareCardListToDB = false;
+                IsSavedCardList = RareRawDataViewModel.Instance.IsSaveRareCardListToDB;
+            }
+            else
+            {
+                var request = new MessageBoxRequest
+                {
+                    Title = CMess.error.ToText(),
+                    IconType = CMSG.MessageBoxIconType.Error,
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.File.ToText())} {messageSyn}",
+                    Buttons = new[] { CMess.ok.ToText() },
+                    ResponseSource = null
+                };
+                OnMessageBoxRequested(request);
             }
         }
 
@@ -2724,34 +2728,34 @@ namespace CardEditor.ViewModels
         #region Rolder
         private void ClearOriginalPath()
         {
-            OriginalImgPath = string.Empty;
+            imageSetting.OriginalCardFolder = string.Empty;
         }
         private bool CanClearOriginalPath()
         {
-            return !string.IsNullOrWhiteSpace(OriginalImgPath);
+            return !string.IsNullOrWhiteSpace(imageSetting.OriginalCardFolder);
         }
         private void BrowseOriginalPath()
         {
             string folderPath = FileDiaLogHelper.OpenFolder(CMess.OriginalFolder.ToText());
             if (!string.IsNullOrWhiteSpace(folderPath) && Directory.Exists(folderPath))
             {
-                OriginalImgPath = folderPath;
+                imageSetting.OriginalCardFolder = folderPath;
             }
         }
         private void ClearOutputPath()
         {
-            OutputImgPath = string.Empty;
+            imageSetting.OutPutFolder = string.Empty;
         }
         private bool CanClearOutputPath()
         {
-            return !string.IsNullOrWhiteSpace(OutputImgPath);
+            return !string.IsNullOrWhiteSpace(imageSetting.OutPutFolder);
         }
         private void BrowseOutputPath()
         {
             string folderPath = FileDiaLogHelper.OpenFolder(CMess.OutPutFolder.ToText());
             if (!string.IsNullOrWhiteSpace(folderPath) && Directory.Exists(folderPath))
             {
-                OutputImgPath = folderPath;
+                imageSetting.OutPutFolder = folderPath;
             }
         }
 
@@ -2759,34 +2763,30 @@ namespace CardEditor.ViewModels
         {
             try
             {
-                ConfigViewModel.Instance.imageSetting.OriginalCardFolder = OriginalImgPath;
-                ConfigViewModel.Instance.imageSetting.OutPutFolder = OutputImgPath;
-                ConfigViewModel.Instance.imageSetting.ImageSizeString = ImageSize;
-                ConfigViewModel.Instance.imageSetting.StampSizeString = StampSize;
-                ConfigViewModel.Instance.imageSetting.StampMarrginString = StampMargin;
-                ConfigViewModel.Instance.imageSetting.StampPosition = SelectedStampPosition == null ? 1 : (int)SelectedStampPosition.Position;
-                ConfigViewModel.Instance.dataHandlingSetting.WriteMode = WriteMode;
-                var (resultImg, messageImg) = ConfigViewModel.Instance.SaveSingleSettingFile("ImageSetting", ConfigViewModel.Instance.imageSetting);
-                var (resultData, messageData) = ConfigViewModel.Instance.SaveSingleSettingFile("DataHandlingSetting", ConfigViewModel.Instance.dataHandlingSetting);
-                
-                if (resultImg && resultData)
-                {
-                    OnSettingSaved?.Invoke();
-                    OnSnackbarRequested(string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()));
-                }
-                else
+                ConfigViewModel.Instance.dataHandlingSetting = dataHandlingSetting.Clone();
+                ConfigViewModel.Instance.imageSetting = imageSetting.Clone();
+
+                ConfigViewModel.Instance.UpdateSettingsProperties();
+                ConfigViewModel.Instance.SaveSettingsProperties();
+
+                //ConfigViewModel.Instance.UpdateSettingsFile();
+                var (resultSetting, messageSetting) = ConfigViewModel.Instance.SaveAllSettingFile();
+                var (resultSorting, messageSorting) = await SortsViewModel.Instance.SaveSortingFile();
+
+                if (resultSetting && resultSorting)
                 {
                     var request = new MessageBoxRequest
                     {
-                        Title = CMess.error.ToText(),
-                        IconType = CMSG.MessageBoxIconType.Error,
-                        Message = $"{CMess.errorOcc.ToText()}\n{messageImg}\n{messageData}",
+                        Title = CMess.notifi.ToText(),
+                        IconType = CMSG.MessageBoxIconType.Notification,
+                        Message = string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()),
                         Buttons = new[] { CMess.ok.ToText() },
                         ResponseSource = null
                     };
                     OnMessageBoxRequested(request);
                 }
-                await Task.Delay(100);
+                else throw new IOException(messageSetting + messageSorting);
+
             }
             catch (Exception ex)
             {
@@ -2801,24 +2801,50 @@ namespace CardEditor.ViewModels
                 OnMessageBoxRequested(request);
             }
         }
+
         private bool CanSaveFolderPath()
         {
-            return(
-                !string.IsNullOrWhiteSpace(OriginalImgPath) &&
-                !string.IsNullOrWhiteSpace(OutputImgPath) &&
-                Directory.Exists(OriginalImgPath) &&
-                Directory.Exists(OutputImgPath) &&
-                IsValidIntPair(ImageSize) &&
-                IsValidIntPair(StampSize) &&
-                IsValidIntPair(StampMargin)  &&
-                SelectedStampPosition != null &&
-                SelectedArrange != null );
+            Debug.WriteLine("CanSaveSettingCommand called");
+
+
+            if (string.IsNullOrWhiteSpace(imageSetting.OutPutFolder) ||
+                imageSetting.OutPutFolder.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0 ||
+                !System.IO.Path.IsPathRooted(imageSetting.OutPutFolder) ||
+                !Directory.Exists(imageSetting.OutPutFolder))
+                return false;
+
+            if (imageSetting.StampPosition < 0 ||
+                string.IsNullOrEmpty(imageSetting.BackgroundArt) ||
+                string.IsNullOrEmpty(imageSetting.Foild) ||
+                imageSetting.Secret < 0 || imageSetting.Secret > 3)
+                return false;
+
+            return true;
         }
         private static readonly Regex IntPairRegex = new Regex(@"^\d+,\d+$", RegexOptions.Compiled);
         private bool IsValidIntPair(string input) => !string.IsNullOrWhiteSpace(input) && IntPairRegex.IsMatch(input);
         #endregion
 
         #region Event
+        private void DataHandlingSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ClearOriginalPathCommand?.RaiseCanExecuteChanged();
+            ClearOutputPathCommand?.RaiseCanExecuteChanged();
+            BrowseOriginalPathCommand?.RaiseCanExecuteChanged();
+            BrowseOutputPathCommand?.RaiseCanExecuteChanged();
+            ReloadFolderCommand?.RaiseCanExecuteChanged();
+            SaveFolderCommand?.RaiseCanExecuteChanged();
+        }
+        private void ImageSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ClearOriginalPathCommand?.RaiseCanExecuteChanged();
+            ClearOutputPathCommand?.RaiseCanExecuteChanged();
+            BrowseOriginalPathCommand?.RaiseCanExecuteChanged();
+            BrowseOutputPathCommand?.RaiseCanExecuteChanged();
+            ReloadFolderCommand?.RaiseCanExecuteChanged();
+            SaveFolderCommand?.RaiseCanExecuteChanged();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler<MessageBoxRequest> MessageBoxRequested;
         public event EventHandler<string> SnackbarRequested;
@@ -2911,7 +2937,8 @@ namespace CardEditor.ViewModels
             CreateImageCommand = null;
             CancelCreateImageCommand = null;
             LoadCardCommand = null;
-            BrowseDBCommand = null;
+            BrowseCardListDBCommand = null;
+            BrowseRarityJSONFileCommand = null;
             AddCardCommand = null;
             ModifyCardCommand = null;
             SaveAllCommand = null;

@@ -623,7 +623,7 @@ namespace CardEditor.ViewModels
         #region IDisposable
         public void Dispose()
         {
-
+            _rules.Clear();
         }
         #endregion
 

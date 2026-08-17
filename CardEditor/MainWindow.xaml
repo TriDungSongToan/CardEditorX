@@ -618,11 +618,20 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem Header="{Lag:Localize chkUpdate}" Click="MenuItemchkupdate_Click"
-                              Margin="0" Padding="10,0,15,0" >
+                    <MenuItem Header="{Lag:Localize chkUpdate}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Help/Update.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
+                        <MenuItem Header="Card Data" Margin="0" Padding="10,0,15,0" Click="CardDataChkUpdate_Click" >
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="DatabaseSyncOutline" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Card Image" Margin="0" Padding="10,0,15,0" Click="CardImageChkUpdate_Click" >
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="ImageRefresh" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
 
                     <MenuItem Header="Registry" Margin="0" Padding="10,0,15,0" >
@@ -646,39 +655,10 @@
                 </MenuItem>
 
                 <MenuItem x:Name="menuDev" Header="Developer" Margin="0" Padding="10,0,10,0" >
-                    <MenuItem Header="Export Data" Margin="0" Padding="10,0,15,0" >
+                    <MenuItem Header="Developer Tools" Margin="0" Padding="10,0,15,0" Click="DevrloperTool_Click" >
                         <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="FileExport" Width="auto" Height="auto" Margin="0" />
+                            <materialDesign:PackIcon Kind="DeveloperBoard" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
-                        <MenuItem Header="Archetype" Margin="0" Padding="10,0,15,0" >
-                            <MenuItem x:Name="ListSetCodeEDOPro" Header="EDOPro" Click="ListSetCodeEDO_Click" />
-                            <MenuItem x:Name="ListSetCodeMDPro" Header="MDPro" Click="ListSetCodeMDPro_Click" />
-                        </MenuItem>
-
-                        <MenuItem Header="Scrapiyard" Margin="0" Padding="10,0,15,0" >
-                            <MenuItem Header="Check Update" x:Name="menuUpdateScrapiyard" Margin="0" Padding="10,0,15,0" Click="menuUpdateScrapiyard_Click" />
-                            <MenuItem x:Name="exportFunctions" Header="Functions" Margin="0" Padding="10,0,15,0" Click="exportFunctions_Click" />
-                            <MenuItem x:Name="exportconstants" Header="Constants" Margin="0" Padding="10,0,15,0" Click="exportconstants_Click" />
-                            <MenuItem x:Name="exportScript" Header="Script" Margin="0" Padding="10,0,15,0" Click="exportScript_Click" />
-                        </MenuItem>
-
-                        <MenuItem Header="Yaml Yugi" Margin="0" Padding="10,0,15,0" >
-                            <MenuItem Header="Check Update" x:Name="menuchkupdateYamlYugi" Margin="0" Padding="10,0,15,0" Click="menuchkupdateYamlYugi_Click" />
-                            <MenuItem Header="Create Database" x:Name="menucreateKonamiDB" Margin="0" Padding="10,0,15,0" Click="menucreateKonamiDB_Click" />
-                            <MenuItem Header="Get Official Card Konami ID" x:Name="menuGetKonamiIDOfficial" Margin="0" Padding="10,0,15,0" Click="menuGetKonamiIDOfficial_Click" />
-                            <MenuItem Header="Get Rush Card Konami ID" x:Name="menuGetKonamiIDRush" Margin="0" Padding="10,0,15,0" Click="menuGetKonamiIDRush_Click" />
-                        </MenuItem>
-
-                        <MenuItem Header="Genesys Point" Margin="0" Padding="10,0,15,0" >
-                            <MenuItem Header="Export List Point" x:Name="menuListPointGenesys" Margin="0" Padding="10,0,15,0" Click="menuListPointGenesys_Click" />
-                        </MenuItem>
-
-                        <MenuItem Header="Terminology" Margin="0" Padding="10,0,15,0" Click="exportTerminology_Click" />
-
-                        <MenuItem Header="Special Sharacters" Margin="0" Padding="10,0,15,0" >
-                            <MenuItem Header="Export Special Characters" Margin="0" Padding="10,0,15,0" Click="speChar_Click" />
-                            <MenuItem Header="View Code Box" Margin="0" Padding="10,0,15,0" Click="menuviewcodebox_Click" />
-                        </MenuItem>
                     </MenuItem>
                 </MenuItem>
             </Menu>

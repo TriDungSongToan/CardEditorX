@@ -9,7 +9,7 @@ namespace CardEditor.Helpers
 {
     public static class Archetype
     {
-        public static void GetEDOArchetypeList(string inputFilePath)
+        public static (bool, string) GetEDOArchetypeList(string inputFilePath)
         {
             string exeFilePath = Assembly.GetExecutingAssembly().Location;
             string outputDirectory = Path.Combine(System.IO.Path.GetDirectoryName(exeFilePath), "data");
@@ -17,16 +17,9 @@ namespace CardEditor.Helpers
 
             try
             {
-                if (!File.Exists(inputFilePath))
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
-                    return;
-                }
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
+                if (!File.Exists(inputFilePath)) return (false, CMess.fileNotExit.ToText());
+
+                if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
 
                 // Đọc toàn bộ các dòng từ file nguồn
                 string[] lines = File.ReadAllLines(inputFilePath);
@@ -56,13 +49,16 @@ namespace CardEditor.Helpers
                         }
                     }
                 }
-                CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                    $"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText())}", new[] { CMess.ok.ToText() });
+
+                return (true, outputFilePath);
+                //CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
+                    //$"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText())}", new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                return (false, ex.Message);
+                //CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    //$"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         static string CapitalizeWords(string input)
@@ -91,7 +87,7 @@ namespace CardEditor.Helpers
             return result.ToString();
         }
 
-        public static void GetMDProArchetypeList(string inputFilePath)
+        public static (bool, string) GetMDProArchetypeList(string inputFilePath)
         {
             string exeFilePath = Assembly.GetExecutingAssembly().Location;
             string outputDirectory = Path.Combine(System.IO.Path.GetDirectoryName(exeFilePath), "data");
@@ -99,16 +95,9 @@ namespace CardEditor.Helpers
 
             try
             {
-                if (!File.Exists(inputFilePath))
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
-                    return;
-                }
-                if (!Directory.Exists(outputDirectory))
-                {
-                    Directory.CreateDirectory(outputDirectory);
-                }
+                if (!File.Exists(inputFilePath)) return (false, CMess.fileNotExit.ToText());
+
+                if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
 
                 string[] lines = File.ReadAllLines(inputFilePath);
                 using (StreamWriter writer = new StreamWriter(outputFilePath))
@@ -133,13 +122,16 @@ namespace CardEditor.Helpers
                         }
                     }
                 }
-                CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                    string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
+                //CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
+                    //string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
+
+                return (true, outputFilePath);
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                return (false, ex.Message);
+                //CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    //$"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
     }

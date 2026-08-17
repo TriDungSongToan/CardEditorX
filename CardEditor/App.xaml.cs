@@ -268,6 +268,9 @@ namespace CardEditor
             ScriptViewModel.Instance.Dispose();
             SortsViewModel.Instance.Dispose();
             CardDataViewModel.Instance.Dispose();
+            PenLanguageViewModel.Instance.Dispose();
+            MasterDuelAPIViewModel.Instance.Dispose();
+            CreditsViewModel.Instance.Dispose();
             UIConfigViewModel.Instance.Dispose();
 
             GC.Collect();

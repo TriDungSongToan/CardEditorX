@@ -1412,38 +1412,72 @@ namespace CardEditor.ImageGene
                 //SelectedNamePaintOut?.Dispose();
             }
         }
-        public static async Task<string> GenerateImageRare(CardEditor.Models.RareCard cardItem)
+        public static async Task<(bool, string)> GenerateImageRare(CardEditor.Models.RareCard cardItem)
         {
             if (cardItem == null || string.IsNullOrWhiteSpace(outputFolderPath) || string.IsNullOrWhiteSpace(originalFolderPath))
-                return string.Empty;
+                return (false, CMess.cardNotExit.ToText());
 
-            return await Task.Run(async () =>
+            EnsureInitialized();
+
+            try
             {
-                var info = new SKImageInfo(ConfigViewModel.Instance.imageSetting.ImageSize.Width,
-                    ConfigViewModel.Instance.imageSetting.ImageSize.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
+                var info = new SKImageInfo(GeneraImageViewModel.Instance.CurrentImageInfo.CardWidth, GeneraImageViewModel.Instance.CurrentImageInfo.CardHeight, SKColorType.Rgba8888, SKAlphaType.Premul);
                 using (var surface = SKSurface.Create(info))
+                using (var paint = new SKPaint { IsAntialias = true })
+                using (var detailPaint = new SKPaint { IsAntialias = false })
                 {
                     var canvas = surface.Canvas;
                     canvas.Clear(SKColors.Transparent);
 
                     string imageOriPath = FindIInfoService.FindImagePath(cardItem.id.ToString(), originalFolderPath);
-
-                    if(string.IsNullOrEmpty(imageOriPath) || !File.Exists(imageOriPath))
-                        return string.Empty;
+                    if (string.IsNullOrEmpty(imageOriPath) || !File.Exists(imageOriPath))
+                        return (false, CMess.cardNotExit.ToText());
 
                     using (var stream = File.OpenRead(imageOriPath))
                     using (var bitmap = SKBitmap.Decode(stream))
                     {
-                        var destRect = new SKRect(0, 0, info.Width, info.Height);
-                        canvas.DrawBitmap(bitmap, destRect);
+                        canvas.DrawBitmap(bitmap, GeneraImageViewModel.Instance.CurrentImageInfo.FrameRect, paint);
                     }
+
+                    #region Secret
+                    if (ConfigViewModel.Instance.imageSetting.Secret != 0)
+                    {
+                        var cardFilted = CardEXDataViewModel.Instance.GetCardOrNull(cardItem.id);
+                        if (cardFilted != null)
+                        {
+                            bool isPendulum = FindIInfoService.CheckCardInfo(cardFilted.BaseCard.type, CardEditor.Models.CardType.Pendulum);
+                            if (ConfigViewModel.Instance.imageSetting.Secret == 1)
+                            {
+                                if (isPendulum)
+                                {
+                                    if (GeneraImageViewModel.Instance.SecretCache?.TryGetValue("2", out var selectedSecret) == true)
+                                        canvas.DrawBitmap(selectedSecret, GeneraImageViewModel.Instance.CurrentImageInfo.AWPendulumRect, paint);
+                                }
+                                else
+                                {
+                                    if (GeneraImageViewModel.Instance.SecretCache?.TryGetValue("1", out var selectedSecret) == true)
+                                        canvas.DrawBitmap(selectedSecret, GeneraImageViewModel.Instance.CurrentImageInfo.AWNormalRect, paint);
+                                }
+                            }
+                            else if (ConfigViewModel.Instance.imageSetting.Secret == 2)
+                            {
+                                if (GeneraImageViewModel.Instance.SecretCache?.TryGetValue(isPendulum ? "4" : "3", out var selectedSecret) == true)
+                                    canvas.DrawBitmap(selectedSecret, GeneraImageViewModel.Instance.CurrentImageInfo.FrameRect, paint);
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region Foild
+                    if (!string.IsNullOrEmpty(ConfigViewModel.Instance.imageSetting.Foild) &&
+                        ConfigViewModel.Instance.imageSetting.Foild != "None")
+                    {
+                        if (GeneraImageViewModel.Instance.FoildCache?.TryGetValue(ConfigViewModel.Instance.imageSetting.Foild, out var selectedFoild) == true)
+                            canvas.DrawBitmap(selectedFoild, GeneraImageViewModel.Instance.CurrentImageInfo.FrameRect, paint);
+                    }
+                    #endregion
 
                     #region Rarity
-                    if (GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.HasValue)
-                    {
-                        var rect = GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.Value;
-                    }
-
                     if (ConfigViewModel.Instance.imageSetting.IncludeRare && GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.HasValue)
                     {
                         long rarity = RareRawDataViewModel.Instance.GetRareByCardId(cardItem.id);
@@ -1462,22 +1496,117 @@ namespace CardEditor.ImageGene
                         }
                         if (selectedRarity != null)
                         {
-                            canvas.DrawBitmap(selectedRarity, GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.Value, null);
+                            canvas.DrawBitmap(selectedRarity, GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.Value, paint);
                         }
                     }
                     #endregion
 
                     #region Savve
                     var outputFilePath = Path.Combine(outputFolderPath, $"{cardItem.id}.png");
-                    if (!ImageValidate.TryDeleteFile(outputFilePath)) return string.Empty;
+                    if (!ImageValidate.TryDeleteFile(outputFilePath)) return (false, CMess.unableDelete.ToText());
 
                     using (var image = surface.Snapshot())
                         await ImageValidate.SaveImage(image, outputFilePath);
                     #endregion
 
-                    return outputFilePath;
+                    return (true, outputFilePath);
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+
+            }
+
+            //return await Task.Run(async () =>
+            //{
+            //    var info = new SKImageInfo(ConfigViewModel.Instance.imageSetting.ImageSize.Width,
+            //        ConfigViewModel.Instance.imageSetting.ImageSize.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
+            //    using (var surface = SKSurface.Create(info))
+            //    {
+            //        var canvas = surface.Canvas;
+            //        canvas.Clear(SKColors.Transparent);
+
+            //        string imageOriPath = FindIInfoService.FindImagePath(cardItem.id.ToString(), originalFolderPath);
+
+            //        if(string.IsNullOrEmpty(imageOriPath) || !File.Exists(imageOriPath))
+            //            return string.Empty;
+
+            //        using (var stream = File.OpenRead(imageOriPath))
+            //        using (var bitmap = SKBitmap.Decode(stream))
+            //        {
+            //            var destRect = new SKRect(0, 0, info.Width, info.Height);
+            //            canvas.DrawBitmap(bitmap, destRect);
+            //        }
+
+            //        #region Secret
+            //        if (ConfigViewModel.Instance.imageSetting.Secret != 0)
+            //        {
+            //            var cardFilted = CardEXDataViewModel.Instance.GetCardOrNull(cardItem.id);
+            //            if (cardFilted != null)
+            //            {
+            //                bool isPendulum = FindIInfoService.CheckCardInfo(cardFilted.BaseCard.type, CardEditor.Models.CardType.Pendulum);
+            //                if (ConfigViewModel.Instance.imageSetting.Secret == 1)
+            //                {
+            //                    if (isPendulum)
+            //                    {
+            //                        //if (GeneraImageViewModel.Instance.SecretCache?.TryGetValue("2", out var selectedSecret) == true)
+            //                            //canvas.DrawBitmap(selectedSecret, GeneraImageViewModel.Instance.CurrentImageInfo.AWPendulumRect, paint);
+            //                    }
+            //                    else
+            //                    {
+            //                        //if (GeneraImageViewModel.Instance.SecretCache?.TryGetValue("1", out var selectedSecret) == true)
+            //                            //canvas.DrawBitmap(selectedSecret, GeneraImageViewModel.Instance.CurrentImageInfo.AWNormalRect, paint);
+            //                    }
+            //                }
+            //            }
+
+            //        }
+            //        #endregion
+
+            //        #region Rarity
+            //        if (GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.HasValue)
+            //        {
+            //            var rect = GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.Value;
+            //        }
+
+            //        if (ConfigViewModel.Instance.imageSetting.IncludeRare && GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.HasValue)
+            //        {
+            //            long rarity = RareRawDataViewModel.Instance.GetRareByCardId(cardItem.id);
+            //            SKBitmap selectedRarity = null;
+
+            //            if (rarity > 0 && RareRawDataViewModel.Instance.RarityCache?.Count > 0)
+            //            {
+            //                foreach (var item in RareRawDataViewModel.Instance.RarityCache)
+            //                {
+            //                    if ((rarity & item.Key) == item.Key)
+            //                    {
+            //                        selectedRarity = item.Value;
+            //                        break;
+            //                    }
+            //                }
+            //            }
+            //            if (selectedRarity != null)
+            //            {
+            //                canvas.DrawBitmap(selectedRarity, GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.Value, null);
+            //            }
+            //        }
+            //        #endregion
+
+            //        #region Savve
+            //        var outputFilePath = Path.Combine(outputFolderPath, $"{cardItem.id}.png");
+            //        if (!ImageValidate.TryDeleteFile(outputFilePath)) return string.Empty;
+
+            //        using (var image = surface.Snapshot())
+            //            await ImageValidate.SaveImage(image, outputFilePath);
+            //        #endregion
+
+            //        return outputFilePath;
+            //    }
+            //});
         }
 
         private static string FindArtworkPath(string cardId)

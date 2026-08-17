@@ -18,7 +18,7 @@ namespace CardEditor.Manager
 {
     public static class Terminology
     {
-        public static async Task ExtractTerminology(string dataSourcePath, string dataFolderPath)
+        public static async Task<(bool result, string message, string filePath)> ExtractTerminology(string dataSourcePath, string dataFolderPath)
         {
             try
             {
@@ -67,13 +67,12 @@ namespace CardEditor.Manager
                         await writer.WriteLineAsync(term);
                     }
                 }
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"Successfully extracted {sortedTerms.Count} terms into file: {outputPath}", new[] { CMess.ok.ToText() });
+
+                return (true, $"Successfully extracted {sortedTerms.Count} terms into file: {outputPath}", outputPath);
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                return (false, ex.Message, null);
             }
             finally
             {
@@ -110,7 +109,7 @@ namespace CardEditor.Manager
         }
 
 
-        public static async Task ExtractSpecialCharacters(string dataSourcePath, string dataFolderPath)
+        public static async Task<(bool result, string message, string filePath)> ExtractSpecialCharacters(string dataSourcePath, string dataFolderPath)
         {
             try
             {
@@ -118,6 +117,135 @@ namespace CardEditor.Manager
                 {
                     Mouse.OverrideCursor = Cursors.Wait;
                 });
+
+                var (count, outputPath) = await Task.Run(async () =>
+                {
+                    HashSet<char> specialChars = new HashSet<char>();
+
+                    HashSet<char> unwantedChars = new HashSet<char>
+            {
+                '\u200B', '\u200C', '\u200D', '\u200E',
+                '\u200F', '\uFEFF', '\u2028', '\u2029'
+            };
+
+                    specialChars.UnionWith(new char[]
+                    {
+                '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
+                '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
+                    });
+
+                    string outputPath = Path.Combine(
+                        dataFolderPath,
+                        "SpecialCharacters.txt");
+
+                    // Đọc file cũ
+                    if (File.Exists(outputPath))
+                    {
+                        using (var reader = new StreamReader(outputPath, Encoding.UTF8))
+                        {
+                            string existingContent = await reader.ReadToEndAsync();
+
+                            foreach (char c in existingContent)
+                            {
+                                specialChars.Add(c);
+                            }
+                        }
+                    }
+
+                    // Xử lý CDB
+                    await ProcessCdbFilesAsync(dataSourcePath, content =>
+                    {
+                        foreach (char c in content)
+                        {
+                            if (char.IsControl(c) ||
+                                unwantedChars.Contains(c))
+                                continue;
+
+                            UnicodeCategory category = Char.GetUnicodeCategory(c);
+
+                            if (!char.IsLetterOrDigit(c) &&
+                                c != ' ' &&
+                                c != '\r' &&
+                                c != '\n' &&
+                                c != '\t')
+                            {
+                                if (c < 32 || c > 126)
+                                {
+                                    if (category != UnicodeCategory.UppercaseLetter &&
+                                        category != UnicodeCategory.LowercaseLetter &&
+                                        category != UnicodeCategory.TitlecaseLetter &&
+                                        category != UnicodeCategory.ModifierLetter &&
+                                        category != UnicodeCategory.OtherLetter)
+                                    {
+                                        specialChars.Add(c);
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Xử lý Lua
+                    await ProcessLuaFilesAsync(dataSourcePath, content =>
+                    {
+                        foreach (char c in content)
+                        {
+                            if (char.IsControl(c) ||
+                                unwantedChars.Contains(c))
+                                continue;
+
+                            UnicodeCategory category = Char.GetUnicodeCategory(c);
+
+                            if (!char.IsLetterOrDigit(c) &&
+                                c != ' ' &&
+                                c != '\r' &&
+                                c != '\n' &&
+                                c != '\t')
+                            {
+                                if (c < 32 || c > 126)
+                                {
+                                    if (category != UnicodeCategory.UppercaseLetter &&
+                                        category != UnicodeCategory.LowercaseLetter &&
+                                        category != UnicodeCategory.TitlecaseLetter &&
+                                        category != UnicodeCategory.ModifierLetter &&
+                                        category != UnicodeCategory.OtherLetter)
+                                    {
+                                        specialChars.Add(c);
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Loại bỏ ký tự ASCII và full-width ASCII
+                    specialChars.RemoveWhere(c =>
+                        (c >= 32 && c <= 126) ||
+                        (c >= 0xFF01 && c <= 0xFF5E));
+
+                    // Loại bỏ control / whitespace
+                    specialChars.RemoveWhere(c =>
+                        char.IsControl(c) ||
+                        char.IsWhiteSpace(c));
+
+                    // Sắp xếp
+                    var sortedChars = specialChars
+                        .OrderBy(c => (int)c)
+                        .ToList();
+
+                    // Ghi file
+                    using (var writer = new StreamWriter(
+                        outputPath,
+                        false,
+                        Encoding.UTF8))
+                    {
+                        foreach (var c in sortedChars)
+                        {
+                            await writer.WriteLineAsync(c.ToString());
+                        }
+                    }
+
+                    return (sortedChars.Count, outputPath);
+                });
+                return (true, $"Successfully extracted {count} special characters.", outputPath);
 
                 await Task.Run(async () =>
                 {
@@ -239,8 +367,7 @@ namespace CardEditor.Manager
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                return (false, ex.Message, null);
             }
             finally
             {

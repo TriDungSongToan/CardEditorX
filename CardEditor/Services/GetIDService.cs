@@ -10,8 +10,6 @@ using System.Collections.Concurrent;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using CardEditor.Models;
-using CardEditor.Localization;
-using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Services
 {
@@ -56,18 +54,14 @@ namespace CardEditor.Services
             }
         }
 
-        public static async Task GetOfficialKonamiID(string yankYugiFolderPath)
+        public static async Task<(bool, string)> GetOfficialKonamiID(string yankYugiFolderPath)
         {
             KonamiIDDBPath = System.IO.Path.Combine(CardEditor.Models.AppContext.Instance.DataFolderPath, $@"KonamiID.cdb");
             try
             {
                 var CardList = await GetListOfficialData(yankYugiFolderPath);
-                if (CardList == null || CardList.Count == 0)
-                {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Warning,
-                        $"No valid YAML files found in {yankYugiFolderPath}", new[] { CMess.ok.ToText() });
-                    return;
-                }
+                if (CardList == null || CardList.Count == 0) return (false, $"No valid YAML files found in {yankYugiFolderPath}");
+
                 string connectionString = $"Data Source={KonamiIDDBPath};Version=3;";
                 using (var connection = new SQLiteConnection(connectionString))
                 {
@@ -92,28 +86,22 @@ namespace CardEditor.Services
                         transaction.Commit();
                     }
                 }
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"Get Official Konami ID Suc", new[] { CMess.ok.ToText() });
+
+                return (true, "Get Official Konami ID successfully.");
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                return;
+                return (false, ex.Message);
             }
         }
-        public static async Task GetRushKonamiID(string yankYugiFolderPath)
+        public static async Task<(bool, string)> GetRushKonamiID(string yankYugiFolderPath)
         {
             KonamiIDDBPath = System.IO.Path.Combine(CardEditor.Models.AppContext.Instance.DataFolderPath, $@"KonamiID.cdb");
             try
             {
                 var CardList = await GetListRushData(yankYugiFolderPath);
-                if (CardList == null || CardList.Count == 0)
-                {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Warning,
-                        $"No valid YAML files found in {yankYugiFolderPath}", new[] { CMess.ok.ToText() });
-                    return;
-                }
+                if (CardList == null || CardList.Count == 0) return (false, $"No valid YAML files found in {yankYugiFolderPath}");
+
                 string connectionString = $"Data Source={KonamiIDDBPath};Version=3;";
                 using (var connection = new SQLiteConnection(connectionString))
                 {
@@ -138,14 +126,11 @@ namespace CardEditor.Services
                         transaction.Commit();
                     }
                 }
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    $"Get Rush Konami ID Suc", new[] { CMess.ok.ToText() });
+                return (true, "Get Rush Konami ID successfully.");
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                return;
+                return (false, ex.Message);
             }
         }
 

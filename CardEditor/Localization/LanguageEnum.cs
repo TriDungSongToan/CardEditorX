@@ -426,16 +426,17 @@ namespace CardEditor.Localization
         Zip = 0x5b4,        //Zip
         Excel = 0x5b5,      //Excel
         Video = 0x5b6,      //Video
-        All = 0x5b7,        //All
-        UnknownFile = 0x5b8,//Unknown
-        Folder = 0x5b9,     //Folder
+        Json = 0x5b7,       //JSON
+        All = 0x5b8,        //All
+        UnknownFile = 0x5b9,//Unknown
+        Folder = 0x5ba,     //Folder
 
-        Path = 0x5ba,       //Path
-        Format = 0x5bb,     //Format
-        Handle = 0x5bc,     //Handle
-        Operation = 0x5bd,  //Operation
-        Permission = 0x5be, //Permission
-        Encoding = 0x5bf,   //Encoding
+        Path = 0x5bb,       //Path
+        Format = 0x5bc,     //Format
+        Handle = 0x5bd,     //Handle
+        Operation = 0x5be,  //Operation
+        Permission = 0x5bf, //Permission
+        Encoding = 0x5c0,   //Encoding
         #endregion
 
         #region Card Element
@@ -679,76 +680,5 @@ namespace CardEditor.Localization
         Link = 0x7a9,       //Link:
         #endregion
 
-
-
-
-        //invaFilePath = 0x54a,   //Invalid File Path.
-        //invaFileForm = 0x54b,   //Invalid File Format.
-        //invaFileHan = 0x54c,    //Invalid File Handle.
-        //invaFileOpe = 0x54d,    //Invalid File Operation.
-        //invaFolderPath = 0x54e, //Invalid Folder Path.
-
-        //invaDataPath = 0x555,   //Invalid Data Path.
-        //invaDataForm = 0x556,   //Invalid Data Format.
-        //invaPermi = 0x581,      //Invalid Permission.
-        //invaEnco = 0x582,       //Invalid Encoding.
-
-        //invaRareName = 0x563,   //Invalid Rarity name.
-        //invaSetting = 0x56a,    //Invalid Setting. Please select a Setting before saving.
-        //invaScope = 0x571,      //Invalid Scope.
-
-        //creaSuc = 0x5c6,        //{0} {1} created successfully!
-        //addSuc = 0x5c7,         //{0} {1} added successfully!
-        //updateSuc = 0x5c8,      //{0} {1} updated successfully!
-        //saveSuc = 0x5c9,        //{0} {1} saved successfully!
-        //copySuc = 0x5ca,        //{0] {1} copied successfully!
-        //pasteSuc = 0x5cb,       //{0} {1} pasted successfully!
-        //replaceSuc = 0x5cc,     //{0} {1} Replaced successfully!
-        //deleteSuc = 0x5cd,      //{0} {1} deleted successfully!
-        //refreshSuc = 0x5ce,     //{0} {1} refresh successfully!
-        //expoDataSuc = 0x5df,    //Data exported successfully!
-        //impoDataSuc = 0x5e0,    //Data imported successfully!
-        //saveSettingSuc = 0x5d0, //Save Settings successfully!
-
-
-        //errorCreaCDB = 0x512,   //Error creating Card Database file:
-        //errorCreaCRRC = 0x513,  //Error creating Card Rare Database file:
-        //errorCreaCRRL = 0x514,  //Error creating List Rare Database file:
-
-        //errorCreaCGNS = 0x515,  //Error creating Genesys Card Database file:
-        //errorCreaCredit = 0x516,//Error creating Credit Database file:
-
-        //errorCreaLua = 0x517,   //Error creating Script file:
-        //errorCreaImg = 0x518,   //Error creating Image file:
-        //errorCreaCeds = 0x519,  //Error creating Ceds file:
-        //errorCreaDeck = 0x51a,  //Error creating Deck file:
-        //errorRead = 0x51b,      //Error reading file:
-        //errorReadConf = 0x51c,  //Error reading configuration:
-        //errorSaveConf = 0x51d,  //Error saving configuration:
-        //errorWrite = 0x51e,     //Error writing file:
-        //errorCopy = 0x51f,      //Error copying card:
-        //errorPaste = 0x520,     //Error pasting card:
-        //errorSave = 0x521,      //Error Saving:
-        //errorSaveCard = 0x522,  //Error saving cards:
-        //errorSaveScript = 0x523,//Error saving script:
-
-
-        // confirmClearAll = 0x709,        //Are you sure you want to Clear all {0}?
-        // confirmReload = 0x70b,          //Are you sure you want to Reload {0}?
-        // confirmReset = 0x70c,           //Are you sure you want to Reset {0}?
-
-        //errorAddCard = 0x531,       //Error adding card:
-        //errorAddRare = 0x532,       //Error adding/modifying rarity:
-        //errorAddCredit = 0x533,     //Error adding/modifying credit:
-        //errorDeleteCard = 0x534,    //Error deleting card:
-        //errorDeleteRare = 0x535,    //Error deleting rarity:
-        //errorDeleteFile = 0x536,    //Error deleting file:
-        //errorModifyCard = 0x537,    //Error modifying card:
-        //errorCreateCard = 0x538,    //Error creating card:
-        //errorFilterCard = 0x539,    //Error filtering cards:
-        //errorExport = 0x53a,        //Error exporting data:
-        //errorImport = 0x53b,        //Error importing data:
-        //errorDownload = 0x53c,      //Error downloading data:
-        //errorUpdate = 0x53d,        //Error updating data:
     }
 }

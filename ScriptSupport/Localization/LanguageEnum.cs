@@ -426,16 +426,17 @@ namespace ScriptSupport.Localization
         Zip = 0x5b4,        //Zip
         Excel = 0x5b5,      //Excel
         Video = 0x5b6,      //Video
-        All = 0x5b7,        //All
-        UnknownFile = 0x5b8,//Unknown
-        Folder = 0x5b9,     //Folder
+        Json = 0x5b7,       //JSON
+        All = 0x5b8,        //All
+        UnknownFile = 0x5b9,//Unknown
+        Folder = 0x5ba,     //Folder
 
-        Path = 0x5ba,       //Path
-        Format = 0x5bb,     //Format
-        Handle = 0x5bc,     //Handle
-        Operation = 0x5bd,  //Operation
-        Permission = 0x5be, //Permission
-        Encoding = 0x5bf,   //Encoding
+        Path = 0x5bb,       //Path
+        Format = 0x5bc,     //Format
+        Handle = 0x5bd,     //Handle
+        Operation = 0x5be,  //Operation
+        Permission = 0x5bf, //Permission
+        Encoding = 0x5c0,   //Encoding
         #endregion
 
         #region Card Element

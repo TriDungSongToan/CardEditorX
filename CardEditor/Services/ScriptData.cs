@@ -73,9 +73,9 @@ namespace CardEditor.Services
             };
         }
 
-        public static (bool, string) ExportConstantsToJson()
+        public static (bool, string) ExportConstantsToJson(string folderPath = null)
         {
-            string folderPath = FileDiaLogHelper.OpenFolder("Constants Folder (scrapiyard Folder)");
+            folderPath ??= FileDiaLogHelper.OpenFolder("Constants Folder (scrapiyard Folder)");
             if (string.IsNullOrWhiteSpace(folderPath) || !System.IO.Directory.Exists(folderPath))
                 return (false, CMess.folderNotExit.ToText());
             int CountSuccesses = 0;
@@ -141,9 +141,9 @@ namespace CardEditor.Services
                 return (false, ex.Message);
             }
         }
-        public static (bool, string) ExportEnumsToJson()
+        public static (bool, string) ExportEnumsToJson(string folderPath = null)
         {
-            string folderPath = FileDiaLogHelper.OpenFolder("Enums Folder (scrapiyard Folder)");
+            folderPath ??= FileDiaLogHelper.OpenFolder("Enums Folder (scrapiyard Folder)");
             if (string.IsNullOrWhiteSpace(folderPath) || !System.IO.Directory.Exists(folderPath))
                 return (false, CMess.folderNotExit.ToText());
             int CountSuccesses = 0;
@@ -207,9 +207,9 @@ namespace CardEditor.Services
                 return (false, ex.Message);
             }
         }
-        public static (bool, string) ExportFunctionsToJson()
+        public static (bool, string) ExportFunctionsToJson(string folderPath = null)
         {
-            string folderPath = FileDiaLogHelper.OpenFolder("Functions Folder (scrapiyard Folder)");
+            folderPath ??= FileDiaLogHelper.OpenFolder("Functions Folder (scrapiyard Folder)");
             if (string.IsNullOrWhiteSpace(folderPath) || !System.IO.Directory.Exists(folderPath))
                 return (false, CMess.folderNotExit.ToText());
             int CountSuccesses = 0;
@@ -281,9 +281,9 @@ namespace CardEditor.Services
                 return (false, ex.Message);
             }
         }
-        public static (bool, string) ExportNameSpacesToJson()
+        public static (bool, string) ExportNameSpacesToJson(string folderPath = null)
         {
-            string folderPath = FileDiaLogHelper.OpenFolder("NameSpaces Folder (scrapiyard Folder)");
+            folderPath ??= FileDiaLogHelper.OpenFolder("NameSpaces Folder (scrapiyard Folder)");
             if (string.IsNullOrWhiteSpace(folderPath) || !System.IO.Directory.Exists(folderPath))
                 return (false, CMess.folderNotExit.ToText());
             int CountSuccesses = 0;
@@ -347,9 +347,9 @@ namespace CardEditor.Services
                 return (false, ex.Message);
             }
         }
-        public static (bool, string) ExportTagToJson()
+        public static (bool, string) ExportTagToJson(string folderPath = null)
         {
-            string folderPath = FileDiaLogHelper.OpenFolder("Tags Folder (scrapiyard Folder)");
+            folderPath ??= FileDiaLogHelper.OpenFolder("Tags Folder (scrapiyard Folder)");
             if (string.IsNullOrWhiteSpace(folderPath) || !System.IO.Directory.Exists(folderPath))
                 return (false, CMess.folderNotExit.ToText());
             int CountSuccesses = 0;
@@ -412,9 +412,9 @@ namespace CardEditor.Services
                 return (false, ex.Message);
             }
         }
-        public static (bool, string) ExportTypesToJson()
+        public static (bool, string) ExportTypesToJson(string folderPath = null)
         {
-            string folderPath = FileDiaLogHelper.OpenFolder("Types Folder (scrapiyard Folder)");
+            folderPath ??= FileDiaLogHelper.OpenFolder("Types Folder (scrapiyard Folder)");
             if (string.IsNullOrWhiteSpace(folderPath) || !System.IO.Directory.Exists(folderPath))
                 return (false, CMess.folderNotExit.ToText());
             int CountSuccesses = 0;

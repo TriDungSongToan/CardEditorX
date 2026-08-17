@@ -1,38 +1,39 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
+using System.Data.SQLite;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Media.Animation;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using System.Data.SQLite;
-using System.Reflection;
-using System.Diagnostics;
-using System.Configuration;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Dragablz;
+using System.Reflection;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Configuration;
+using System.ComponentModel;
 using MahApps.Metro.Controls;
+using Dragablz;
 using CardEditor.Views;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Manager;
 using CardEditor.Services;
+using CardEditor.ViewModels;
 using CardEditor.Commands;
 using CardEditor.ImageGene;
-using CardEditor.ViewModels;
-using CardEditor.UserControls;
 using CardEditor.Localization;
-using CMess = CardEditor.Localization.Language;
+using CardEditor.UserControls;
 using CardAppContext = CardEditor.Models.AppContext;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor
 {
@@ -3616,7 +3617,7 @@ namespace CardEditor
             if (_rareEditor == null || !_rareEditor.IsLoaded)
             {
                 _rareEditor = new RareEditor();
-                _rareEditor.Owner = null;
+                _rareEditor.Owner = this;
                 _rareEditor.ShowInTaskbar = true;
                 _rareEditor.Closed += (s, args) => _rareEditor = null;
                 _rareEditor.Show();
@@ -3637,7 +3638,7 @@ namespace CardEditor
             if (_genesysEditor == null || !_genesysEditor.IsLoaded)
             {
                 _genesysEditor = new GenesysEditor();
-                _genesysEditor.Owner = null;
+                _genesysEditor.Owner = this;
                 _genesysEditor.ShowInTaskbar = true;
                 _genesysEditor.Closed += (s, args) => _genesysEditor = null;
                 _genesysEditor.Show();
@@ -3661,6 +3662,119 @@ namespace CardEditor
             if (currentUserControl is CodeEditor currentCodeEditor)
             {
                 currentCodeEditor.CheckLua();
+            }
+        }
+
+        private async void CardDataChkUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            string CardDataURL = ConfigurationManager.AppSettings["CardDataURL"];
+            string CardDataPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "CardData");
+            await UpdateOneAsync(CardDataURL, CardDataPath, "Card Data");
+        }
+        private async void CardImageChkUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            if (menuItem != null) menuItem.IsEnabled = false;
+            Mouse.OverrideCursor = Cursors.Wait;
+
+            try
+            {
+                string CardImageURL = ConfigurationManager.AppSettings["CardImageURL"];
+                string CardImagePath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "CardImage");
+
+                var downloader = new GithubReleaseDownloader();
+                var (success, message) = await downloader.DownloadGithubRelease(CardImageURL, "CardImage.zip", CardImagePath);
+
+                if (success)
+                {
+                    Mouse.OverrideCursor = null;
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        $"[Card Image] {CMess.updateCompe.ToText()}", new[] { CMess.ok.ToText() });
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.Data.ToText())} {message}"
+                        , new[] { CMess.ok.ToText() });
+                }
+            }
+            catch (HttpRequestException netEx)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"Network connection error or unable to download from GitHub:\n{netEx.Message}", new[] { CMess.ok.ToText() });
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] {CMess.ok.ToText()});
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+                if (menuItem != null) menuItem.IsEnabled = true;
+            }
+        }
+        private async Task UpdateOneAsync(string gitHubUrl, string folderPath, string displayName)
+        {
+            if (string.IsNullOrWhiteSpace(gitHubUrl)) return;
+
+            (bool hasUpdate, string remoteSha, string branch) checkResult;
+
+            try
+            {
+                this.Cursor = Cursors.Wait;
+                checkResult = await GitHubService.CheckForUpdateAsync(folderPath, gitHubUrl);
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"[{displayName}] {CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                return;
+            }
+            finally
+            {
+                this.Cursor = null;
+            }
+
+            if (!checkResult.hasUpdate)
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    $"[{displayName}] {CMess.noUpdate.ToText()}", new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            // Hỏi User xác nhận trước khi tải
+            var confirm = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                $"[{displayName}] {CMess.quesDownloadUpdate.ToText()}",
+                new[] { CMess.yes.ToText(), CMess.no.ToText() });
+
+            if (confirm != 0) return;
+
+            try
+            {
+                this.Cursor = Cursors.Wait;
+                var (success, message) = await GitHubService.SyncSnapshotAsync(folderPath, gitHubUrl, checkResult.remoteSha);
+
+                if (success)
+                {
+                    ConfigEditor_ConfigChanged();
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        $"[{displayName}] {CMess.updateCompe.ToText()}", new[] { CMess.ok.ToText() });
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"[{displayName}] {CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"[{displayName}] {CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            finally
+            {
+                this.Cursor = null;
             }
         }
         private async void MenuItemchkupdate_Click(object sender, RoutedEventArgs e)
@@ -4206,7 +4320,7 @@ namespace CardEditor
             {
                 string selectFolder = FileDiaLogHelper.OpenFolder("Official yaml-yugi Folder");
                 await GetKonamiIDService.GetOfficialKonamiID(selectFolder);
-            }
+            }   
             else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
                 CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
         }
@@ -4225,7 +4339,15 @@ namespace CardEditor
         {
             await GenesysID.ProcessCardDataAsync();
         }
+        private void DevrloperTool_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isDeveloper) return;
 
+            DEVWindow devWindow = new DEVWindow();
+            devWindow.ShowInTaskbar = false;
+            devWindow.Owner = this;
+            devWindow.ShowDialog();
+        }
         #endregion
 
         #endregion
@@ -4368,8 +4490,8 @@ namespace CardEditor
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
         #endregion
 
+        
     }
 }

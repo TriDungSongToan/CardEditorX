@@ -1,7 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-using System.ComponentModel;
 using MaterialDesignThemes.Wpf;
 using CardEditor.Services;
 using CardEditor.ViewModels;
@@ -189,7 +189,12 @@ namespace CardEditor
         //    var selectedItems = datagrRareCard?.SelectedItems.Cast<CardEditor.Models.RareCard>().ToList();
         //    RareViewModel.Instance.SelectedRareCards = new ObservableCollection<CardEditor.Models.RareCard>(selectedItems);
         //}
-
+        private void cmbrare_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if (cmbrare.SelectedItems != null && cmbrare.SelectedItems.Count > 0)
+                tlRareLabel.Visibility = Visibility.Collapsed;
+            else tlRareLabel.Visibility = Visibility.Visible;
+        }
         private void btnCreateImagetest_Click(object sender, RoutedEventArgs e)
         {
             //RareViewModel.Instance.ProgressHeight = 65;
@@ -215,6 +220,6 @@ namespace CardEditor
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
-        }
+        } 
     }
 }

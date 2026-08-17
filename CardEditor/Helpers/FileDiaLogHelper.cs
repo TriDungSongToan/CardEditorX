@@ -1,6 +1,8 @@
-﻿using System.Linq;
-using CardEditor.Localization;
+﻿using System;
+using System.Linq;
+using System.Windows;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Helpers
@@ -23,7 +25,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenCardList()
@@ -41,7 +46,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.lflist.conf)", "*.lflist.conf"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenDataBase()
@@ -58,7 +66,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenDeck()
@@ -73,7 +84,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenRare()
@@ -90,7 +104,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenGenesys()
@@ -106,7 +123,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenScript()
@@ -127,7 +147,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.conf)", "*.conf"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenCeds()
@@ -142,7 +165,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenExcel()
@@ -157,7 +183,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenLua(string filter = "")
@@ -173,7 +202,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog} (*.lua)", "*.lua"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenConf(string filter = "")
@@ -189,7 +221,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog} (*.conf)", "*.conf"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenBanList()
@@ -204,7 +239,10 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.lflist.conf)", "*.lflist.conf"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenImage()
@@ -218,7 +256,10 @@ namespace CardEditor.Helpers
             };
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Image.ToText())} (*.png, *.jpg, *.jpeg, *.bmp)", "*.jpg;*.jpeg;*.png;*.bmp"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenVideo()
@@ -232,7 +273,10 @@ namespace CardEditor.Helpers
             };
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Video.ToText())} (*.mp4, *.avi)", "*.mp4;*.avi"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenText()
@@ -247,7 +291,28 @@ namespace CardEditor.Helpers
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            else return string.Empty;
+        }
+        public static string OpenJSON()
+        {
+            CommonOpenFileDialog openFileDialog = new CommonOpenFileDialog()
+            {
+                Title = $"{CMess.Open.ToText()} {CMess.Json.ToText()}",
+                EnsureFileExists = true,
+                EnsurePathExists = true,
+                Multiselect = false,
+            };
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Json.ToText())} (*.json)", "*.json"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         public static string OpenFile()
@@ -261,7 +326,10 @@ namespace CardEditor.Helpers
             };
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
 
@@ -275,7 +343,10 @@ namespace CardEditor.Helpers
                 IsFolderPicker = true,
             };
 
-            if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok) return openFileDialog.FileName;
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            if (openFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok) return openFileDialog.FileName;
             else return string.Empty;
         }
         #endregion
@@ -293,9 +364,13 @@ namespace CardEditor.Helpers
             };
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -332,9 +407,13 @@ namespace CardEditor.Helpers
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -376,9 +455,13 @@ namespace CardEditor.Helpers
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())} (*.yml)", "*.yml"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.conf)", "*.conf"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -415,9 +498,13 @@ namespace CardEditor.Helpers
             };
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"Registry (*.reg)", "*.reg"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -453,9 +540,13 @@ namespace CardEditor.Helpers
             };
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -491,9 +582,13 @@ namespace CardEditor.Helpers
             };
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -530,9 +625,13 @@ namespace CardEditor.Helpers
             };
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.zip)", "*.zip"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -569,9 +668,56 @@ namespace CardEditor.Helpers
             };
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
+            {
+                string path = saveFileDialog.FileName;
+                string ext = System.IO.Path.GetExtension(path);
+                bool hasUserExtension = !string.IsNullOrWhiteSpace(ext);
+                int selected = saveFileDialog.SelectedFileTypeIndex;
+                string finalPath;
+                if (hasUserExtension) finalPath = path;
+                else
+                {
+                    if (selected == allFilesIndex)
+                    {
+                        finalPath = path + "." + saveFileDialog.DefaultExtension;
+                    }
+                    else
+                    {
+                        string filterExt = saveFileDialog.Filters[selected - 1].Extensions.First().TrimStart('*', '.');
+                        finalPath = path + "." + filterExt;
+                    }
+                }
+                return finalPath;
+            }
+            else return string.Empty;
+        }
+        public static string SaveJSON()
+        {
+            CommonSaveFileDialog saveFileDialog = new CommonSaveFileDialog
+            {
+                Title = $"{CMess.SaveCard.ToText()}",
+                DefaultExtension = "json",
+                DefaultFileName = "cards.json",
+                AlwaysAppendDefaultExtension = false,
+                EnsurePathExists = true,
+                OverwritePrompt = true,
+            };
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Json.ToText())} (*.json)", "*.json"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            int allFilesIndex = saveFileDialog.Filters.Count;
+
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);
@@ -607,9 +753,13 @@ namespace CardEditor.Helpers
             };
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.lflist.conf)", "*.lflist.conf"));
             saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
             int allFilesIndex = saveFileDialog.Filters.Count;
 
-            if (saveFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
             {
                 string path = saveFileDialog.FileName;
                 string ext = System.IO.Path.GetExtension(path);

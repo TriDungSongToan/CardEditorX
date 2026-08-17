@@ -4477,12 +4477,15 @@ namespace CardEditor.UserControls
             try
             {
                 ImageGenerator.outputFolderPath = outPutPath;
-                if (ConfigViewModel.Instance.imageSetting.Series == 0)
+                if (ConfigViewModel.Instance.imageSetting.Series == 4)
                 {
                     var (resultImage, Imagepath) = await ImageGenerator.GenerateImage10(CurrentCard);
                     return (resultImage, Imagepath);
                 }
-                else return (false, string.Empty);
+                else return (false, "This series is not yet supported.");
+                
+                /// Khi nào rảnh thì làm thêm ảnh
+
             }
             catch (Exception ex)
             {

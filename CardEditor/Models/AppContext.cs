@@ -12,6 +12,7 @@ namespace CardEditor.Models
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public string ExeFilePath { get; }
+        public string BaseDirectory { get; }
         public string ConfigFolderPath { get; }
         public string ErrorLogFilePath { get; }
         public string DataFolderPath { get; }
@@ -30,9 +31,10 @@ namespace CardEditor.Models
         private AppContext()
         {
             ExeFilePath = Assembly.GetExecutingAssembly().Location;
-            ConfigFolderPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(ExeFilePath), "config");
-            DataFolderPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(ExeFilePath), "data");
-            ErrorLogFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(ExeFilePath), "ErrorLog.txt");
+            BaseDirectory = System.IO.Path.GetDirectoryName(ExeFilePath) ?? AppDomain.CurrentDomain.BaseDirectory;
+            ConfigFolderPath = System.IO.Path.Combine(BaseDirectory, "config");
+            DataFolderPath = System.IO.Path.Combine(BaseDirectory, "data");
+            ErrorLogFilePath = System.IO.Path.Combine(BaseDirectory, "ErrorLog.txt");
             BanListFolderPath = System.IO.Path.Combine(DataFolderPath, @"CardData\BanList");
             RaresFolderPath = System.IO.Path.Combine(DataFolderPath, "Rares");
             RaresListDBPath = System.IO.Path.Combine(RaresFolderPath, "RaresListDB.cdb");

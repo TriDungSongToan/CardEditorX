@@ -606,12 +606,6 @@ namespace CardEditor.ImagesConfig
 
 
 
-
-
-
-
-
-
     public class Image10Info1
     {
         #region Card Size
