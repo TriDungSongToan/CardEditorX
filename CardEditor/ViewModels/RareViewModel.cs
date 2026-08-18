@@ -640,6 +640,9 @@ namespace CardEditor.ViewModels
         {
             try
             {
+                List<ImageFormat> imageFormats = Enum.GetValues(typeof(ImageFormat)).Cast<ImageFormat>().ToList();
+                imageSettingSource.ImageFormats.AddRange(imageFormats);
+
                 var (resultSeries, messageSeries) = GeneraImageViewModel.Instance.LoadSeriesList();
 
                 string FoildFolderPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath,
@@ -1236,6 +1239,7 @@ namespace CardEditor.ViewModels
 
         private void FilterData()
         {
+            if (RareCards == null || RareCardsView == null) return;
             int advancedSettings = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
             bool isAdvancedFind = (advancedSettings & 0x01) == 0x01; // bit 1: Advanced Find
             bool matchCase = (advancedSettings & 0x02) == 0x02;     // bit 2: Match Case

@@ -1177,7 +1177,7 @@
                                                  PreviewTextInput="txtSize_PreviewTextInput"/>
 
                                         <ComboBox x:Name="cmbstampposition" Grid.Column="4" Height="auto"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,12,5"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,10,5"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1228,7 +1228,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <ComboBox x:Name="cmbFormatName" Grid.Column="0" Height="auto"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,10,5" Width="110"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,5,5" Width="110"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1249,7 +1249,7 @@
                                         </ComboBox>
 
                                         <ComboBox x:Name="cmbSeries" Grid.Column="2" Height="auto"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,10,5" Width="120"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,5,5" Width="120"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1268,7 +1268,7 @@
                                                   materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
 
                                         <ComboBox x:Name="cmbRare" Grid.Column="4" Height="auto"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,12,5" Width="110"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,5,5" Width="110"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1290,7 +1290,7 @@
                                         </ComboBox>
 
                                         <ComboBox x:Name="cmbSecret" Grid.Column="6" Height="auto"
-                                                  BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                                  BorderThickness="0.7" Padding="10,18,5,5" IsEditable="False"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1315,15 +1315,17 @@
 
                                     <Grid Width="500" Margin="0,0,0,2" >
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="auto" />
-                                            <ColumnDefinition Width="2" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="2" />
-                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="2"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="2"/>
+                                            <ColumnDefinition Width="auto"/>
+                                            <ColumnDefinition Width="2"/>
+                                            <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        
+
                                         <ComboBox x:Name="cmbFormatEffect" Grid.Column="0" Height="auto"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,10,5" Width="130"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,5,5" Width="110"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1342,9 +1344,28 @@
                                             <ComboBoxItem Content="OCG" />
                                             <ComboBoxItem Content="TCG" />
                                         </ComboBox>
-                                        
-                                        <ComboBox x:Name="cmbFoild" Grid.Column="2" Height="auto"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,10,5"
+
+                                        <ComboBox x:Name="cmbImageFormat" Grid.Column="2" Height="auto"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,5,5" Width="120"
+                                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  ItemsSource="{Binding imageSettingSource.ImageFormats}"
+                                                  SelectedItem="{Binding imageSetting.OutPutFormat}"
+                                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                  materialDesign:ColorZoneAssist.Mode="Custom"
+                                                  materialDesign:HintAssist.Hint="Image Format"
+                                                  Style="{StaticResource MaterialDesignFilledComboBox}"
+                                                  TextOptions.TextFormattingMode="Display"
+                                                  TextOptions.TextRenderingMode="ClearType"
+                                                  materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+
+                                        <ComboBox x:Name="cmbFoild" Grid.Column="4" Height="auto"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,5,5"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1362,8 +1383,8 @@
                                                   materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
                                                   materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
                                         
-                                        <ComboBox x:Name="cmbBackgroundArt" Grid.Column="4" Height="auto"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,10,5"
+                                        <ComboBox x:Name="cmbBackgroundArt" Grid.Column="6" Height="auto"
+                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,5,5"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

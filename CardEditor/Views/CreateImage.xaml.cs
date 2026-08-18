@@ -1,19 +1,22 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
-using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
-using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.ComponentModel;
+using CardEditor.Models;
 using CardEditor.Helpers;
+using CardEditor.ImageGene;
 using CardEditor.Services;
 using CardEditor.Commands;
-using CardEditor.ImageGene;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
-using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor
 {
@@ -106,6 +109,9 @@ namespace CardEditor
                 //}
                 //else Series.Add("Series 10");
                 //imageSettingSource.Series.AddRange(Series);
+
+                List<ImageFormat> imageFormats = Enum.GetValues(typeof(ImageFormat)).Cast<ImageFormat>().ToList();
+                imageSettingSource.ImageFormats.AddRange(imageFormats);
 
                 string FoildFolderPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath,
                     $@"CardImage\{ConfigViewModel.Instance.imageSetting.Series}\Foild");

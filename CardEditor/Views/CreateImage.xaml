@@ -193,7 +193,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Grid Grid.Column="0" >
-                            <Button x:Name="btnCreate" Content="{Lag:Localize CreateImage}" MinHeight="40" Padding="5"
+                            <Button x:Name="btnCreate" Content="{Lag:Localize CreateImage}" MinHeight="40" Padding="10,5,10,5"
                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Center"
@@ -201,7 +201,7 @@
                                     materialDesign:ButtonAssist.CornerRadius="5" 
                                     Style="{StaticResource ButtonDanger}" 
                                     Command="{Binding CreateImageCommand}" />
-                            <Button x:Name="btnCreateTest" Content="{Lag:Localize CreateImage}" MinHeight="40" Padding="5"
+                            <Button x:Name="btnCreateTest" Content="{Lag:Localize CreateImage}" MinHeight="40" Padding="10,5,10,5"
                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Center"
@@ -212,7 +212,7 @@
                         </Grid>
 
                         <Grid Grid.Column="2" >
-                            <Button x:Name="btnSave" Content="{Lag:Localize Save}" MinHeight="40" Padding="5"
+                            <Button x:Name="btnSave" Content="{Lag:Localize Save}" MinHeight="40" Padding="10,5,10,5"
                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Center"
@@ -223,7 +223,7 @@
                         </Grid>
 
                         <Grid Grid.Column="4" >
-                            <Button x:Name="btnCancel" Content="{Lag:Localize cancel}" MinHeight="40" Padding="5"
+                            <Button x:Name="btnCancel" Content="{Lag:Localize cancel}" MinHeight="40" Padding="10,5,10,5"
                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -255,8 +255,8 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <ComboBox x:Name="cmbFormatName" Grid.Column="0" Width="130" Height="auto"
-                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,12,5"
+                        <ComboBox x:Name="cmbFormatName" Grid.Column="0" Width="120" Height="auto"
+                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,8,5"
                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -344,14 +344,16 @@
                     <Grid Grid.Row="2" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto" />
-                            <ColumnDefinition Width="2" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="2" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="3" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="3" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <ComboBox x:Name="cmbFormatEffect" Grid.Column="0" Width="130" Height="auto"
-                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,12,5"
+                        <ComboBox x:Name="cmbFormatEffect" Grid.Column="0" Width="120" Height="auto"
+                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,8,5"
                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -371,19 +373,19 @@
                             <ComboBoxItem Content="TCG" />
                         </ComboBox>
 
-                        <ComboBox x:Name="cmbBackgroundArt" Grid.Column="2" Height="auto" MinHeight="35" IsEditable="False"
+                        <ComboBox x:Name="cmbImageFormat" Grid.Column="2" Width="120" Height="auto" MinHeight="35" IsEditable="False"
                                   BorderThickness="0.7" Padding="10,18,10,5"
                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                  ItemsSource="{Binding imageSettingSource.BackgroundArts}"
-                                  SelectedItem="{Binding imageSetting.BackgroundArt}"
+                                  ItemsSource="{Binding imageSettingSource.ImageFormats}"
+                                  SelectedItem="{Binding imageSetting.OutPutFormat}"
                                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                   VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
                                   materialDesign:ColorZoneAssist.Mode="Custom"
-                                  materialDesign:HintAssist.Hint="{Lag:Localize BackgroundArt}"
+                                  materialDesign:HintAssist.Hint="Image Format"
                                   Style="{StaticResource MaterialDesignFilledComboBox}"
                                   TextOptions.TextFormattingMode="Display"
                                   TextOptions.TextRenderingMode="ClearType"
@@ -408,6 +410,26 @@
                                   TextOptions.TextRenderingMode="ClearType"
                                   materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
                                   materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+
+                        <ComboBox x:Name="cmbBackgroundArt" Grid.Column="6" Height="auto" MinHeight="35" IsEditable="False"
+                                  BorderThickness="0.7" Padding="10,18,10,5"
+                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                  ItemsSource="{Binding imageSettingSource.BackgroundArts}"
+                                  SelectedItem="{Binding imageSetting.BackgroundArt}"
+                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                  materialDesign:ColorZoneAssist.Mode="Custom"
+                                  materialDesign:HintAssist.Hint="{Lag:Localize BackgroundArt}"
+                                  Style="{StaticResource MaterialDesignFilledComboBox}"
+                                  TextOptions.TextFormattingMode="Display"
+                                  TextOptions.TextRenderingMode="ClearType"
+                                  materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+                        
                     </Grid>
 
                     <Border Grid.Row="4" Height="40" BorderThickness="0.5" CornerRadius="5"

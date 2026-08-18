@@ -176,12 +176,15 @@
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0"
+                                <TextBox x:Name="txtEDOArchetypeFilePath" Grid.Column="0"
                                          Text="{Binding EDooProArchetypeSetcodeFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Behaviors:FileDropBehavior.Enable="True"
                                          Behaviors:PasteSanitizerBehavior.Enable="True"
                                          materialDesign:HintAssist.Hint="EDOPro Archetype Setcode FilePath" />
-                                <Button Grid.Column="0" Style="{StaticResource BrowseButtonStyle}"
+                                <Button Grid.Column="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                         ToolTip="{Lag:Localize Browse}"
                                         Command="{Binding BrowseEDOProArchetypeFilePathCommand}" >
                                     <Button.Content>
@@ -216,12 +219,15 @@
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0"
+                                <TextBox x:Name="txtMDProStringFilePath" Grid.Column="0"
                                          Text="{Binding MDproStringConfigFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Behaviors:FileDropBehavior.Enable="True"
                                          Behaviors:PasteSanitizerBehavior.Enable="True"
                                          materialDesign:HintAssist.Hint="MDPro String Configuration FilePath" />
-                                <Button Grid.Column="0" Style="{StaticResource BrowseButtonStyle}"
+                                <Button Grid.Column="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                         ToolTip="{Lag:Localize Browse}"
                                         Command="{Binding BrowseMDProStringConfigFilePathCommand}" >
                                     <Button.Content>
@@ -270,12 +276,15 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Column="0"
+                            <TextBox x:Name="txtScrapiyardFolderPath" Grid.Column="0"
                                      Text="{Binding ScrapiyardFolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Behaviors:FileDropBehavior.Enable="True"
                                      Behaviors:PasteSanitizerBehavior.Enable="True"
                                      materialDesign:HintAssist.Hint="Scrapiyard Folder Path" />
-                            <Button Grid.Column="0" Style="{StaticResource BrowseButtonStyle}"
+                            <Button Grid.Column="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                     ToolTip="{Lag:Localize Browse}"
                                     Command="{Binding BrowseScrapiyardFolderPathCommand}" >
                                 <Button.Content>
@@ -377,13 +386,16 @@
                                 <RowDefinition Height="auto" />
                             </Grid.RowDefinitions>
 
-                            <TextBox Grid.Row="0"
+                            <TextBox x:Name="txtOfficialYamlYugiPath" Grid.Row="0"
                                      Text="{Binding OfficialYamlYugiFolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Behaviors:FileDropBehavior.Enable="True"
                                      Behaviors:PasteSanitizerBehavior.Enable="True"
                                      materialDesign:HintAssist.Hint="Official Card Yaml Yugi Folder Path" />
 
-                            <Button Grid.Row="0" Style="{StaticResource BrowseButtonStyle}"
+                            <Button Grid.Row="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                     ToolTip="{Lag:Localize Browse}"
                                     Command="{Binding BrowseOfficialYamlYugiFolderPathCommand}" >
                                 <Button.Content>
@@ -405,13 +417,16 @@
                                 <RowDefinition Height="auto" />
                             </Grid.RowDefinitions>
 
-                            <TextBox Grid.Row="0"
+                            <TextBox x:Name="txtRushYamlYugiPath" Grid.Row="0"
                                      Text="{Binding RushYamlYugiFolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Behaviors:FileDropBehavior.Enable="True"
                                      Behaviors:PasteSanitizerBehavior.Enable="True"
                                      materialDesign:HintAssist.Hint="Rush Card Yaml Yugi Folder Path" />
 
-                            <Button Grid.Row="0" Style="{StaticResource BrowseButtonStyle}"
+                            <Button Grid.Row="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                     ToolTip="{Lag:Localize Browse}"
                                     Command="{Binding BrowseRushYamlYugiFolderPathCommand}" >
                                 <Button.Content>
@@ -451,12 +466,15 @@
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Column="0"
-                                         Text="{Binding GenesysFilepath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         Behaviors:FileDropBehavior.Enable="True"
-                                         Behaviors:PasteSanitizerBehavior.Enable="True"
-                                         materialDesign:HintAssist.Hint="Genesys Point File Path" />
-                            <Button Grid.Column="0" Style="{StaticResource BrowseButtonStyle}"
+                            <TextBox x:Name="txtGenesysFilePath" Grid.Column="0"
+                                     Text="{Binding GenesysFilepath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Behaviors:FileDropBehavior.Enable="True"
+                                     Behaviors:PasteSanitizerBehavior.Enable="True"
+                                     materialDesign:HintAssist.Hint="Genesys Point File Path" />
+                            <Button Grid.Column="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                         ToolTip="{Lag:Localize Browse}"
                                         Command="{Binding BrowseGenesysFilePathCommand}" >
                                 <Button.Content>
@@ -506,12 +524,15 @@
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0"
+                                <TextBox x:Name="txtTerminologyFolderPath" Grid.Column="0"
                                          Text="{Binding TerminologyFolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Behaviors:FileDropBehavior.Enable="True"
                                          Behaviors:PasteSanitizerBehavior.Enable="True"
                                          materialDesign:HintAssist.Hint="Terminology Folder Path" />
-                                <Button Grid.Column="0" Style="{StaticResource BrowseButtonStyle}"
+                                <Button Grid.Column="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                         ToolTip="{Lag:Localize Browse}"
                                         Command="{Binding BrowseTerminologyFolderPathCommand}" >
                                     <Button.Content>
@@ -545,12 +566,15 @@
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0"
+                                <TextBox x:Name="txtSpecialCharFolderPath" Grid.Column="0"
                                          Text="{Binding SpecialCharFolderPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          Behaviors:FileDropBehavior.Enable="True"
                                          Behaviors:PasteSanitizerBehavior.Enable="True"
                                          materialDesign:HintAssist.Hint="Special Characters Folder Path" />
-                                <Button Grid.Column="0" Style="{StaticResource BrowseButtonStyle}"
+                                <Button Grid.Column="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                         ToolTip="{Lag:Localize Browse}"
                                         Command="{Binding BrowseSpecialCharFolderPathCommand}" >
                                     <Button.Content>
@@ -585,7 +609,7 @@
                         </Grid.RowDefinitions>
 
                         <Grid Grid.Row="0" >
-                            <TextBox Grid.Column="0" Height="40"
+                            <TextBox x:Name="txtMasterDuelAPIURL" Grid.Column="0" Height="40"
                                      Text="{Binding MasterDuelAPIURL, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Behaviors:FileDropBehavior.Enable="True"
                                      Behaviors:PasteSanitizerBehavior.Enable="True"
@@ -693,13 +717,16 @@
                                         <ColumnDefinition Width="auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBox Grid.Column="0"
+                                    <TextBox x:Name="txtMDAPIJsonFilePath" Grid.Column="0"
                                              Text="{Binding JsonMDAPIFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              Behaviors:FileDropBehavior.Enable="True"
                                              Behaviors:PasteSanitizerBehavior.Enable="True"
                                              materialDesign:HintAssist.Hint="MD API JSON File Path" />
 
-                                    <Button Grid.Column="0" Style="{StaticResource BrowseButtonStyle}"
+                                    <Button Grid.Column="0" Width="25" Height="25" Margin="0,0,5,0" Padding="0"
+                                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                            Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
                                             ToolTip="{Lag:Localize Browse}"
                                             Command="{Binding BrowseJSONMDAPIFilePathCommand}" >
                                         <Button.Content>
@@ -718,7 +745,6 @@
                                             Content="Export Card Rarity List"
                                             Command="{Binding ExportCardRarityListCommand}" />
                                 </Grid>
-
 
                             </StackPanel>
                         </ScrollViewer>

@@ -20,6 +20,17 @@ namespace CardEditor.Models
         RankStar,
         LevelRankStar,
     }
+    public enum ImageFormat
+    {
+        PNG,
+        JPG,
+        JPEG,
+        WEBP,
+        DNG,
+        HEIF,
+        AVIF,
+        JPEGXL
+    }
     #endregion
 
     #region FlowDirection

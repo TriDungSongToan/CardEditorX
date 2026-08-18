@@ -2818,6 +2818,7 @@ namespace CardEditor.UserControls
             var token = _filterCts.Token;
 
             if (!await _filterLock.WaitAsync(0)) return;
+            if (FilteredCards == null) return;
 
             try
             {
@@ -2839,6 +2840,7 @@ namespace CardEditor.UserControls
                     }, token);
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
+
                         FilteredCards.ReplaceAll(filtered);
                     }, DispatcherPriority.Background);
                 }

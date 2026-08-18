@@ -956,11 +956,11 @@
     <Resource Include="Images\Setting\Setting.ico" />
     <Resource Include="Images\Menu\File\Save\SaveExcel.ico" />
     <Resource Include="Images\Menu\Data\Replace.ico" />
-    <Resource Include="Images\SSS.ico" />
     <Resource Include="Images\Menu\Help\Update.ico" />
     <Resource Include="Images\Menu\Help\Registry.ico" />
     <Resource Include="Images\Manager\Rarity.ico" />
     <Resource Include="Images\DataEditor\RankStar.ico" />
+    <Resource Include="Images\SSS.ico" />
     <Content Include="Images\Textures\0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -759,10 +759,13 @@ namespace CardEditor.ViewModels
                     rareCard.rare |= (long)item.Value;
                 }
 
+                IsSaveRareCardListToDB = false;
+                OnDataChanged?.Invoke();
                 return (true, string.Empty);
             }
             catch (Exception ex)
             {
+                OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
                 return (false, ex.Message);
             }
         }

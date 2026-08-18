@@ -2899,6 +2899,7 @@ namespace CardEditor.UserControls
         }
         private void FilterCardData()
         {
+            if (CollectionViewCollection == null || Cards == null) return;
             int advancedSettings = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
             bool isAdvancedFind = (advancedSettings & 0x01) == 0x01;
             bool matchCase = (advancedSettings & 0x02) == 0x02;
@@ -3602,7 +3603,7 @@ namespace CardEditor.UserControls
 
         public async Task FilterDuplicateDataFromYdkFile(bool isDuplicate)
         {
-            if(Cards == null || !Cards.Any())
+            if(CollectionViewCollection == null || Cards == null || !Cards.Any())
             {
                 CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
                     CMess.noCardFilter.ToText(), new[] { CMess.ok.ToText() });
@@ -3668,7 +3669,7 @@ namespace CardEditor.UserControls
         }
         public async Task FilterDuplicateDataFromCdbFile(bool isDuplicate)
         {
-            if (Cards == null || !Cards.Any())
+            if (CollectionViewCollection == null || Cards == null || !Cards.Any())
             {
                 CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noCardFilter.ToText(), new[] { CMess.ok.ToText() });
                 return;
@@ -3729,7 +3730,7 @@ namespace CardEditor.UserControls
 
         public async Task<ResultItem> FilterCardByLanguage(int languageCode, bool isInclude)
         {
-            if (Cards == null || !Cards.Any())
+            if (CollectionViewCollection == null || Cards == null || !Cards.Any())
             {
                 return new ResultItem
                 {
@@ -3800,7 +3801,7 @@ namespace CardEditor.UserControls
         }
         public async Task<ResultItem> FilterCardByPenLang(PendulumLanguageRule rule, bool isInclude)
         {
-            if (Cards == null || !Cards.Any())
+            if (CollectionViewCollection == null || Cards == null || !Cards.Any())
             {
                 return new ResultItem
                 {
@@ -3871,7 +3872,7 @@ namespace CardEditor.UserControls
                 };
             }
 
-            if (Cards == null || !Cards.Any())
+            if (CollectionViewCollection == null || Cards == null || !Cards.Any())
             {
                 return new ResultItem
                 {
@@ -3931,7 +3932,7 @@ namespace CardEditor.UserControls
                 };
             }
 
-            if (Cards == null || !Cards.Any())
+            if (CollectionViewCollection == null || Cards == null || !Cards.Any())
             {
                 return new ResultItem
                 {

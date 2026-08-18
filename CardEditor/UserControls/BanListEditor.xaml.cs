@@ -1604,6 +1604,12 @@ namespace CardEditor.UserControls
         }
         private void FilterCard()
         {
+            if (ForbiddenCards == null || ForbiddenCardsView == null ||
+                LimitedCards == null || LimitedCardsView == null ||
+                SemiLimitedCards == null || SemiLimitedCardsView == null ||
+                UnLimitedCards == null || UnLimitedCardsView == null)
+                return;
+
             int advancedSettings = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
             bool isAdvancedFind = (advancedSettings & 0x01) == 0x01;
             bool matchCase = (advancedSettings & 0x02) == 0x02;
@@ -1695,12 +1701,12 @@ namespace CardEditor.UserControls
 
         public async Task FilterDuplicateDataFromYdkFile(bool isDuplicate)
         {
-            if (ForbiddenCards == null || LimitedCards == null || SemiLimitedCards == null || UnLimitedCards == null)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    CMess.noCardFilter.ToText(), new[] { CMess.ok.ToText() });
+            if (ForbiddenCards == null || ForbiddenCardsView == null ||
+                LimitedCards == null || LimitedCardsView == null ||
+                SemiLimitedCards == null || SemiLimitedCardsView == null ||
+                UnLimitedCards == null || UnLimitedCardsView == null)
                 return;
-            }
+
             if (!ForbiddenCards.Any() && !LimitedCards.Any() && !SemiLimitedCards.Any() && !UnLimitedCards.Any())
             {
                 CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
@@ -1810,12 +1816,12 @@ namespace CardEditor.UserControls
         }
         public async Task FilterDuplicateDataFromCdbFile(bool isDuplicate)
         {
-            if (ForbiddenCards == null || LimitedCards == null || SemiLimitedCards == null || UnLimitedCards == null)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    CMess.noCardFilter.ToText(), new[] { CMess.ok.ToText() });
+            if (ForbiddenCards == null || ForbiddenCardsView == null ||
+                LimitedCards == null || LimitedCardsView == null ||
+                SemiLimitedCards == null || SemiLimitedCardsView == null ||
+                UnLimitedCards == null || UnLimitedCardsView == null)
                 return;
-            }
+
             if (!ForbiddenCards.Any() && !LimitedCards.Any() && !SemiLimitedCards.Any() && !UnLimitedCards.Any())
             {
                 CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,

@@ -88,6 +88,7 @@
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
                 <Setter Property="materialDesign:TextFieldAssist.TextFieldCornerRadius" Value="5" />
                 <Setter Property="materialDesign:TextFieldAssist.UnderlineCornerRadius" Value="0,0,10,10" />
+                <Setter Property="materialDesign:ThemeAssist.Theme" Value="Dark" />
                 <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="Custom" />
             </Style>
 
@@ -875,6 +876,8 @@
                                             <ColumnDefinition Width="5" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="5" />
                                             <ColumnDefinition Width="1.5*" />
                                         </Grid.ColumnDefinitions>
 
@@ -898,6 +901,14 @@
                                         </Grid>
 
                                         <Grid Grid.Column="4" >
+                                            <ComboBox  Style="{StaticResource ComboboxStyle}"
+                                                       Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                       materialDesign:HintAssist.Hint="Image Format"
+                                                       ItemsSource="{Binding imageSettingSource.ImageFormats}"
+                                                       SelectedItem="{Binding imageSetting.OutPutFormat}" />
+                                        </Grid>
+
+                                        <Grid Grid.Column="6" >
                                             <ComboBox Style="{StaticResource ComboboxStyle}"
                                                       ToolTip="{Binding SelectedItem.ToolTip, RelativeSource={RelativeSource Self}}"
                                                       Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -910,27 +921,27 @@
                                             </ComboBox>
                                         </Grid>
 
-                                        <Border Grid.Column="6" BorderThickness="0.7" CornerRadius="5"
+                                        <Border Grid.Column="8" BorderThickness="0.7" CornerRadius="5"
                                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="auto" />
                                                 </Grid.ColumnDefinitions>
 
                                                 <Viewbox Grid.Column="0" HorizontalAlignment="Center"
-                                                         Margin="0,0,0,0" Stretch="None" StretchDirection="Both" >
+                                                         Margin="0" Stretch="None" StretchDirection="Both" >
                                                     <TextBlock Text="{Lag:Localize IncludeRare}"
                                                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
+                                                               HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
                                                 </Viewbox>
                                                 <ToggleButton x:Name="tbtnIncludeStamp" Grid.Column="1" Panel.ZIndex="2"
                                                               IsChecked="{Binding imageSetting.IncludeRare}"
                                                               VerticalAlignment="Center" HorizontalAlignment="Center" 
                                                               VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                                                              Width="55" Height="28" Margin="0,0,30,0" >
+                                                              Width="55" Height="28" Margin="0,0,5,0" >
                                                     <ToggleButton.Content>
                                                         <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
                                                     </ToggleButton.Content>
@@ -1345,7 +1356,7 @@
 
                                     <Grid Grid.Column="2" >
                                         <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                Margin="0" Padding="0" Height="40" Width="auto" MinWidth="100" BorderThickness="0"
+                                                Margin="0" Padding="5,0,5,0" Height="40" Width="auto" MinWidth="100" BorderThickness="0"
                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                 Style="{StaticResource ButtonSuccess}" 
@@ -1366,7 +1377,7 @@
                                                     <TextBlock Grid.Row="0" Text="{Lag:Localize Browse}" HorizontalAlignment="Center"
                                                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                                                    <TextBlock Grid.Row="1" Text="{Lag:Localize CardDB}" HorizontalAlignment="Center"
+                                                    <TextBlock Grid.Row="1" Text="{Lag:Localize CardData}" HorizontalAlignment="Center"
                                                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                                 </Grid>
@@ -1376,7 +1387,7 @@
                                     
                                     <Grid Grid.Column="4" >
                                         <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                Margin="0" Padding="0" Height="40" Width="auto" MinWidth="90" BorderThickness="0"
+                                                Margin="0" Padding="5,0,5,0" Height="40" Width="auto" MinWidth="90" BorderThickness="0"
                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                 Style="{StaticResource ButtonSuccess}" 

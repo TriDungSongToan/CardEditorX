@@ -307,6 +307,7 @@ namespace CardEditor.Views
         {
             InitializeComponent();
             InitializeCommands();
+            InitializeContentMenu();
 
             _masterDuelApi = new MasterDuelAPIService();
             _fileService = new FileService();
@@ -373,6 +374,19 @@ namespace CardEditor.Views
             #endregion
 
             CancelCommand = new RelayCommand(_ => this.Close());
+        }
+        private void InitializeContentMenu()
+        {
+            ControlContextMenuService.Attach(txtEDOArchetypeFilePath);
+            ControlContextMenuService.Attach(txtMDProStringFilePath);
+            ControlContextMenuService.Attach(txtScrapiyardFolderPath);
+            ControlContextMenuService.Attach(txtOfficialYamlYugiPath);
+            ControlContextMenuService.Attach(txtRushYamlYugiPath);
+            ControlContextMenuService.Attach(txtGenesysFilePath);
+            ControlContextMenuService.Attach(txtTerminologyFolderPath);
+            ControlContextMenuService.Attach(txtSpecialCharFolderPath);
+            ControlContextMenuService.Attach(txtMasterDuelAPIURL);
+            ControlContextMenuService.Attach(txtMDAPIJsonFilePath);
         }
         #endregion
 

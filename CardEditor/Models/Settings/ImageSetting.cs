@@ -62,12 +62,26 @@ namespace CardEditor.Models.Settings
                 }
             }
         }
+        private BulkObservableCollection<ImageFormat> _imageFormats;
+        public BulkObservableCollection<ImageFormat> ImageFormats
+        {
+            get => _imageFormats;
+            set
+            {
+                if (!ReferenceEquals(_imageFormats, value))
+                {
+                    _imageFormats = value ?? new BulkObservableCollection<ImageFormat>();
+                    OnPropertyChanged(nameof(ImageFormats));
+                }
+            }
+        }
         public ImageSettingSource()
         {
             _series = new BulkObservableCollection<string>();
             _foildLists = new BulkObservableCollection<string>();
             _backgroundArts = new BulkObservableCollection<string>();
             _cardMakers = new BulkObservableCollection<CardMaker>();
+            _imageFormats = new BulkObservableCollection<ImageFormat>();
         }
         [OnDeserialized]
         internal void OnDeserialized(StreamingContext context)
@@ -76,8 +90,8 @@ namespace CardEditor.Models.Settings
             _foildLists ??= new BulkObservableCollection<string>();
             _backgroundArts ??= new BulkObservableCollection<string>();
             _cardMakers ??= new BulkObservableCollection<CardMaker>();
+            _imageFormats ??= new BulkObservableCollection<ImageFormat>();
         }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -302,6 +316,19 @@ namespace CardEditor.Models.Settings
             }
         }
         private int _series = 4;
+        private ImageFormat _outPutFormat = ImageFormat.PNG;
+        public ImageFormat OutPutFormat
+        {
+            get => _outPutFormat;
+            set
+            {
+                if (_outPutFormat != value)
+                {
+                    _outPutFormat = value;
+                    OnPropertyChanged(nameof(OutPutFormat));
+                }
+            }
+        }
         public int Series
         {
             get => _series;

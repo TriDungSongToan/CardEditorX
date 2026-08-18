@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using SkiaSharp;
+using CardEditor.Models;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -146,9 +147,37 @@ namespace CardEditor.ImageGene
         }
         public static async Task SaveImage(SKImage image, string filePath)
         {
-            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+            SKEncodedImageFormat encodedFormat = ConfigViewModel.Instance.imageSetting.OutPutFormat switch
+            {
+                ImageFormat.PNG => SKEncodedImageFormat.Png,
+                ImageFormat.JPG => SKEncodedImageFormat.Jpeg,
+                ImageFormat.JPEG => SKEncodedImageFormat.Jpeg,
+                ImageFormat.WEBP => SKEncodedImageFormat.Webp,
+                ImageFormat.DNG => SKEncodedImageFormat.Dng,
+                ImageFormat.HEIF => SKEncodedImageFormat.Heif,
+                ImageFormat.AVIF => SKEncodedImageFormat.Avif,
+                ImageFormat.JPEGXL => SKEncodedImageFormat.Jpegxl,
+                _ => SKEncodedImageFormat.Png
+            };
+
+            using var data = image.Encode(encodedFormat, 100);
             using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
             await data.AsStream().CopyToAsync(fs);
+        }
+        public static string GetExtension(ImageFormat format)
+        {
+            return format switch
+            {
+                ImageFormat.PNG => ".png",
+                ImageFormat.JPG => ".jpg",
+                ImageFormat.JPEG => ".jpg",
+                ImageFormat.WEBP => ".webp",
+                ImageFormat.DNG => ".dng",
+                ImageFormat.HEIF => ".heif",
+                ImageFormat.AVIF => ".avif",
+                ImageFormat.JPEGXL => ".jxl",
+                _ => ".png"
+            };
         }
         public static bool IsImageFile(string filePath)
         {

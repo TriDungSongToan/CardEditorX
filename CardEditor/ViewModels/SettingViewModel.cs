@@ -184,6 +184,9 @@ namespace CardEditor.ViewModels
                 //else Series.Add("Series 10");
                 //imageSettingSource.Series.AddRange(Series);
 
+                List<ImageFormat> imageFormats = Enum.GetValues(typeof(ImageFormat)).Cast<ImageFormat>().ToList();
+                imageSettingSource.ImageFormats.AddRange(imageFormats);
+
                 string FoildFolderPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath,
                     $@"CardImage\{ConfigViewModel.Instance.imageSetting.Series}\Foild");
                 var listFoild = FindNameHelper.LoadNameArtList(FoildFolderPath);

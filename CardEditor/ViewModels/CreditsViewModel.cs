@@ -577,9 +577,9 @@ namespace CardEditor.ViewModels
         #region IDisposable
         public void Dispose()
         {
-            _creditData.Clear();
-            _lastSnapshot.Clear();
-            CreditDataUI.Clear();
+            _creditData?.Clear();
+            _lastSnapshot?.Clear();
+            CreditDataUI?.Clear();
 
             _creditData = null;
             _lastSnapshot = null;

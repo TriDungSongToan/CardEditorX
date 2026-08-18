@@ -558,6 +558,8 @@ namespace CardEditor.ViewModels
 
         private void FilterData()
         {
+            if (GenesysCards == null || GenesysCardsView == null) return;
+
             int advancedSettings = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
             bool isAdvancedFind = (advancedSettings & 0x01) == 0x01; // bit 1: Advanced Find
             bool matchCase = (advancedSettings & 0x02) == 0x02;     // bit 2: Match Case
