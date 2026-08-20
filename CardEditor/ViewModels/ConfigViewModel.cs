@@ -3,7 +3,6 @@ using System.IO;
 using System.Text.Json;
 using System.Data.SQLite;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.ComponentModel;
 using SkiaSharp;
 using CardEditor.Models;
@@ -17,8 +16,7 @@ namespace CardEditor.ViewModels
     {
         private static readonly Lazy<ConfigViewModel> _instance = new Lazy<ConfigViewModel>(() => new ConfigViewModel());
         public static ConfigViewModel Instance => _instance.Value;
-        private readonly object _lock = new object();
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+
 
         public string SettingFilePath { get; set; }
 
@@ -203,33 +201,10 @@ namespace CardEditor.ViewModels
 
         public void ReadSettingsPropertiesCommand()
         {
-            displaySetting.Background = PropertiesSettingService.GetStringSetting("Background", "#FF000000");
-            displaySetting.Foreground = PropertiesSettingService.GetStringSetting("Foreground", "#FFFFFFFF");
-            displaySetting.Theme = PropertiesSettingService.GetStringSetting("Theme", "DeepPurple");
-            displaySetting.FontFamily = PropertiesSettingService.GetStringSetting("FontFamily", "Consolas");
-            displaySetting.FontSize = PropertiesSettingService.GetIntSetting("FontSize", 12, true, 50);
-            displaySetting.HighLight = PropertiesSettingService.GetStringSetting("HighLight", "Default");
-            displaySetting.FlowDirectionC = PropertiesSettingService.GetIntSetting("FlowDirectionC", 0);
-            displaySetting.TextAlignmentC = PropertiesSettingService.GetIntSetting("TextAlignmentC", 0);
-            displaySetting.ButtonChat = PropertiesSettingService.GetStringSetting("ButtonChat", "45,45");
-            displaySetting.WidthChat = PropertiesSettingService.GetIntSetting("WidthChat", 545);
-            displaySetting.WidthMiniMap = PropertiesSettingService.GetIntSetting("WidthMiniMap", 50);
-
             DeveloperEncrypted = PropertiesSettingService.GetStringSetting("DeveloperEncrypted", string.Empty);
         }
         public void UpdateSettingsProperties()
         {
-            Properties.Settings.Default.Background = displaySetting.Background;
-            Properties.Settings.Default.Foreground = displaySetting.Foreground;
-            Properties.Settings.Default.Theme = displaySetting.Theme;
-            Properties.Settings.Default.FontFamily = displaySetting.FontFamily;
-            Properties.Settings.Default.FontSize = displaySetting.FontSize.HasValue ? displaySetting.FontSize.Value : 12;
-            Properties.Settings.Default.HighLight = displaySetting.HighLight;
-            Properties.Settings.Default.FlowDirectionC = displaySetting.FlowDirectionC;
-            Properties.Settings.Default.TextAlignmentC = displaySetting.TextAlignmentC;
-            Properties.Settings.Default.ButtonChat = displaySetting.ButtonChat;
-            Properties.Settings.Default.WidthChat = displaySetting.WidthChat;
-            Properties.Settings.Default.WidthMiniMap = displaySetting.WidthMiniMap;
             Properties.Settings.Default.DeveloperEncrypted = DeveloperEncrypted;
         }
         public void SaveSettingsProperties()
@@ -256,6 +231,7 @@ namespace CardEditor.ViewModels
             try
             {
                 userSetting = LoadSetting<UserSetting>("UserSetting", connectionString);
+                displaySetting = LoadSetting<DisplaySetting>("DisplaySetting", connectionString);
                 dataHandlingSetting = LoadSetting<DataHandlingSetting>("DataHandlingSetting", connectionString);
                 imageSetting = LoadSetting<ImageSetting>("ImageSetting", connectionString);
                 codeEditSetting = LoadSetting<CodeEditSetting>("CodeEditSetting", connectionString);
@@ -322,6 +298,10 @@ namespace CardEditor.ViewModels
             {
                 return (false, ex.Message);
             }
+        }
+        public (bool, string) SaveDisplaySettingFile()
+        {
+            return SaveSingleSettingFile("DisplaySetting", displaySetting);
         }
         public (bool, string) SaveAllSettingFile()
         {
@@ -406,7 +386,11 @@ namespace CardEditor.ViewModels
 
         public void Dispose()
         {
-            _semaphore?.Dispose();
+            if (imageSize != null)
+            {
+                imageSize.PropertyChanged -= ImageSize_PropertyChanged;
+                imageSize = null;
+            }
             userSetting = null;
             displaySetting = null;
             dataHandlingSetting = null;

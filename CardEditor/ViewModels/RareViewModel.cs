@@ -563,6 +563,7 @@ namespace CardEditor.ViewModels
         public RelayCommand ModifyCardCommand { get; private set; }
         public RelayCommand SaveAllCommand { get; private set; }
         public RelayCommand SortCardCommand { get; private set; }
+        public RelayCommand UnSortCardCommand { get; private set; }
         public RelayCommand ResetCardCommand { get; private set; }
         public RelayCommand ClearCardCommand { get; private set; }
         public RelayCommand DeleteSingleCardCommand { get; private set; }
@@ -763,6 +764,7 @@ namespace CardEditor.ViewModels
             ModifyCardCommand = new CardEditor.Commands.RelayCommand(async _ => await ModifyRareCard(RareCardId.Value, RareCardName, RareCardRare), _ => CanModifyRareCard());
             SaveAllCommand = new CardEditor.Commands.RelayCommand(async _ => await SaveAllCard(), _ => !IsSavedCardList);
             SortCardCommand = new CardEditor.Commands.RelayCommand(_ => SortCard(), _ => CanFilterSortData());
+            UnSortCardCommand = new CardEditor.Commands.RelayCommand(_ => UnSortCard());
             ResetCardCommand = new CardEditor.Commands.RelayCommand(_ => ResetRareCard(), _ => CanResetClearRareCard());
             ClearCardCommand = new CardEditor.Commands.RelayCommand(_ => ClearRareCardCommand(), _ => CanResetClearRareCard());
             DeleteSingleCardCommand = new CardEditor.Commands.RelayCommand(async _ => await DeleteSingleRareCardCommand(), _ => CanDeleteSingleRareCard());
@@ -1456,7 +1458,7 @@ namespace CardEditor.ViewModels
                     catch
                     {
                         int chooseFailed = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                            "Failed to load all cards from the data source. It will not be possible to create images with the Secret layer. Continue?",
+                            "Failed to load all cards from the data source. It will not be possible to generate images with the Secret layer and Rarity label for the Alternate Artwork version. Continue?",
                             new[] { CMess.yes.ToText(), CMess.no.ToText() });
 
                         if (chooseFailed != 0) return;
@@ -1891,27 +1893,50 @@ namespace CardEditor.ViewModels
         }
         private void SortCard()
         {
-            RareCardsView.SortDescriptions.Clear();
-            //int arrangeValue = ConfigViewModel.Instance.Arrange;
+            var selectedSorts = SortsViewModel.Instance.SelectedSortItems;
+            if (selectedSorts == null || selectedSorts.Count <= 0) return;
 
-            //switch (arrangeValue)
-            //{
-            //    case 1: // Tăng dần theo id
-            //        RareCardsView.SortDescriptions.Add(new SortDescription("id", ListSortDirection.Ascending));
-            //        break;
-            //    case 2: // Giảm dần theo id
-            //        RareCardsView.SortDescriptions.Add(new SortDescription("id", ListSortDirection.Descending));
-            //        break;
-            //    case 3: // Tăng dần theo name (theo bảng chữ cái)
-            //        RareCardsView.SortDescriptions.Add(new SortDescription("name", ListSortDirection.Ascending));
-            //        break;
-            //    case 4: // Giảm dần theo name (ngược bảng chữ cái)
-            //        RareCardsView.SortDescriptions.Add(new SortDescription("name", ListSortDirection.Descending));
-            //        break;
-            //    default: // Tăng dần theo id
-            //        RareCardsView.SortDescriptions.Add(new SortDescription("id", ListSortDirection.Ascending));
-            //        break;
-            //}
+            try
+            {
+                using (RareCardsView.DeferRefresh())
+                {
+                    RareCardsView.SortDescriptions.Clear();
+                    foreach (var sort in selectedSorts)
+                    {
+                        if (sort?.SelectedItem == null) continue;
+                        if (string.IsNullOrEmpty(sort.SelectedItem.Name)) continue;
+
+                        string cardPropertyName = sort.SelectedItem.Name switch
+                        {
+                            "id" => "id",
+                            "name" => "name",
+                            "Rare" => "rare",
+                            _ => null
+                        };
+                        if (string.IsNullOrEmpty(cardPropertyName)) continue;
+                        var direction = sort.OrderByAsc ? ListSortDirection.Ascending : ListSortDirection.Descending;
+
+                        RareCardsView.SortDescriptions.Add(new SortDescription(cardPropertyName, direction));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var request = new MessageBoxRequest
+                {
+                    Title = CMess.error.ToText(),
+                    IconType = CMSG.MessageBoxIconType.Error,
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.error.ToText(), CMess.cardrare.ToText())} {ex.Message}",
+                    Buttons = new[] { CMess.ok.ToText() },
+                    ResponseSource = null
+                };
+                OnMessageBoxRequested(request);
+            }
+        }
+        private void UnSortCard()
+        {
+            if (RareCardsView == null || RareCards == null) return;
+            RareCardsView.SortDescriptions.Clear();
             RareCardsView.Refresh();
         }
         private bool CanFilterSortData()

@@ -36,6 +36,9 @@ namespace CardEditor
         {
             base.OnStartup(e);
 
+            UpgradeSettingsIfNeeded();
+            EnsureDefaultPassword();
+
             _instanceManager = new SingleInstanceManager();
             _instanceManager.FileReceived += OnFileReceivedFromAnotherInstance;
             bool isFirstInstance = _instanceManager.TryStart(e.Args);
@@ -116,6 +119,36 @@ namespace CardEditor
         #endregion
 
         #region Functions
+        private void UpgradeSettingsIfNeeded()
+        {
+            if (CardEditor.Properties.Settings.Default.NeedsUpgrade)
+            {
+                CardEditor.Properties.Settings.Default.Upgrade();
+                CardEditor.Properties.Settings.Default.NeedsUpgrade = false;
+                CardEditor.Properties.Settings.Default.Save();
+            }
+        }
+        private void EnsureDefaultPassword()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(CardEditor.Properties.Settings.Default.EncryptedPasswordHash))
+                {
+                    const string defaultHash = "yky1YY/H2TRQRFDHiPuK9A==.XlAjVXO4OmV7rIpqhg0wT9t+PVU7ELwx80SnErOkNlI=";
+
+                    CardEditor.Properties.Settings.Default.EncryptedPasswordHash =
+                        SettingsEncryption.EncryptString(defaultHash);
+                    CardEditor.Properties.Settings.Default.Save();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error when setting the default password: {ex.Message}");
+                MessageBox.Show("Unable to initialize security configuration. DEV Mode may not work.",
+                    "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         internal void RegisterWindow(MainWindow window)
         {
             _openWindows.Add(window);
@@ -248,7 +281,6 @@ namespace CardEditor
         }
 
         private bool _cleaned = false;
-
         private void Cleanup()
         {
             if (_cleaned) return;

@@ -508,6 +508,9 @@
     <Compile Include="UserControls\ImageViewer.xaml.cs">
       <DependentUpon>ImageViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\PasswordRevealBox.xaml.cs">
+      <DependentUpon>PasswordRevealBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\ScriptDescription.xaml.cs">
       <DependentUpon>ScriptDescription.xaml</DependentUpon>
     </Compile>
@@ -677,6 +680,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\ImageViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\PasswordRevealBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

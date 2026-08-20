@@ -1355,6 +1355,11 @@ namespace CardEditor.ImageGene
                     if (ConfigViewModel.Instance.imageSetting.IncludeRare && GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.HasValue)
                     {
                         long rarity = RareRawDataViewModel.Instance.GetRareByCardId(cardItem.id);
+                        if (rarity == 0 && CardEXDataViewModel.Instance.AliasToID.TryGetValue(cardItem.id, out var originalId))
+                        {
+                            rarity = RareRawDataViewModel.Instance.GetRareByCardId(originalId);
+                        }
+
                         SKBitmap selectedRarity = null;
                         if (rarity > 0 && RareRawDataViewModel.Instance.RarityCache.Count > 0)
                         {
@@ -1482,8 +1487,12 @@ namespace CardEditor.ImageGene
                     if (ConfigViewModel.Instance.imageSetting.IncludeRare && GeneraImageViewModel.Instance.CurrentImageInfo.RarityLabelRect.HasValue)
                     {
                         long rarity = RareRawDataViewModel.Instance.GetRareByCardId(cardItem.id);
-                        SKBitmap selectedRarity = null;
+                        if (rarity == 0 && CardEXDataViewModel.Instance.AliasToID.TryGetValue(cardItem.id, out var originalId))
+                        {
+                            rarity = RareRawDataViewModel.Instance.GetRareByCardId(originalId);
+                        }
 
+                        SKBitmap selectedRarity = null;
                         if (rarity > 0 && RareRawDataViewModel.Instance.RarityCache?.Count > 0)
                         {
                             foreach (var item in RareRawDataViewModel.Instance.RarityCache)

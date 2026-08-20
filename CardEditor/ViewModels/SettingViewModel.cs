@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using CardEditor.Models;
 using CardEditor.Models.Settings;
-using CardEditor.Manager;
 using CardEditor.Helpers;
 using CardEditor.Commands;
 using CardEditor.Localization;
@@ -42,19 +41,19 @@ namespace CardEditor.ViewModels
         #endregion
 
         #region Dev
-        private bool _developer = false;
-        public bool Developer
-        {
-            get => _developer;
-            set
-            {
-                if(_developer != value)
-                {
-                    _developer = value;
-                    OnPropertyChanged(nameof(Developer));
-                }
-            }
-        }
+        //private bool _developer = false;
+        //public bool Developer
+        //{
+        //    get => _developer;
+        //    set
+        //    {
+        //        if(_developer != value)
+        //        {
+        //            _developer = value;
+        //            OnPropertyChanged(nameof(Developer));
+        //        }
+        //    }
+        //}
         #endregion
 
         #region Command
@@ -243,7 +242,7 @@ namespace CardEditor.ViewModels
             if (selectedCardMaker != null) imageSetting.SelectedCardMaker = selectedCardMaker;
 
             string encryptedDevelop = ConfigViewModel.Instance.DeveloperEncrypted;
-            Developer = SettingsEncryption.DecryptBoolSetting(encryptedDevelop);
+            // Developer = SettingsEncryption.DecryptBoolSetting(encryptedDevelop);
         }
 
         private void AddSortItem(object parameter)
@@ -472,10 +471,10 @@ namespace CardEditor.ViewModels
                 ConfigViewModel.Instance.codeEditSetting = codeEditSetting.Clone();
                 ConfigViewModel.Instance.deckEditSetting = deckEditSetting.Clone();
 
-                #region Develop
-                string encryptedDevelop = SettingsEncryption.EncryptBoolSetting(Developer);
-                ConfigViewModel.Instance.DeveloperEncrypted = encryptedDevelop;
-                #endregion
+                //#region Develop
+                //string encryptedDevelop = SettingsEncryption.EncryptBoolSetting(Developer);
+                //ConfigViewModel.Instance.DeveloperEncrypted = encryptedDevelop;
+                //#endregion
 
                 ConfigViewModel.Instance.UpdateSettingsProperties();
                 ConfigViewModel.Instance.SaveSettingsProperties();

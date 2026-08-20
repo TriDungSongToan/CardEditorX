@@ -2487,8 +2487,8 @@ namespace CardEditor
                 double top = Canvas.GetTop(ChatIcon);
 
                 double right = canvas.ActualWidth - left - ChatIcon.ActualWidth;
-                Properties.Settings.Default.ButtonChat = $"{right},{top}";
-                Properties.Settings.Default.Save();
+                ConfigViewModel.Instance.displaySetting.ButtonChat = $"{right},{top}";
+                ConfigViewModel.Instance.SaveDisplaySettingFile();
             }
         }
         #endregion
@@ -4466,8 +4466,8 @@ namespace CardEditor
             {
                 _isDragging = false;
                 DragHandle.ReleaseMouseCapture();
-                Properties.Settings.Default.WidthChat = (int)blMainChat.Width;
-                Properties.Settings.Default.Save();
+                ConfigViewModel.Instance.displaySetting.WidthChat = (int)blMainChat.Width;
+                ConfigViewModel.Instance.SaveDisplaySettingFile();
             }
         }
         private void DragHandle_MouseLeave(object sender, MouseEventArgs e)
@@ -4476,11 +4476,10 @@ namespace CardEditor
             {
                 _isDragging = false;
                 DragHandle.ReleaseMouseCapture();
-                Properties.Settings.Default.WidthChat = (int)blMainChat.Width;
-                Properties.Settings.Default.Save();
+                ConfigViewModel.Instance.displaySetting.WidthChat = (int)blMainChat.Width;
+                ConfigViewModel.Instance.SaveDisplaySettingFile();
             }
         }
-
 
         #endregion
 
@@ -4492,6 +4491,5 @@ namespace CardEditor
         }
         #endregion
 
-        
     }
 }

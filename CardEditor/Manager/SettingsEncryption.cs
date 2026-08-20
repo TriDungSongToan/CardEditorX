@@ -8,11 +8,29 @@ namespace CardEditor.Manager
     public static class SettingsEncryption
     {
         private static byte[] GetEntropy()
-        {
-            string entropySource = $"CardEditorX-{Environment.MachineName}-{Environment.UserName}";
-            return Encoding.UTF8.GetBytes(entropySource);
-        }
+            => Encoding.UTF8.GetBytes($"CardEditorX-{Environment.MachineName}-{Environment.UserName}");
 
+        public static string EncryptString(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return null;
+            byte[] data = Encoding.UTF8.GetBytes(value);
+            byte[] encrypted = ProtectedData.Protect(data, GetEntropy(), DataProtectionScope.CurrentUser);
+            return Convert.ToBase64String(encrypted);
+        }
+        public static string DecryptString(string encryptedValue)
+        {
+            if (string.IsNullOrEmpty(encryptedValue)) return null;
+            try
+            {
+                byte[] encrypted = Convert.FromBase64String(encryptedValue);
+                byte[] data = ProtectedData.Unprotect(encrypted, GetEntropy(), DataProtectionScope.CurrentUser);
+                return Encoding.UTF8.GetString(data);
+            }
+            catch
+            {
+                return null;
+            }
+        }
         public static string EncryptBoolSetting(bool value)
         {
             try
@@ -36,7 +54,6 @@ namespace CardEditor.Manager
                 return null;
             }
         }
-
         public static bool DecryptBoolSetting(string encryptedValue)
         {
             try
@@ -63,6 +80,57 @@ namespace CardEditor.Manager
                 Debug.WriteLine($"Lỗi khi giải mã: {ex.Message}");
                 return false; // Giá trị mặc định khi có lỗi
             }
+        }
+    }
+
+    public static class PasswordHasher
+    {
+        private const int SaltSize = 16;
+        private const int HashSize = 32;
+        private const int Iterations = 100_000;
+
+        public static string Hash(string password)
+        {
+            byte[] salt = new byte[SaltSize];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(salt);
+            }
+
+            byte[] hash;
+            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
+            {
+                hash = pbkdf2.GetBytes(HashSize);
+            }
+
+            return $"{Convert.ToBase64String(salt)}.{Convert.ToBase64String(hash)}";
+        }
+        public static bool Verify(string password, string stored)
+        {
+            var parts = stored.Split('.');
+            if (parts.Length != 2) return false;
+
+            byte[] salt = Convert.FromBase64String(parts[0]);
+            byte[] expectedHash = Convert.FromBase64String(parts[1]);
+
+            byte[] actualHash;
+            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
+            {
+                actualHash = pbkdf2.GetBytes(expectedHash.Length);
+            }
+
+            return FixedTimeEquals(actualHash, expectedHash);
+        }
+        private static bool FixedTimeEquals(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length) return false;
+
+            int diff = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                diff |= a[i] ^ b[i];
+            }
+            return diff == 0;
         }
     }
 }

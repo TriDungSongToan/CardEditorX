@@ -19,6 +19,11 @@ namespace CardEditor.ViewModels
         private Dictionary<ulong, CardEX> _allCards;
         public IReadOnlyDictionary<ulong, CardEX> AllCards => _allCards ?? new Dictionary<ulong, CardEX>();
 
+        private Dictionary<ulong, List<ulong>> _idToAlias;
+        private Dictionary<ulong, ulong> _aliasToId;
+        public IReadOnlyDictionary<ulong, List<ulong>> IdToAlias => _idToAlias ?? new Dictionary<ulong, List<ulong>>();
+        public IReadOnlyDictionary<ulong, ulong> AliasToID => _aliasToId ?? new Dictionary<ulong, ulong>();
+
         public bool IsLoadedCard;
         public bool IsLoadedScript;
 
@@ -42,6 +47,25 @@ namespace CardEditor.ViewModels
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                         $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
                     return;
+                }
+
+                _idToAlias = new Dictionary<ulong, List<ulong>>();
+                _aliasToId = new Dictionary<ulong, ulong>();
+                foreach (var item in allCards)
+                {
+                    if (item.alias == 0) continue;
+
+                    // ID -> Aliases
+                    if (!_idToAlias.TryGetValue(item.id, out var aliases))
+                    {
+                        aliases = new List<ulong>();
+                        _idToAlias[item.id] = aliases;
+                    }
+
+                    aliases.Add(item.alias);
+
+                    // Alias -> ID
+                    _aliasToId[item.alias] = item.id;
                 }
 
                 var rareDict = RareRawDataViewModel.Instance.RareCardsData;

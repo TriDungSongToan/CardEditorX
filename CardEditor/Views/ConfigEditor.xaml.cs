@@ -1,36 +1,36 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Controls;
-using System.Security.Cryptography;
-using MaterialDesignThemes.Wpf;
+using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using System.ComponentModel;
 using CardEditor.Models;
 using CardEditor.Manager;
 using CardEditor.Helpers;
 using CardEditor.Services;
 using CardEditor.ViewModels;
-using CardEditor.Localization;
 using TextBox = System.Windows.Controls.TextBox;
-using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor
 {
     /// <summary>
     /// Interaction logic for ConfigEditor.xaml
     /// </summary>
-    public partial class ConfigEditor : Window
+    public partial class ConfigEditor : Window, INotifyPropertyChanged
     {
         #region Variable
         public MainWindow MainWindowReference { get; set; }
         private SettingViewModel settingViewModel;
-
-        private readonly string CedsFilePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CardEditor", "Ceds.dat");
-        private readonly string KeyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CardEditor", "Ceds.key");
-        private readonly string IVPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CardEditor", "Ceds.iv");
         private bool gridrowsave = false;
+
+        private int _failedAttempts = 0;
+        private DateTime _lockUntil = DateTime.MinValue;
+        private const int MaxAttempts = 5;
+        private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(30);
+
         public event Action ConfigChanged;
         #endregion
 
@@ -41,8 +41,10 @@ namespace CardEditor
 
             settingViewModel = SettingViewModel.CreateInstance();
             DataContext = settingViewModel;
-            
-            LoadDev();
+            grDev.DataContext = this;
+            Debug.WriteLine($"[Constructor] grDev.DataContext set, is ConfigEditor: {grDev.DataContext == this}");
+
+            LoadDevModeState();
             settingViewModel.CallConfigChanged += SettingViewModel_CallConfigChanged;
             settingViewModel.RequestOpenBrowseDialog += SettingViewModel_RequestOpenBrowseDialog;
             settingViewModel.MessageBoxRequested += SettingViewModel_MessageBoxRequested;
@@ -80,30 +82,11 @@ namespace CardEditor
             ControlContextMenuService.Attach(txtMaxExtraDeck);
             ControlContextMenuService.Attach(txtMaxSideDeck);
         }
-        private void LoadDev()
+        private void LoadDevModeState()
         {
-            string directorySecPath = System.IO.Path.GetDirectoryName(CedsFilePath);
-            if (!Directory.Exists(directorySecPath))
-            {
-                Directory.CreateDirectory(directorySecPath);
-            }
-            if (!File.Exists(CedsFilePath))
-            {
-                if (!File.Exists(KeyPath) || !File.Exists(IVPath))
-                {
-                    tbtndeveloper.IsChecked = false;
-                    tbtndeveloper.IsEnabled = false;
-                    btnIconReset.IsEnabled = false;
-                    grdev.ToolTip = "You do not have permission to use this mode.";
-                    return;
-                }
-
-                string defaultP = SecretManager.GetSecret(KeyPath, IVPath);
-                if (!string.IsNullOrEmpty(defaultP))
-                    CreateInitial(defaultP);
-                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    "Decryption error. Invalid key file.", new[] { CMess.ok.ToText() });
-            }
+            bool devModeUnlocked = SettingsEncryption.DecryptBoolSetting(
+                CardEditor.Properties.Settings.Default.DeveloperEncrypted);
+            tbtndeveloper.IsChecked = devModeUnlocked;
         }
         #endregion
 
@@ -171,17 +154,15 @@ namespace CardEditor
             {
                 gridrowsave = false;
                 grDev.Height = 0;
-                MainDialogHost.Visibility = Visibility.Collapsed;
-                ResetPassDiaLog.Visibility = Visibility.Collapsed;
-                btnIconReset.Visibility = Visibility.Collapsed;
+                blLogin.Visibility = Visibility.Collapsed;
+                blReSetPass.Visibility = Visibility.Collapsed;
             }
             else
             {
                 gridrowsave = true;
                 grDev.Height = Double.NaN;
-                MainDialogHost.Visibility = Visibility.Visible;
-                ResetPassDiaLog.Visibility = Visibility.Visible;
-                btnIconReset.Visibility = Visibility.Visible;
+                blLogin.Visibility = Visibility.Collapsed;
+                blReSetPass.Visibility = Visibility.Collapsed;
             }
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -248,211 +229,298 @@ namespace CardEditor
         }
         #endregion
 
-        #region Button
-        private void btncacels_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-        private void tbtnShowPass_Checked(object sender, RoutedEventArgs e)
-        {
-            txtpassword.Visibility = Visibility.Collapsed;
-            txtPlainPassword.Visibility = Visibility.Visible;
+        #region PassWord
 
-            txtPlainPassword.Text = txtpassword.Password;
-            txtPlainPassword.Focus();
-            txtPlainPassword.UpdateLayout();
-            txtPlainPassword.CaretIndex = txtPlainPassword.Text.Length;
-        }
-        private void tbtnShowPass_Unchecked(object sender, RoutedEventArgs e)
+        #region Propertys
+        private string _passWord = string.Empty;
+        public string PassWord
         {
-            txtPlainPassword.Visibility = Visibility.Collapsed;
-            txtpassword.Visibility = Visibility.Visible;
-            txtpassword.Focus();
-            txtpassword.Password = txtPlainPassword.Text;
-            txtpassword.UpdateLayout();
-        }
-        private void txtpassword_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Enter)
+            get => _passWord;
+            set
             {
-                ValidatePassword();
-            }
-        }
-        private void txtPlainPassword_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Enter)
-            {
-                ValidatePassword();
-            }
-        }
-        private void btnAccept_Click(object sender, RoutedEventArgs e)
-        {
-            ValidatePassword();
-        }
-        private void btnAcceptReset_Click(object sender, RoutedEventArgs e)
-        {
-            string oldPassword = txtoldpassword.Text;
-            string newPassword = txtnewpassword.Text;
-            string confirmPassword = txtconfirmpassword.Text;
-
-            // Ẩn các thông báo lỗi
-            IncorrectPassword.Visibility = Visibility.Collapsed;
-            UnMatchPassword.Visibility = Visibility.Collapsed;
-
-            // Kiểm tra mật khẩu cũ
-            if (!VerifyPassword(oldPassword))
-            {
-                IncorrectPassword.Visibility = Visibility.Visible;
-                return;
-            }
-
-            // Kiểm tra mật khẩu mới và xác nhận có giống nhau không
-            if (newPassword != confirmPassword)
-            {
-                UnMatchPassword.Visibility = Visibility.Visible;
-                return;
-            }
-
-            // Mọi kiểm tra đều thành công, thay đổi mật khẩu
-            // Tạo salt mới cho mật khẩu mới
-            byte[] newSalt = GenerateRandomSalt();
-            byte[] newPasswordHash = HashPassword(newPassword, newSalt);
-
-            // Lưu salt và hash mới
-            SavePasswordData(newSalt, newPasswordHash);
-            CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Information,
-                "Password changed successfully!", new[] { CMess.ok.ToText() });
-
-            // Xóa dữ liệu nhập để tăng tính bảo mật
-            txtoldpassword.Text = string.Empty;
-            txtnewpassword.Text = string.Empty;
-            txtconfirmpassword.Text = string.Empty;
-
-            DialogHost.CloseDialogCommand.Execute(true, ResetPassDiaLog);
-        }
-        private async void btnIconReset_Click(object sender, RoutedEventArgs e)
-        {
-            if (DialogHost.IsDialogOpen("ResetPass")) return;
-            txtoldpassword.Text = string.Empty;
-            txtnewpassword.Text = string.Empty;
-            txtconfirmpassword.Text = string.Empty;
-
-            object result = await ResetPassDiaLog.ShowDialog(ResetPassDiaLog.DialogContent);
-        }
-        private async void tbtndeveloper_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (!tbtndeveloper.IsChecked.Value)
-            {
-                e.Handled = true;
-                if (DialogHost.IsDialogOpen("MainDialog"))
-                    return;
-
-                txtpassword.Password = string.Empty;
-                ErrorMessage.Visibility = Visibility.Collapsed;
-
-                object result = await MainDialogHost.ShowDialog(MainDialogHost.DialogContent);
-                if (result is bool dialogResult && dialogResult)
+                if (_passWord != value)
                 {
-                    tbtndeveloper.IsChecked = true;
+                    _passWord = value;
+                    Debug.WriteLine($"[PassWord setter] '{value}'");
+                    OnPropertyChanged(nameof(PassWord));
+                }
+            }
+        }
+        private string _oldPassWord = string.Empty;
+        public string OldPassWord
+        {
+            get => _oldPassWord;
+            set
+            {
+                if (_oldPassWord != value)
+                {
+                    _oldPassWord = value;
+                    OnPropertyChanged(nameof(OldPassWord));
+                }
+            }
+        }
+        private string _newPassWord = string.Empty;
+        public string NewPassWord
+        {
+            get => _newPassWord;
+            set
+            {
+                if (_newPassWord != value)
+                {
+                    _newPassWord = value;
+                    OnPropertyChanged(nameof(NewPassWord));
+                }
+            }
+        }
+        private string _confirmPassWord = string.Empty;
+        public string ConfirmPassWord
+        {
+            get => _confirmPassWord;
+            set
+            {
+                if (_confirmPassWord != value)
+                {
+                    _confirmPassWord = value;
+                    OnPropertyChanged(nameof(ConfirmPassWord));
                 }
             }
         }
 
+        private string _loginResult = string.Empty;
+        public string LoginResult
+        {
+            get => _loginResult;
+            set
+            {
+                if (_loginResult != value)
+                {
+                    _loginResult = value;
+                    OnPropertyChanged(nameof(LoginResult));
+                }
+            }
+        }
+        private string _oldPassWordResult = string.Empty;
+        public string OldPassWordResult
+        {
+            get => _oldPassWordResult;
+            set
+            {
+                if (_oldPassWordResult != value)
+                {
+                    _oldPassWordResult = value;
+                    OnPropertyChanged(nameof(OldPassWordResult));
+                }
+            }
+        }
+        private string _newPassWordResult = string.Empty;
+        public string NewPassWordResult
+        {
+            get => _newPassWordResult;
+            set
+            {
+                if (_newPassWordResult != value)
+                {
+                    _newPassWordResult = value;
+                    OnPropertyChanged(nameof(NewPassWordResult));
+                }
+            }
+        }
+        private string _confirmpasswordResult = string.Empty;
+        public string ConfirmpasswordResult
+        {
+            get => _confirmpasswordResult;
+            set
+            {
+                if (_confirmpasswordResult != value)
+                {
+                    _confirmpasswordResult = value;
+                    OnPropertyChanged(nameof(ConfirmpasswordResult));
+                }
+            }
+        }
         #endregion
 
-        #region Password
-        private const int SaltSize = 16; // Kích thước salt - 16 bytes (128 bits)
-        private const int Iterations = 10000; // Số vòng lặp cho PBKDF2
-        private void CreateInitial(string password)
+        #region Events
+        private void txtPassWordBox_EnterPressed(object sender, RoutedEventArgs e)
         {
-            // Tạo salt ngẫu nhiên
-            byte[] salt = GenerateRandomSalt();
-
-            // Hash mật khẩu với salt
-            byte[] passwordHash = HashPassword(password, salt);
-
-            // Lưu salt và password hash
-            SavePasswordData(salt, passwordHash);
-        } // Phương thức tạo mật khẩu ban đầu
-        private byte[] GenerateRandomSalt()
+            btnAccept_Click(sender, e);
+        }
+        private void txtOldPassWordBox_EnterPressed(object sender, RoutedEventArgs e)
         {
-            using (var rng = RandomNumberGenerator.Create())
+            btnAcceptReset_Click(sender, e);
+        }
+        private void txtNewPassWordBox_EnterPressed(object sender, RoutedEventArgs e)
+        {
+            btnAcceptReset_Click(sender, e);
+        }
+        private void txtConfirmPassWordBox_EnterPressed(object sender, RoutedEventArgs e)
+        {
+            btnAcceptReset_Click(sender, e);
+        }
+
+        private void btnAccept_Click(object sender, RoutedEventArgs e)
+        {
+            if (DateTime.Now < _lockUntil)
             {
-                byte[] salt = new byte[SaltSize];
-                rng.GetBytes(salt);
-                return salt;
+                int secondsLeft = (int)(_lockUntil - DateTime.Now).TotalSeconds;
+                LoginResult = $"Đã nhập sai quá nhiều lần. Thử lại sau {secondsLeft}s.";
+                return;
             }
-        } // Tạo salt ngẫu nhiên
-        private byte[] HashPassword(string password, byte[] salt)
-        {
-            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
+
+            string hash = SettingsEncryption.DecryptString(
+                CardEditor.Properties.Settings.Default.EncryptedPasswordHash);
+
+            string enteredPassword = PassWord;
+
+            if (hash != null && PasswordHasher.Verify(enteredPassword, hash))
             {
-                return pbkdf2.GetBytes(32); // 32 bytes = 256 bits
-            }
-        } // Hash mật khẩu sử dụng PBKDF2
-        private void SavePasswordData(byte[] salt, byte[] passwordHash)
-        {
-            // Kết hợp salt và hash để lưu trữ
-            byte[] dataToSave = new byte[salt.Length + passwordHash.Length];
-            Array.Copy(salt, 0, dataToSave, 0, salt.Length);
-            Array.Copy(passwordHash, 0, dataToSave, salt.Length, passwordHash.Length);
+                _failedAttempts = 0;
+                tbtndeveloper.IsChecked = true;
+                SaveDevModeUnlocked(true);
 
-            // Lưu vào file (trong thực tế, nên lưu vào cơ sở dữ liệu an toàn)
-            File.WriteAllBytes(CedsFilePath, dataToSave);
-        } // Lưu salt và hash
-        private (byte[] Salt, byte[] Hash) GetStoredPasswordData()
-        {
-            byte[] storedData = File.ReadAllBytes(CedsFilePath);
+                blLogin.Visibility = Visibility.Collapsed;
+                grToggleButtonDev.IsEnabled = true;
 
-            byte[] salt = new byte[SaltSize];
-            byte[] hash = new byte[storedData.Length - SaltSize];
-
-            Array.Copy(storedData, 0, salt, 0, SaltSize);
-            Array.Copy(storedData, SaltSize, hash, 0, storedData.Length - SaltSize);
-
-            return (salt, hash);
-        } // Đọc salt và hash từ storage
-        private bool SlowEquals(byte[] a, byte[] b)
-        {
-            uint diff = (uint)a.Length ^ (uint)b.Length;
-            for (int i = 0; i < a.Length && i < b.Length; i++)
-            {
-                diff |= (uint)(a[i] ^ b[i]);
-            }
-            return diff == 0;
-        } // So sánh hai mảng byte cẩn thận để tránh timing attacks
-        private bool VerifyPassword(string password)
-        {
-            try
-            {
-                var (salt, storedHash) = GetStoredPasswordData();
-
-                // Tính toán hash của mật khẩu được nhập với salt đã lưu
-                byte[] computedHash = HashPassword(password, salt);
-
-                // So sánh byte-by-byte
-                return SlowEquals(storedHash, computedHash);
-            }
-            catch
-            {
-                return false;
-            }
-        } // Kiểm tra mật khẩu
-        private void ValidatePassword()
-        {
-            string enteredPassword = tbtnShowPass.IsChecked == true ? txtPlainPassword.Text : txtpassword.Password;
-
-            if (VerifyPassword(enteredPassword))
-            {
-                // Xác thực thành công
-                ErrorMessage.Visibility = Visibility.Collapsed;
-                DialogHost.CloseDialogCommand.Execute(true, MainDialogHost);
+                PassWord = string.Empty;
+                LoginResult = string.Empty;
             }
             else
             {
-                // Xác thực thất bại
-                ErrorMessage.Visibility = Visibility.Visible;
+                _failedAttempts++;
+                if (_failedAttempts >= MaxAttempts)
+                {
+                    _lockUntil = DateTime.Now.Add(LockDuration);
+                    _failedAttempts = 0;
+                    LoginResult = $"Sai quá {MaxAttempts} lần. Khóa {LockDuration.TotalSeconds}s.";
+                }
+                else
+                {
+                    LoginResult = "Sai mật khẩu!";
+                }
             }
+        }
+        private void btnAcceptReset_Click(object sender, RoutedEventArgs e)
+        {
+            OldPassWordResult = string.Empty;
+            NewPassWordResult = string.Empty;
+            ConfirmpasswordResult = string.Empty;
+
+            string currentHash = SettingsEncryption.DecryptString(
+                CardEditor.Properties.Settings.Default.EncryptedPasswordHash);
+
+            if (currentHash == null || !PasswordHasher.Verify(OldPassWord, currentHash))
+            {
+                OldPassWordResult = "Mật khẩu cũ không đúng!";
+                return;
+            }
+
+            if (NewPassWord != ConfirmPassWord)
+            {
+                ConfirmpasswordResult = "Xác nhận Mật khẩu không khớp";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(NewPassWord) || NewPassWord.Length < 4)
+            {
+                NewPassWordResult = "Mật khẩu mới phải có ít nhất 4 ký tự!";
+                return;
+            }
+
+            string newHash = PasswordHasher.Hash(NewPassWord);
+            CardEditor.Properties.Settings.Default.EncryptedPasswordHash = SettingsEncryption.EncryptString(newHash);
+            CardEditor.Properties.Settings.Default.Save();
+
+            OldPassWord = string.Empty;
+            NewPassWord = string.Empty;
+            ConfirmPassWord = string.Empty;
+
+            MessageBox.Show("Đổi mật khẩu thành công!", "Thông báo",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+
+            grToggleButtonDev.IsEnabled = true;
+            blReSetPass.Visibility = Visibility.Collapsed;
+        }
+        private void btnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            PassWord = string.Empty;
+            LoginResult = string.Empty;
+            blReSetPass.Visibility = Visibility.Collapsed;
+            blLogin.Visibility = Visibility.Collapsed;
+            grToggleButtonDev.IsEnabled = true;
+        }
+        private void btnCancelReset_Click(object sender, RoutedEventArgs e)
+        {
+            OldPassWord = string.Empty;
+            NewPassWord = string.Empty;
+            ConfirmPassWord = string.Empty;
+
+            LoginResult = string.Empty;
+            OldPassWordResult = string.Empty;
+            NewPassWordResult = string.Empty;
+            ConfirmpasswordResult = string.Empty;
+
+            grToggleButtonDev.IsEnabled = true;
+            blLogin.Visibility = Visibility.Collapsed;
+            blReSetPass.Visibility = Visibility.Collapsed;
+        }
+        #endregion
+
+        private void tbtndeveloper_Click(object sender, RoutedEventArgs e)
+        {
+            if (tbtndeveloper.IsChecked == true)
+            {
+                // Vừa được check -> luôn yêu cầu nhập lại password
+                tbtndeveloper.IsChecked = false;
+                grToggleButtonDev.IsEnabled = false;
+                OpenLoginDialog();
+            }
+            else
+            {
+                SaveDevModeUnlocked(false);
+            }
+        }
+        private async void btnIconReset_Click(object sender, RoutedEventArgs e)
+        {
+            OldPassWord = string.Empty;
+            NewPassWord = string.Empty;
+            ConfirmPassWord = string.Empty;
+
+            LoginResult = string.Empty;
+            OldPassWordResult = string.Empty;
+            NewPassWordResult = string.Empty;
+            ConfirmpasswordResult = string.Empty;
+
+            grToggleButtonDev.IsEnabled = false;
+            blLogin.Visibility = Visibility.Collapsed;
+            blReSetPass.Visibility = Visibility.Visible;
+        }
+        private void OpenLoginDialog()
+        {
+            PassWord = string.Empty;
+            LoginResult = string.Empty;
+            blReSetPass.Visibility = Visibility.Collapsed;
+            blLogin.Visibility = Visibility.Visible;
+        }
+
+        private void SaveDevModeUnlocked(bool unlocked)
+        {
+            CardEditor.Properties.Settings.Default.DeveloperEncrypted =
+                SettingsEncryption.EncryptBoolSetting(unlocked);
+            // CardEditor.Properties.Settings.Default.Save();
+        }
+
+        #endregion
+
+        #region Events
+        private void btncacels_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
 

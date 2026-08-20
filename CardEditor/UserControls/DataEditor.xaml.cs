@@ -2471,29 +2471,6 @@ namespace CardEditor.UserControls
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
-
-            
-
-            //int arrangeValue = ConfigViewModel.Instance.Arrange;
-            //switch (arrangeValue)
-            //{
-            //    case 1: // Tăng dần theo id
-            //        CollectionViewCollection.SortDescriptions.Add(new SortDescription("id", ListSortDirection.Ascending));
-            //        break;
-            //    case 2: // Giảm dần theo id
-            //        CollectionViewCollection.SortDescriptions.Add(new SortDescription("id", ListSortDirection.Descending));
-            //        break;
-            //    case 3: // Tăng dần theo name (theo bảng chữ cái)
-            //        CollectionViewCollection.SortDescriptions.Add(new SortDescription("name", ListSortDirection.Ascending));
-            //        break;
-            //    case 4: // Giảm dần theo name (ngược bảng chữ cái)
-            //        CollectionViewCollection.SortDescriptions.Add(new SortDescription("name", ListSortDirection.Descending));
-            //        break;
-            //    default: // Mặc định không sắp xếp hoặc theo id tăng dần
-            //        CollectionViewCollection.SortDescriptions.Add(new SortDescription("id", ListSortDirection.Ascending));
-            //        break;
-            //}
-            //CollectionViewCollection.Refresh();
         }
         private void btnSort_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {

@@ -12,6 +12,7 @@
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:Lag="clr-namespace:CardEditor.Localization"
         xmlns:Controls="clr-namespace:CardEditor.Controls"
+        xmlns:UserControls="clr-namespace:CardEditor.UserControls"
         xmlns:Behaviors="clr-namespace:CardEditor.Behaviors"
         xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
         xmlns:Converter="clr-namespace:CardEditor.Converter"
@@ -44,6 +45,7 @@
             <Converter:AscDescConverter x:Key="AscDescConverter"/>
             <Converter:NullableIntConverter x:Key="NullableIntConverter" />
             <Converter:FontFamilyConverter x:Key="FontFamilyConverter" />
+            <Converter:EmptyToCollapsedConverter x:Key="EmptyToCollapsedConverter" />
 
             <Style x:Key="TwoStateToggleStyleSetting" TargetType="{x:Type Controls:TwoStateToggle}"
                    BasedOn="{StaticResource {x:Type Controls:TwoStateToggle}}" >
@@ -106,6 +108,7 @@
                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                     HorizontalAlignment="Center" VerticalAlignment="Center" >
                 <StackPanel Orientation="Vertical" >
+                    
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Hidden"
                                   CanContentScroll="False" Height="400" >
@@ -2593,214 +2596,11 @@
                             Style="{StaticResource MaterialDesignToolBarMainPanelBorderStyle}" MouseDown="Border_MouseDown" />
 
                     <Grid Grid.Row="18" x:Name="grDev" Height="0" >
-                        <Grid.RowDefinitions>
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
 
-                        <materialDesign:DialogHost Grid.Row="0" x:Name="MainDialogHost" Identifier="MainDialog"
-                                                   CloseOnClickAway="False" Margin="0" Padding="0" >
-                            <Grid />
-                            <materialDesign:DialogHost.DialogContent>
-                                <Border Padding="10" Width="auto" Height="auto"
-                                        Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        BorderThickness="1.5" CornerRadius="5" >
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="auto" />
-                                            <RowDefinition Height="22" />
-                                            <RowDefinition Height="auto" />
-                                        </Grid.RowDefinitions>
-
-                                        <Grid Grid.Row="0" >
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBox x:Name="txtPlainPassword" Grid.Column="0" Width="200" Height="48"
-                                                     BorderThickness="1" Padding="8,8,30,0" FontSize="16"
-                                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                     Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                     FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                     VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
-                                                     KeyDown="txtPlainPassword_KeyDown"
-                                                     materialDesign:HintAssist.Hint="Password" Visibility="Collapsed"
-                                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                                     TextOptions.TextFormattingMode="Display"
-                                                     TextOptions.TextRenderingMode="ClearType"
-                                                     materialDesign:TextFieldAssist.HasOutlinedTextField="False"
-                                                     materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                                     materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-                                            <PasswordBox x:Name="txtpassword" Grid.Column="0" Width="200" Height="48"
-                                                         BorderThickness="1" FontSize="16" Padding="8,8,30,0"
-                                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                         VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
-                                                         KeyDown="txtpassword_KeyDown"
-                                                         materialDesign:HintAssist.Hint="Password" Visibility="Visible"
-                                                         Style="{StaticResource MaterialDesignOutlinedPasswordBox}"
-                                                         TextOptions.TextFormattingMode="Display"
-                                                         TextOptions.TextRenderingMode="ClearType"
-                                                         materialDesign:TextFieldAssist.HasOutlinedTextField="False"
-                                                         materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                                         materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-                                            <Grid Grid.Column="0" Margin="0,10,5,0" VerticalAlignment="Center" >
-                                                <ToggleButton x:Name="tbtnShowPass" Panel.ZIndex="2" Background="Transparent"
-                                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                              VerticalAlignment="Center" HorizontalAlignment="Right"
-                                                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                                                              Width="26" Height="26" Margin="3,0,0,0" IsChecked="False"
-                                                              Checked="tbtnShowPass_Checked" Unchecked="tbtnShowPass_Unchecked"
-                                                              Content="{materialDesign:PackIcon Kind=EyeOutline}"
-                                                              materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=EyeOffOutline}"
-                                                              Style="{StaticResource MaterialDesignActionLightToggleButton}" >
-                                                </ToggleButton>
-                                            </Grid>
-                                        </Grid>
-
-                                        <Grid Grid.Row="1" >
-                                            <TextBlock x:Name="ErrorMessage" Text="Incorrect Password." FontSize="14"
-                                                       Foreground="Red" Visibility="Collapsed" Margin="0,3,0,5"/>
-                                        </Grid>
-
-                                        <Grid Grid.Row="2" Width="150" HorizontalAlignment="Center"  >
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="15" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <Button x:Name="btnAccept" Grid.Column="0" Content="Accept" Click="btnAccept_Click"
-                                                        Width="auto" Height="32" Margin="0" Padding="0" FontSize="15"
-                                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                                        materialDesign:ButtonAssist.CornerRadius="5"
-                                                        Style="{StaticResource ButtonSuccess}" />
-                                            <Button x:Name="btnCancel" Grid.Column="2" Content="Cancel"
-                                                        Width="auto" Height="32" Margin="0" Padding="0" FontSize="15"
-                                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                                        Style="{StaticResource ButtonInfo}" CommandParameter="False"
-                                                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" />
-                                        </Grid>
-                                    </Grid>
-                                </Border>
-                            </materialDesign:DialogHost.DialogContent>
-                        </materialDesign:DialogHost>
-
-                        <materialDesign:DialogHost Grid.Row="0" x:Name="ResetPassDiaLog" Identifier="ResetPass"
-                                                   CloseOnClickAway="False" Margin="0" Padding="0" >
-                            <Grid />
-                            <materialDesign:DialogHost.DialogContent>
-                                <Border Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                        Padding="10,0,10,10" Width="auto" Height="auto" BorderThickness="1.5" CornerRadius="5" >
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="auto" />
-                                            <RowDefinition Height="auto" />
-                                            <RowDefinition Height="24" />
-                                            <RowDefinition Height="auto" />
-                                            <RowDefinition Height="7" />
-                                            <RowDefinition Height="auto" />
-                                            <RowDefinition Height="22" />
-                                            <RowDefinition Height="auto" />
-                                        </Grid.RowDefinitions>
-
-                                        <Grid Grid.Row="0" >
-                                            <TextBlock Text="Change Password" Grid.Row="0" Margin="0,0,0,3" FontSize="16"
-                                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
-                                        </Grid>
-
-                                        <TextBox x:Name="txtoldpassword" Grid.Row="1" Width="200" Height="48"
-                                                 BorderThickness="1" FontSize="16" Padding="8,8,3,0" Margin="0"
-                                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                 VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                                 KeyDown="txtpassword_KeyDown"
-                                                 materialDesign:HintAssist.Hint="Old Password"
-                                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                                 TextOptions.TextFormattingMode="Display"
-                                                 TextOptions.TextRenderingMode="ClearType"
-                                                 materialDesign:TextFieldAssist.HasOutlinedTextField="False"
-                                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                                 materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-
-                                        <TextBlock x:Name="IncorrectPassword" Grid.Row="2" Text="Incorrect Password." FontSize="14"
-                                                       Foreground="Red" Visibility="Collapsed" Margin="0,3,0,5" />
-
-                                        <TextBox x:Name="txtnewpassword" Grid.Row="3" Width="200" Height="48"
-                                                 BorderThickness="1" FontSize="16" Padding="8,8,3,0" Margin="0"
-                                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                 VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                                 KeyDown="txtpassword_KeyDown"
-                                                 materialDesign:HintAssist.Hint="New Password"
-                                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                                 TextOptions.TextFormattingMode="Display"
-                                                 TextOptions.TextRenderingMode="ClearType"
-                                                 materialDesign:TextFieldAssist.HasOutlinedTextField="False"
-                                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                                 materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-
-                                        <TextBox x:Name="txtconfirmpassword" Grid.Row="5" Width="200" Height="48"
-                                                 BorderThickness="1" FontSize="16" Padding="8,8,3,2"
-                                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                 VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                                 KeyDown="txtpassword_KeyDown"
-                                                 materialDesign:HintAssist.Hint="Confirm Password"
-                                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                                 TextOptions.TextFormattingMode="Display"
-                                                 TextOptions.TextRenderingMode="ClearType"
-                                                 materialDesign:TextFieldAssist.HasOutlinedTextField="False"
-                                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                                 materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
-
-                                        <TextBlock x:Name="UnMatchPassword" Grid.Row="6" Text="Passwords do not match." FontSize="14"
-                                                       Foreground="Red" Visibility="Collapsed" Margin="0,3,0,5" />
-
-                                        <Grid Grid.Row="7" Width="160" HorizontalAlignment="Center" >
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="15" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <Button x:Name="btnAcceptReset" Grid.Column="0" Content="Accept" Click="btnAcceptReset_Click"
-                                                        Width="auto" Height="32" Margin="0" Padding="0" FontSize="15"
-                                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                                        materialDesign:ButtonAssist.CornerRadius="5"
-                                                        Style="{StaticResource ButtonSuccess}" />
-                                            <Button x:Name="btnCancelReset" Grid.Column="2" Content="Cancel" CommandParameter="False"
-                                                        Width="auto" Height="32" Margin="0" Padding="0" FontSize="15"
-                                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                                        materialDesign:ButtonAssist.CornerRadius="5"
-                                                        Style="{StaticResource ButtonInfo}"
-                                                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" />
-                                        </Grid>
-                                    </Grid>
-                                </Border>
-                            </materialDesign:DialogHost.DialogContent>
-                        </materialDesign:DialogHost>
-
-                        <Grid Grid.Row="0" >
-                            <Grid x:Name="grdev" HorizontalAlignment="Center" Margin="0,5,0,0" >
+                        <Border HorizontalAlignment="Center" VerticalAlignment="Stretch" Margin="0,5,0,0"
+                                Background="Transparent" BorderThickness="1" CornerRadius="5"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                            <Grid x:Name="grToggleButtonDev" HorizontalAlignment="Center" Margin="30,5,30,5" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="auto" />
@@ -2815,11 +2615,10 @@
                                                HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
                                 </Viewbox>
                                 <ToggleButton x:Name="tbtndeveloper" Grid.Column="1" Panel.ZIndex="2"
-                                              IsChecked="{Binding Developer}"
                                               VerticalAlignment="Center" HorizontalAlignment="Center" 
                                               VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
                                               Width="55" Height="28" Margin="0,0,0,0"
-                                              PreviewMouseLeftButtonDown="tbtndeveloper_PreviewMouseLeftButtonDown" >
+                                              Click="tbtndeveloper_Click" >
                                     <ToggleButton.Content>
                                         <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
                                     </ToggleButton.Content>
@@ -2840,8 +2639,170 @@
                                     </ToggleButton.Style>
                                 </ToggleButton>
                             </Grid>
+                        </Border>
+                        
+                        <Grid HorizontalAlignment="Right" VerticalAlignment="Top" >
+                            <Button x:Name="btnIconReset" Width="40" Height="40"
+                                    Margin="0,5,5,0" Padding="0" Panel.ZIndex="2"
+                                    BorderThickness="0" Background="Transparent"
+                                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                    Click="btnIconReset_Click" >
+                                <Button.Content>
+                                    <materialDesign:PackIcon Kind="EncryptionReset" Width="40" Height="40" />
+                                </Button.Content>
+                            </Button>
                         </Grid>
+
+                        <Border x:Name="blLogin" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                                Margin="0,5,0,0" BorderThickness="1" Width="350" CornerRadius="5"
+                                Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                            <Grid Margin="3">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="auto" />
+                                        <RowDefinition Height="auto" />
+                                    </Grid.RowDefinitions>
+                                    <UserControls:PasswordRevealBox x:Name="txtPassWordBox" Grid.Row="0"
+                                                                    Password="{Binding PassWord, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                    Hint="Password" IsPasswordVisible="False"
+                                                                    EnterPressed="txtPassWordBox_EnterPressed" />
+                                    <TextBlock FontSize="14" Foreground="Red" Margin="0,3,0,5" Grid.Row="1"
+                                               Text="{Binding LoginResult}"
+                                               Visibility="{Binding LoginResult, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                </Grid>
+
+                                <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,3,0,0" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="btnAccept" Grid.Column="0" Content="Accept" Click="btnAccept_Click"
+                                            Width="70" Height="32" Margin="0" Padding="0" FontSize="15"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                            materialDesign:ButtonAssist.CornerRadius="5"
+                                            Style="{StaticResource ButtonSuccess}" />
+                                    <Button x:Name="btnCancel" Grid.Column="2" Content="Cancel" Click="btnCancel_Click"
+                                            Width="70" Height="32" Margin="0" Padding="0" FontSize="15"
+                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                            materialDesign:ButtonAssist.CornerRadius="5"
+                                            Style="{StaticResource ButtonInfo}" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Border x:Name="blReSetPass" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                                Margin="0,5,0,0" BorderThickness="1" Width="500" CornerRadius="5"
+                                Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                            <Grid Margin="3,0,3,3" >
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0" >
+                                        <TextBlock Text="Change Password" Grid.Row="0" Margin="0,0,0,3" FontSize="16"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
+                                    </Grid>
+
+                                    <Grid Grid.Row="1" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="3" />
+                                            <ColumnDefinition Width="auto" />
+                                            <ColumnDefinition Width="3" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid Grid.Column="0" >
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0" >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="auto" />
+                                                    <RowDefinition Height="auto" />
+                                                </Grid.RowDefinitions>
+                                                <UserControls:PasswordRevealBox x:Name="txtOldPassWordBox" Grid.Row="0" IsPasswordVisible="False"
+                                                                                Password="{Binding OldPassWord, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                Hint="Old PassWord" EnterPressed="txtOldPassWordBox_EnterPressed" />
+                                                <TextBlock Grid.Row="1" Foreground="Red" FontSize="14" Margin="0,0,0,4"
+                                                           Text="{Binding OldPassWordResult}"
+                                                           Visibility="{Binding OldPassWordResult, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                            </Grid>
+
+                                            <Grid Grid.Row="1" >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="auto" />
+                                                    <RowDefinition Height="auto" />
+                                                </Grid.RowDefinitions>
+                                                <UserControls:PasswordRevealBox x:Name="txtNewPassWordBox" Grid.Row="0" IsPasswordVisible="False"
+                                                                                Password="{Binding NewPassWord, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                Hint="New PassWord" EnterPressed="txtNewPassWordBox_EnterPressed" />
+                                                <TextBlock Grid.Row="1" Foreground="Red" FontSize="14" Margin="0,0,0,4"
+                                                           Text="{Binding NewPassWordResult}"
+                                                           Visibility="{Binding NewPassWordResult, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                            </Grid>
+
+                                            <Grid Grid.Row="2" >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="auto" />
+                                                    <RowDefinition Height="auto" />
+                                                </Grid.RowDefinitions>
+                                                <UserControls:PasswordRevealBox x:Name="txtConfirmPassWordBox" Grid.Row="0" IsPasswordVisible="False"
+                                                                                Password="{Binding ConfirmPassWord, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                Hint="Confirm PassWord" EnterPressed="txtConfirmPassWordBox_EnterPressed" />
+                                                <TextBlock Grid.Row="1" Foreground="Red" FontSize="14" Margin="0,0,0,4"
+                                                           Text="{Binding ConfirmpasswordResult}"
+                                                           Visibility="{Binding ConfirmpasswordResult, Converter={StaticResource EmptyToCollapsedConverter}}" />
+                                            </Grid>
+
+                                        </Grid>
+
+                                        <Grid Grid.Column="2">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="5" />
+                                                <RowDefinition Height="auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <Button x:Name="btnAcceptReset" Grid.Row="0" Content="Accept" Click="btnAcceptReset_Click"
+                                                    Width="70" Height="32" Margin="0" Padding="0" FontSize="15"
+                                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                    materialDesign:ButtonAssist.CornerRadius="5"
+                                                    Style="{StaticResource ButtonSuccess}" />
+                                            
+                                            <Button x:Name="btnCancelReset" Grid.Row="2" Content="Cancel" Click="btnCancelReset_Click"
+                                                    Width="70" Height="32" Margin="0" Padding="0" FontSize="15"
+                                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                    materialDesign:ButtonAssist.CornerRadius="5"
+                                                    Style="{StaticResource ButtonInfo}" />
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
                     </Grid>
+                    
                 </StackPanel>
             </Border>
 
@@ -2928,20 +2889,6 @@
                     </Grid>
                 </StackPanel>
 
-                <Grid Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" >
-                    <Button x:Name="btnIconReset" Width="15" Height="15" Visibility="Collapsed"
-                            Margin="0,0,10,0" Padding="0" Panel.ZIndex="2"
-                            BorderThickness="0" Background="Transparent"
-                            BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                            Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                            Click="btnIconReset_Click" >
-                        <Button.Content>
-                            <materialDesign:PackIcon Kind="EncryptionReset" Width="15" Height="15" />
-                        </Button.Content>
-                    </Button>
-                </Grid>
             </Grid>
         </Grid>
     </materialDesign:Card>
