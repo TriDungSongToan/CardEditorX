@@ -23,7 +23,6 @@ using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
 
-
 namespace CardEditor.Views
 {
     /// <summary>
@@ -238,6 +237,50 @@ namespace CardEditor.Views
         public BulkObservableCollection<CardMasterDuel> CardsMasterDuel { get; } = new();
         #endregion
 
+        #region Regulation API
+        private string _regulationAPIURL = string.Empty;
+        public string RegulationAPIURL
+        {
+            get => _regulationAPIURL;
+            set
+            {
+                if (_regulationAPIURL != value)
+                {
+                    _regulationAPIURL = value;
+                    OnPropertyChanged();
+                    FetchBanListRegulationAPICommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+        private string _banListName = string.Empty;
+        public string BanListName
+        {
+            get => _banListName;
+            set
+            {
+                if(_banListName != value)
+                {
+                    _banListName = value;
+                    OnPropertyChanged();
+                    FetchBanListRegulationAPICommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+        private bool _whiteList = false;
+        public bool WhiteList
+        {
+            get => _whiteList;
+            set
+            {
+                if (_whiteList != value)
+                {
+                    _whiteList = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        #endregion
+
         #endregion
 
         #region Commands
@@ -296,6 +339,11 @@ namespace CardEditor.Views
         public RelayCommand BrowseJSONMDAPIFilePathCommand { get; set; }
         public RelayCommand LoadJSONFileMDAPICommand { get; set; }
         public RelayCommand ExportCardRarityListCommand { get; set; }
+        #endregion
+
+        #region Regulation API
+        public RelayCommand GetRegulationURLCommand { get; set; }
+        public RelayCommand FetchBanListRegulationAPICommand { get; set; }
         #endregion
 
         public RelayCommand CancelCommand { get; set; }
@@ -373,6 +421,11 @@ namespace CardEditor.Views
             ExportCardRarityListCommand = new RelayCommand(async _ => await ExportCardRarityList());
             #endregion
 
+            #region Regulation API
+            GetRegulationURLCommand = new RelayCommand(_ => GetRegulationURL());
+            FetchBanListRegulationAPICommand = new RelayCommand(async _ => await FetchBanListRegulationAPI(), _ => CanFetchBanListRegulationAPI());
+            #endregion
+
             CancelCommand = new RelayCommand(_ => this.Close());
         }
         private void InitializeContentMenu()
@@ -387,6 +440,8 @@ namespace CardEditor.Views
             ControlContextMenuService.Attach(txtSpecialCharFolderPath);
             ControlContextMenuService.Attach(txtMasterDuelAPIURL);
             ControlContextMenuService.Attach(txtMDAPIJsonFilePath);
+            ControlContextMenuService.Attach(txtregulationAPIURL);
+            ControlContextMenuService.Attach(txtregulationName);
         }
         #endregion
 
@@ -1521,7 +1576,7 @@ namespace CardEditor.Views
             {
                 CurrentPage = p.page;
                 TotalCardsLoaded = p.totalCards;
-                StatusText = $"Đang tải trang {p.page}... ({p.totalCards} card)";
+                StatusText = $"Loading page {p.page}... ({p.totalCards} card)";
             });
 
             try
@@ -1531,35 +1586,38 @@ namespace CardEditor.Views
 
                 if (!loadOk)
                 {
-                    StatusText = $"Lỗi: {loadMsg}";
-                    MessageBox.Show(loadMsg, "Lỗi tải dữ liệu",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    StatusText = $"Error: {loadMsg}";
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"Data loading error: {loadMsg}", new[] { CMess.ok.ToText() });
                     return;
                 }
 
                 var (saveOk, saveMsg) = await _masterDuelApi.SaveCardMasterDuelList(cardsList, _cachePath);
 
-                StatusText = saveOk ? saveMsg : $"Tải OK nhưng lưu lỗi: {saveMsg}";
-
-                MessageBox.Show(saveMsg, saveOk ? "Thành công" : "Lỗi",
-                    MessageBoxButton.OK,
-                    saveOk ? MessageBoxImage.Information : MessageBoxImage.Error);
-
                 if (saveOk)
                 {
+                    StatusText = saveMsg;
                     CardsMasterDuel.Clear();
                     CardsMasterDuel.AddRange(cardsList);
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        "Save File Successfully!", new[] { CMess.ok.ToText() });
+                }
+                else
+                {
+                    StatusText = $"Error saving list: {saveMsg}";
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"Error saving list: {saveMsg}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (OperationCanceledException)
             {
-                StatusText = "Đã hủy.";
+                StatusText = "Cancelled.";
             }
             catch (Exception ex)
             {
-                StatusText = $"Lỗi: {ex.Message}";
-                MessageBox.Show(ex.Message, "Lỗi tải dữ liệu",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                StatusText = $"Error: {ex.Message}";
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
             finally
             {
@@ -1633,6 +1691,51 @@ namespace CardEditor.Views
         }
         #endregion
 
+        #endregion
+
+        #region Regulation API
+        private void GetRegulationURL()
+        {
+            string URL = ConfigurationManager.AppSettings["regulationURL"];
+
+            if (string.IsNullOrWhiteSpace(URL)) return;
+
+            BrowserURL.NavigateBrowser(URL);
+        }
+        private async Task FetchBanListRegulationAPI()
+        {
+            string filePath = FileDiaLogHelper.SaveBanList();
+            if (string.IsNullOrEmpty(filePath)) return;
+
+            IRegulationInterface regulation = new RegulationService();
+
+            var resultLoad = await regulation.LoadRegulation(RegulationAPIURL);
+            if (!resultLoad.Success)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Read.ToText(), "API")} {resultLoad.Error}",
+                    new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            var resultSave = await regulation.CreateBanListRegulation(resultLoad.Data, BanListName, WhiteList, filePath);
+            if (!resultSave.Success)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.BanList.ToText())} {resultSave.Error}",
+                    new[] { CMess.ok.ToText() });
+            }
+            else
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.BanList.ToText()),
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+        private bool CanFetchBanListRegulationAPI()
+        {
+            return !string.IsNullOrWhiteSpace(RegulationAPIURL) && !string.IsNullOrWhiteSpace(BanListName);
+        }
         #endregion
 
         #endregion

@@ -91,17 +91,17 @@ namespace CardEditor.Services
                 }
                 catch (Exception ex)
                 {
-                    return (false, $"Lỗi mạng tại trang {page}: {ex.Message}", allCards);
+                    return (false, $"Network error on the page {page}: {ex.Message}", allCards);
                 }
 
                 if (response is null)
-                    return (false, $"Hết retry tại trang {page}", allCards);
+                    return (false, $"No more retries on the page {page}", allCards);
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                     break; // hết trang, coi như thành công
 
                 if (!response.IsSuccessStatusCode)
-                    return (false, $"HTTP {(int)response.StatusCode} tại trang {page}", allCards);
+                    return (false, $"HTTP {(int)response.StatusCode} on page {page}", allCards);
 
                 List<CardMasterDuel>? pageCards;
 
@@ -115,7 +115,7 @@ namespace CardEditor.Services
                 }
                 catch (JsonException ex)
                 {
-                    return (false, $"Lỗi parse JSON tại trang {page}: {ex.Message}", allCards);
+                    return (false, $"JSON parse error on page {page}: {ex.Message}", allCards);
                 }
 
                 if (pageCards is null || pageCards.Count == 0) break;
@@ -127,7 +127,7 @@ namespace CardEditor.Services
                 await Task.Delay(200, ct);
             }
 
-            return (true, $"Đã tải {allCards.Count} card từ {page - 1} trang", allCards);
+            return (true, $"Loaded {allCards.Count} cards from {page - 1} pages", allCards);
         }
         public async Task<(bool Success, string Message)> SaveCardMasterDuelList(
             IEnumerable<CardMasterDuel> cardList, string filePath)
@@ -137,7 +137,7 @@ namespace CardEditor.Services
                 var cards = cardList as List<CardMasterDuel> ?? cardList.ToList();
 
                 if (cards.Count == 0)
-                    return (false, "Danh sách card rỗng, không lưu.");
+                    return (false, "Card list is Empty");
 
                 string? dir = Path.GetDirectoryName(filePath);
                 if (!string.IsNullOrEmpty(dir))
@@ -162,11 +162,11 @@ namespace CardEditor.Services
 
                 File.Move(tempPath, filePath);
 
-                return (true, $"Đã lưu {cards.Count} card vào {filePath}");
+                return (true, $"Saved {cards.Count} cards to {filePath}");
             }
             catch (Exception ex)
             {
-                return (false, $"Lỗi khi lưu file: {ex.Message}");
+                return (false, ex.Message);
             }
         }
     }

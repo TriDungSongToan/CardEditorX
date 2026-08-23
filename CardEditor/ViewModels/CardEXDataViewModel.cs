@@ -35,54 +35,49 @@ namespace CardEditor.ViewModels
             IsLoadedScript = false;
         }
 
-        public async Task LoadCardsEXAsync()
+        public async Task<(bool Success, string Message)> LoadCardsEXAsync()
         {
-            if (IsLoadedCard) return;
+            if (IsLoadedCard) return (true, string.Empty);
 
-            await Task.Run(async () =>
+            var (success, allCards, allPaths, message) = await LoadDataServices.LoadAllCdbFiles();
+            if (!success) return (false, message);
+
+            _idToAlias = new Dictionary<ulong, List<ulong>>();
+            _aliasToId = new Dictionary<ulong, ulong>();
+
+            foreach (var item in allCards)
             {
-                var (allCards, allPaths, message) = await LoadDataServices.LoadAllCdbFiles();
-                if (allCards == null)
+                if (item.alias == 0) continue;
+
+                // ID -> Aliases
+                if (!_idToAlias.TryGetValue(item.id, out var aliases))
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                    return;
+                    aliases = new List<ulong>();
+                    _idToAlias[item.id] = aliases;
                 }
 
-                _idToAlias = new Dictionary<ulong, List<ulong>>();
-                _aliasToId = new Dictionary<ulong, ulong>();
-                foreach (var item in allCards)
-                {
-                    if (item.alias == 0) continue;
+                aliases.Add(item.alias);
 
-                    // ID -> Aliases
-                    if (!_idToAlias.TryGetValue(item.id, out var aliases))
-                    {
-                        aliases = new List<ulong>();
-                        _idToAlias[item.id] = aliases;
-                    }
+                // Alias -> ID
+                _aliasToId[item.alias] = item.id;
+            }
 
-                    aliases.Add(item.alias);
+            var rareDict = RareRawDataViewModel.Instance.RareCardsData;
+            var genesysDict = GenesysRawDataViewModel.Instance.GenesysCardsData;
 
-                    // Alias -> ID
-                    _aliasToId[item.alias] = item.id;
-                }
-
-                var rareDict = RareRawDataViewModel.Instance.RareCardsData;
-                var genesysDict = GenesysRawDataViewModel.Instance.GenesysCardsData;
-
-                // Merge data
-                var cardEXList = allCards.Select(card => new CardEX
-                {
-                    BaseCard  = card,
-                    Rare = rareDict.TryGetValue(card.id, out var rareCard) ? rareCard.rare : 0,
-                    GPoint = genesysDict.TryGetValue(card.id, out var gCard) ? gCard.GPoints : 0
-                });
-
-                _allCards = cardEXList.ToDictionary(c => c.ID);
-                CardPaths = allPaths;
+            // Merge data
+            var cardEXList = allCards.Select(card => new CardEX
+            {
+                BaseCard = card,
+                Rare = rareDict.TryGetValue(card.id, out var rareCard) ? rareCard.rare : 0,
+                GPoint = genesysDict.TryGetValue(card.id, out var gCard) ? gCard.GPoints : 0
             });
+
+            _allCards = cardEXList.ToDictionary(c => c.ID);
+            CardPaths = allPaths;
+
             IsLoadedCard = true;
+            return (true, string.Empty);
         }
         public async Task LoadScriptAsync()
         {
@@ -112,14 +107,12 @@ namespace CardEditor.ViewModels
 
             paths.Add(filePath);
         }
-        public bool TryGetCard(ulong id, out CardEX card)
+        public CardEX TryGetCard(ulong id)
         {
-            if (_allCards != null)
-            {
-                return _allCards.TryGetValue(id, out card);
-            }
-            card = null;
-            return false;
+            if (_allCards == null) return null;
+
+            return _allCards.TryGetValue(id, out var card)
+                ? card : null;
         }
         public IReadOnlyList<string> TryGetCardPath(ulong id)
         {

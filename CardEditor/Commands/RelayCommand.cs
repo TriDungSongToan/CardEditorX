@@ -9,15 +9,20 @@ namespace CardEditor.Commands
         private readonly Func<object, Task> _executeAsync;
         private readonly Func<object, bool> _canExecute;
 
-        public RelayCommand(Func<object, Task> executeAsync, Func<object, bool> canExecute = null)
+        public RelayCommand(
+            Func<object, Task> executeAsync,
+            Func<object, bool> canExecute = null)
         {
-            _executeAsync = executeAsync;
+            _executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
             _canExecute = canExecute;
         }
 
-        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
+        public RelayCommand(
+            Action<object> execute,
+            Func<object, bool> canExecute = null)
         {
-            _executeAsync = (param) =>
+            if (execute == null) throw new ArgumentNullException(nameof(execute));
+            _executeAsync = param =>
             {
                 execute(param);
                 return Task.CompletedTask;
@@ -29,13 +34,18 @@ namespace CardEditor.Commands
 
         public async void Execute(object parameter) => await _executeAsync(parameter);
 
-        public event EventHandler CanExecuteChanged
+        public event EventHandler CanExecuteChanged;
+
+        //public event EventHandler CanExecuteChanged
+        //{
+        //    add => CommandManager.RequerySuggested += value;
+        //    remove => CommandManager.RequerySuggested -= value;
+        //}
+
+        //public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested();
+        public void RaiseCanExecuteChanged()
         {
-            add => CommandManager.RequerySuggested += value;
-            remove => CommandManager.RequerySuggested -= value;
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
-
-        public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested();
-
     }
 }

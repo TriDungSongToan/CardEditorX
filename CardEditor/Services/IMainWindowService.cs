@@ -32,6 +32,7 @@ namespace CardEditor.Services
         void ImportDataCreateNewDataEdit(IEnumerable<CardEditor.Models.Card> importedCards);
         void ImportDataCreateNewBanListEdit(IEnumerable<CardEditor.Models.CardBanList> importedCards);
 
+        void SettingCommand();
 
         Task OpenKonamiDB(ulong id, string name);
         Task OpenYugipedia(ulong id, string name);

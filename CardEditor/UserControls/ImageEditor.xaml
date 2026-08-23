@@ -13,7 +13,8 @@
     <Grid x:Name="RootGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
           DragOver="RootGrid_DragOver" AllowDrop="True" >
 
-        <webView:WebView2 x:Name="WebViewControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        <webView:WebView2 x:Name="WebViewControl"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 
 
         <Border Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >

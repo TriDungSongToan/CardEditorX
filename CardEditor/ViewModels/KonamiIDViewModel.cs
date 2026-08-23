@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Data.SQLite;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -15,8 +16,10 @@ namespace CardEditor.ViewModels
         public static KonamiIDViewModel Instance => _instance.Value;
 
         private Dictionary<ulong, int> _officialMapID = new();
+        private Dictionary<int, List<ulong>> _reverseOfficialMapID = new();
         private Dictionary<string, int> _rushMapID = new();
         public IReadOnlyDictionary<ulong, int> OfficialMapID => _officialMapID;
+        public IReadOnlyDictionary<int, List<ulong>> ReverseOfficialMapID => _reverseOfficialMapID;
         public IReadOnlyDictionary<string, int> RushMapID => _rushMapID;
 
         public bool IsLoaded = false;
@@ -64,6 +67,9 @@ namespace CardEditor.ViewModels
                             }
                         }
                     }
+
+                    _reverseOfficialMapID = _officialMapID.GroupBy(kv => kv.Value)
+                        .ToDictionary(g => g.Key, g => g.Select(kv => kv.Key).ToList());
                 }
                 IsLoaded = true;
                 return (true, string.Empty);
@@ -91,6 +97,8 @@ namespace CardEditor.ViewModels
         {
             _officialMapID?.Clear();
             _officialMapID = null;
+            _reverseOfficialMapID?.Clear();
+            _reverseOfficialMapID = null;
             _rushMapID?.Clear();
             _rushMapID = null;
         }

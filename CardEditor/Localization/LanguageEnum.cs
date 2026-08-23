@@ -113,7 +113,8 @@ namespace CardEditor.Localization
         YDKE = 0x12d,           //YDKE
 
         noSave = 0x12e,         //Don't Save
-        CopyInfo = 0x12f,       //Copy Info
+        noAsk = 0x12f,          //Don’t ask again
+        CopyInfo = 0x130,       //Copy Info
         #endregion
 
         #endregion
@@ -622,7 +623,7 @@ namespace CardEditor.Localization
         confirmSaveBlank = 0x70e,       //Are you sure you want to save a blank file?
         confirmUnregisterReg = 0x70f,   //Are you sure you want to unregister the CardEditorX file types from the Windows Registry?
         quesDownloadUpdate = 0x710,     //Update Available, dowload it now?
-        quesDownloadCardData = 0x711,   //Data source is missing or invalid, download now?
+        quesDownloadCardImage = 0x711,  //Download Card Resource Pack now?
         confirmWriteData = 0x712,       //How would you like to handle the selected data?
         noUpdate = 0x713,               //No updates found.
         updateCompe = 0x714,            //Update Complete!

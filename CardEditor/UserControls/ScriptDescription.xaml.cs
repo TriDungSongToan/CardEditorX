@@ -1,4 +1,5 @@
 ﻿using System.Windows.Controls;
+using CardEditor.Generator;
 using CardEditor.ViewModels;
 
 namespace CardEditor.UserControls
@@ -8,6 +9,8 @@ namespace CardEditor.UserControls
     /// </summary>
     public partial class ScriptDescription : UserControl
     {
+        private HyperlinkElement _hyperlinkGenerator;
+
         public ScriptDescription()
         {
             InitializeComponent();
@@ -16,11 +19,36 @@ namespace CardEditor.UserControls
             ScriptDescriptionPane.Options.EnableHyperlinks = true;
             ScriptDescriptionPane.Options.EnableEmailHyperlinks = false;
             ScriptDescriptionPane.IsHitTestVisible = true;
+
+            DataContextChanged += ScriptDescription_DataContextChanged;
+            ConfigureHyperlinks(DataContext as ScriptDescriptionViewModel);
         }
 
 
         public ScriptDescriptionViewModel ViewModel
             => DataContext as ScriptDescriptionViewModel;
+
+        private void ScriptDescription_DataContextChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+        {
+            ConfigureHyperlinks(e.NewValue as ScriptDescriptionViewModel);
+        }
+        private void ConfigureHyperlinks(ScriptDescriptionViewModel viewModel)
+        {
+            if (_hyperlinkGenerator != null)
+            {
+                ScriptDescriptionPane.TextArea.TextView.ElementGenerators.Remove(_hyperlinkGenerator);
+                _hyperlinkGenerator = null;
+            }
+
+            if (viewModel == null) return;
+
+            _hyperlinkGenerator = new HyperlinkElement
+            {
+                OnLinkClicked = url => viewModel.LinkClickedCommand.Execute(url)
+            };
+
+            ScriptDescriptionPane.TextArea.TextView.ElementGenerators.Add(_hyperlinkGenerator);
+        }
 
         //public void SetSymbol(CompletionSymbol symbol)
         //{

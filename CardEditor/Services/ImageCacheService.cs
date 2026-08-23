@@ -95,7 +95,9 @@ namespace CardEditor.Services
 
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    MessageBox.Show($"Error Load Image: {error}", "Error", MessageBoxButton.OK);
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.Image.ToText())} {error}",
+                        new[] { CMess.ok.ToText() });
                 }
 
                 _isLoaded = true;

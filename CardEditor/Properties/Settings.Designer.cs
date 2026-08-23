@@ -70,5 +70,17 @@ namespace CardEditor.Properties {
                 this["EncryptedPasswordHash"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AskDownLoadCardImage {
+            get {
+                return ((bool)(this["AskDownLoadCardImage"]));
+            }
+            set {
+                this["AskDownLoadCardImage"] = value;
+            }
+        }
     }
 }

@@ -12,7 +12,9 @@ using CardEditor.Manager;
 using CardEditor.Helpers;
 using CardEditor.Services;
 using CardEditor.ViewModels;
+using CardEditor.Localization;
 using TextBox = System.Windows.Controls.TextBox;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor
 {
@@ -410,19 +412,19 @@ namespace CardEditor
 
             if (currentHash == null || !PasswordHasher.Verify(OldPassWord, currentHash))
             {
-                OldPassWordResult = "Mật khẩu cũ không đúng!";
+                OldPassWordResult = "Old password is incorrect!";
                 return;
             }
 
             if (NewPassWord != ConfirmPassWord)
             {
-                ConfirmpasswordResult = "Xác nhận Mật khẩu không khớp";
+                ConfirmpasswordResult = "Password confirmation does not match";
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(NewPassWord) || NewPassWord.Length < 4)
             {
-                NewPassWordResult = "Mật khẩu mới phải có ít nhất 4 ký tự!";
+                NewPassWordResult = "New password must be at least 4 characters long!";
                 return;
             }
 
@@ -434,8 +436,8 @@ namespace CardEditor
             NewPassWord = string.Empty;
             ConfirmPassWord = string.Empty;
 
-            MessageBox.Show("Đổi mật khẩu thành công!", "Thông báo",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                "Password changed successfully!", new[] { CMess.ok.ToText() });
 
             grToggleButtonDev.IsEnabled = true;
             blReSetPass.Visibility = Visibility.Collapsed;

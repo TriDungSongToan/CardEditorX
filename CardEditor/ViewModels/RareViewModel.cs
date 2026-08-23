@@ -1926,7 +1926,7 @@ namespace CardEditor.ViewModels
                 {
                     Title = CMess.error.ToText(),
                     IconType = CMSG.MessageBoxIconType.Error,
-                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.error.ToText(), CMess.cardrare.ToText())} {ex.Message}",
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Sort.ToText(), CMess.cardrare.ToText())} {ex.Message}",
                     Buttons = new[] { CMess.ok.ToText() },
                     ResponseSource = null
                 };

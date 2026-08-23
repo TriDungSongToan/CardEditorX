@@ -83,6 +83,25 @@ namespace CardEditor.ViewModels
                 LoadSetting();
             }
         }
+        private void UnSubscribeEvent()
+        {
+            userSetting.PropertyChanged -= UserSetting_PropertyChanged;
+            displaySetting.PropertyChanged -= DisplaySetting_PropertyChanged;
+            dataHandlingSetting.PropertyChanged -= DataHandlingSetting_PropertyChanged;
+            imageSetting.PropertyChanged -= ImageSetting_PropertyChanged;
+            codeEditSetting.PropertyChanged -= CodeEditSetting_PropertyChanged;
+            deckEditSetting.PropertyChanged -= DeckEditSetting_PropertyChanged;
+        }
+        private void InitializeEvent()
+        {
+            userSetting.PropertyChanged += UserSetting_PropertyChanged;
+            displaySetting.PropertyChanged += DisplaySetting_PropertyChanged;
+            dataHandlingSetting.PropertyChanged += DataHandlingSetting_PropertyChanged;
+            imageSetting.PropertyChanged += ImageSetting_PropertyChanged;
+            codeEditSetting.PropertyChanged += CodeEditSetting_PropertyChanged;
+            deckEditSetting.PropertyChanged += DeckEditSetting_PropertyChanged;
+        }
+
         private void InitializeCommands()
         {
             AddSortItemCommand = new RelayCommand(AddSortItem);
@@ -230,6 +249,8 @@ namespace CardEditor.ViewModels
         }
         private void LoadSetting()
         {
+            UnSubscribeEvent();
+
             userSetting = ConfigViewModel.Instance.userSetting.Clone();
             displaySetting = ConfigViewModel.Instance.displaySetting.Clone();
             dataHandlingSetting = ConfigViewModel.Instance.dataHandlingSetting.Clone();
@@ -243,6 +264,7 @@ namespace CardEditor.ViewModels
 
             string encryptedDevelop = ConfigViewModel.Instance.DeveloperEncrypted;
             // Developer = SettingsEncryption.DecryptBoolSetting(encryptedDevelop);
+            InitializeEvent();
         }
 
         private void AddSortItem(object parameter)
@@ -553,6 +575,8 @@ namespace CardEditor.ViewModels
                 !Directory.Exists(imageSetting.OutPutFolder))
                 return false;
 
+            if (imageSetting.SelectedCardMaker == null) return false;
+
             if (imageSetting.StampPosition < 0 ||
                 string.IsNullOrEmpty(imageSetting.BackgroundArt) ||
                 string.IsNullOrEmpty(imageSetting.Foild) ||
@@ -626,6 +650,31 @@ namespace CardEditor.ViewModels
         }
 
         #region Event
+        private void DeckEditSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveSetting?.RaiseCanExecuteChanged();
+        }
+        private void CodeEditSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveSetting?.RaiseCanExecuteChanged();
+        }
+        private void ImageSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveSetting?.RaiseCanExecuteChanged();
+        }
+        private void DataHandlingSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveSetting?.RaiseCanExecuteChanged();
+        }
+        private void DisplaySetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveSetting?.RaiseCanExecuteChanged();
+        }
+        private void UserSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveSetting?.RaiseCanExecuteChanged();
+        }
+
         public event Action CallConfigChanged;
         public event Func<string, (bool, string)> RequestOpenBrowseDialog;
         public event EventHandler<MessageBoxRequest> MessageBoxRequested;
@@ -644,6 +693,13 @@ namespace CardEditor.ViewModels
         #region IDisposable
         public void Dispose()
         {
+            userSetting.PropertyChanged -= UserSetting_PropertyChanged;
+            displaySetting.PropertyChanged -= DisplaySetting_PropertyChanged;
+            dataHandlingSetting.PropertyChanged -= DataHandlingSetting_PropertyChanged;
+            imageSetting.PropertyChanged -= ImageSetting_PropertyChanged;
+            codeEditSetting.PropertyChanged -= CodeEditSetting_PropertyChanged;
+            deckEditSetting.PropertyChanged -= DeckEditSetting_PropertyChanged;
+
             AddSortItemCommand = null;
             RemoveSortItemCommand = null;
 

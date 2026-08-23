@@ -315,6 +315,7 @@ namespace CardEditor.ViewModels
                 return (false, ex.Message);
             }
         }
+
         public (List<CardBanList> banned, List<CardBanList> limited,
             List<CardBanList> semiLimited, List<CardBanList> unLimited)
         SplitCardList(Dictionary<ulong, CardBanList> cardList)

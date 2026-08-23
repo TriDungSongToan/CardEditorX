@@ -89,7 +89,8 @@
 0x12d	YDKE
 
 0x12e	Không Lưu
-0x12f	Sao chép thông tin
+0x12f	Không hỏi lại
+0x130	Sao chép thông tin
 
 #=======Config=======#
 0x201	Cài đặt người dùng
@@ -578,7 +579,7 @@
 0x70e	Bạn có chắc chắn muốn lưu tệp trống?
 0x70f	Bạn có chắc chắn muốn hủy đăng ký các loại tệp CardEditorX khỏi Registry của Windows không?
 0x710	Đã có bản cập nhật, tải xuống ngay?
-0x711	Nguồn dữ liệu bị thiếu hoặc không hợp lệ, hãy tải xuống ngay?
+0x711	Tải xuống Gói tài nguyên thẻ ngay?
 0x712	Bạn muốn xử lý dữ liệu đã chọn như thế nào?
 0x713	Không tìm thấy bản cập nhật nào.
 0x714	Cập nhật hoàn tất!

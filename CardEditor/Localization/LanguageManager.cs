@@ -42,13 +42,15 @@ namespace CardEditor.Localization
                     using var stream = GetEmbeddedResourceStream("CardEditor.Localization.AppLanguage.txt");
                     if (stream != null)
                     {
-                        MessageBox.Show("Language file not found. Using default language file.\nYou may need to check for updates and restart application.",
-                            "Language File Fallback", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        CMSG.Show("Language File Fallback", CMSG.MessageBoxIconType.Warning,
+                            "Language file not found. Using default language file.\nYou may need to check for updates and restart application.",
+                            new[] { "OK" });
                         LoadFromStream(stream);
                     }
                     else
                     {
-                        MessageBox.Show("No language files found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        CMSG.Show("Error", CMSG.MessageBoxIconType.Error,
+                            "No language files found.", new[] { "OK" });
                         return;
                     }
                 }
@@ -57,7 +59,8 @@ namespace CardEditor.Localization
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading language file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CMSG.Show("Error", CMSG.MessageBoxIconType.Error,
+                    $"Error loading language file: {ex.Message}", new[] { "OK" });
             }
         }
 
@@ -70,7 +73,8 @@ namespace CardEditor.Localization
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading language file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CMSG.Show("Error", CMSG.MessageBoxIconType.Error,
+                    $"Error loading language file: {ex.Message}", new[] { "OK" });
             }
         }
         private void LoadFromFile(string filePath)
@@ -180,7 +184,8 @@ namespace CardEditor.Localization
                         message += $"   - {item.Name}\n";
                     message += "\n";
                 }
-                MessageBox.Show(message, "Enum Duplicate Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CMSG.Show("Enum Duplicate Error", CMSG.MessageBoxIconType.Error,
+                    message, new[] { "OK" });
             }
         }
         private static Stream GetEmbeddedResourceStream(string resourceName) =>

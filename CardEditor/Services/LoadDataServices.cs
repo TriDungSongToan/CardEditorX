@@ -77,10 +77,12 @@ namespace CardEditor.Services
                 }
             });
         }
-        public static async Task<(List<CardEditor.Models.Card>, Dictionary<ulong, List<string>>, string)> LoadAllCdbFiles()
+
+        public static async Task<(bool Success, List<CardEditor.Models.Card> Cards,
+            Dictionary<ulong, List<string>> Paths, string Message)> LoadAllCdbFiles()
         {
             string dataSourcePath = CardEditor.ViewModels.ConfigViewModel.Instance.userSetting.DataSource;
-            if (!Directory.Exists(dataSourcePath)) return (null, null, $"{CMess.dataSourceErr.ToText()} {dataSourcePath}");
+            if (!Directory.Exists(dataSourcePath)) return (false, null, null, $"{CMess.dataSourceErr.ToText()} {dataSourcePath}");
 
             var allCards = new List<CardEditor.Models.Card>(25000);
             var cardPaths = new Dictionary<ulong, List<string>>(25000);
@@ -113,11 +115,11 @@ namespace CardEditor.Services
                         System.Diagnostics.Debug.WriteLine($"Error loading {cdbFile}: {ex.Message}");
                     }
                 }
-                return (allCards, cardPaths, string.Empty);
+                return (true, allCards, cardPaths, string.Empty);
             }
             catch (Exception ex)
             {
-                return (null, null, ex.Message);
+                return (false, null, null, ex.Message);
             }
         }
         public static async Task<(List<CardEditor.Models.Card>, string)> LoadDatabaseCard(string filePath)

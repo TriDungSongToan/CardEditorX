@@ -26,14 +26,14 @@ using CardEditor.Views;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Manager;
-using CardEditor.Services;
-using CardEditor.ViewModels;
 using CardEditor.Commands;
+using CardEditor.Services;
 using CardEditor.ImageGene;
+using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CardEditor.UserControls;
-using CardAppContext = CardEditor.Models.AppContext;
 using CMess = CardEditor.Localization.Language;
+using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor
 {
@@ -308,12 +308,6 @@ namespace CardEditor
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{CMess.errorOcc.ToText()} {messageGenesys}", new[] { CMess.ok.ToText() });
             }
-            var (resultSeries, messageSeries) = GeneraImageViewModel.Instance.LoadSeriesList();
-            if (!resultSeries)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {messageSeries}", new[] { CMess.ok.ToText() });
-            }
             var (resultPenLang, messagePenLang) = await PenLanguageViewModel.Instance.LoadAsync();
             if (!resultPenLang)
             {
@@ -326,6 +320,7 @@ namespace CardEditor
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{CMess.errorOcc.ToText()} {messageCredit}", new[] { CMess.ok.ToText() });
             }
+            LoadSeriesImage();
         }
         private void LoadBGImage()
         {
@@ -422,28 +417,31 @@ namespace CardEditor
                 string encryptedDevelop = ConfigViewModel.Instance.DeveloperEncrypted;
                 isDeveloper = SettingsEncryption.DecryptBoolSetting(encryptedDevelop);
 
-                string scrapiyardPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "scrapiyard");
-                string CardDataPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "CardData");
+                //string scrapiyardPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "scrapiyard");
+                //string CardDataPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "CardData");
 
-                if (isDeveloper)
-                {
-                    if (!(Directory.Exists(scrapiyardPath) && GitHubService.IsGitRepository(scrapiyardPath) &&
-                    Directory.Exists(CardDataPath) && GitHubService.IsGitRepository(CardDataPath)))
-                    {
-                        MessageBox.Show("Scrapiyard or CardData source is missing or does not exist, Check Update and restart application.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                }
-                else
-                {
-                    if (!Directory.Exists(CardDataPath) && GitHubService.IsGitRepository(CardDataPath))
-                    {
-                        MessageBox.Show("CardData source is missing or does not exist, Check Update and restart application.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                }
+                //if (isDeveloper)
+                //{
+                //    if (!(Directory.Exists(scrapiyardPath) && GitHubService.IsGitRepository(scrapiyardPath) &&
+                //    Directory.Exists(CardDataPath) && GitHubService.IsGitRepository(CardDataPath)))
+                //    {
+                //        CMSG.Show("Warning", CMSG.MessageBoxIconType.Warning,
+                //            "Scrapiyard or CardData source is missing or does not exist, Check Update and restart application.", new[] { "OK" });
+                //    }
+                //}
+                //else
+                //{
+                //    if (!Directory.Exists(CardDataPath) && GitHubService.IsGitRepository(CardDataPath))
+                //    {
+                //        CMSG.Show("Warning", CMSG.MessageBoxIconType.Warning,
+                //            "CardData source is missing or does not exist, Check Update and restart application.", new[] { "OK" });
+                //    }
+                //}
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Unexpected error in CheckGit: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CMSG.Show("Error", CMSG.MessageBoxIconType.Error,
+                    $"Unexpected error in CheckGit: {ex.Message}", new[] { "OK" });
             }
         }
         private void LoadChatButton()
@@ -601,7 +599,80 @@ namespace CardEditor
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading images: {ex.Message}", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.Image.ToText())} {ex.Message}",
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+        private async void LoadSeriesImage()
+        {
+            string cardImageFolderPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "CardImage");
+
+            if (!System.IO.Directory.Exists(cardImageFolderPath))
+            {
+                if (!PropertiesSettingService.GetBoolSetting("AskDownLoadCardImage")) return;
+
+                int choose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.quesDownloadCardImage.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.noAsk.ToText() });
+                if (choose == 2)
+                {
+                    Properties.Settings.Default.AskDownLoadCardImage = false;
+                    Properties.Settings.Default.Save();
+                    return;
+                }
+                else if (choose == 1)
+                {
+                    return;
+                }
+                else if (choose == 0)
+                {
+                    try
+                    {
+                        Mouse.OverrideCursor = Cursors.Wait;
+                        string CardImageURL = ConfigurationManager.AppSettings["CardImageURL"];
+                        string CardImagePath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "CardImage");
+
+                        var downloader = new GithubReleaseDownloader();
+                        var (success, message) = await downloader.DownloadGithubRelease(CardImageURL, "CardImage.zip", CardImagePath);
+
+                        if (success)
+                        {
+                            Mouse.OverrideCursor = null;
+                            CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                                $"[Card Image] {CMess.updateCompe.ToText()}", new[] { CMess.ok.ToText() });
+                        }
+                        else
+                        {
+                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                                $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.Data.ToText())} {message}"
+                                , new[] { CMess.ok.ToText() });
+                            return;
+                        }
+                    }
+                    catch (HttpRequestException netEx)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                            $"Network connection error or unable to download from GitHub:\n{netEx.Message}", new[] { CMess.ok.ToText() });
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                            $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                        return;
+                    }
+                    finally
+                    {
+                        Mouse.OverrideCursor = null;
+                    }
+                }
+            }
+
+            var (resultSeries, messageSeries) = GeneraImageViewModel.Instance.LoadSeriesList();
+            if (!resultSeries)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {messageSeries}", new[] { CMess.ok.ToText() });
             }
         }
 
@@ -1959,7 +2030,7 @@ namespace CardEditor
         {
             SettingCommand();
         }
-        private void SettingCommand()
+        public void SettingCommand()
         {
             ConfigEditor configEditor = new ConfigEditor();
             configEditor.ShowInTaskbar = false;
@@ -3957,391 +4028,14 @@ namespace CardEditor
         #endregion
 
         #region Devrloper
-        private void ListSetCodeEDO_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string filePath = FileDiaLogHelper.OpenLua();
-
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    Archetype.GetEDOArchetypeList(filePath);
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private void ListSetCodeMDPro_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string filePath = FileDiaLogHelper.OpenConf("MDPro Archetype");
-
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    Archetype.GetMDProArchetypeList(filePath);
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-
-        private void menuUpdateScrapiyard_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                // Đọc URL của các kho Git scrapiyard từ app.config
-                string scrapiyardURL = ConfigurationManager.AppSettings["scrapiyardURL"];
-                string scrapiyardPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "scrapiyard");
-
-                // Kiểm tra kho Git 'scrapiyard'
-                if (!GitHubService.IsGitRepository(scrapiyardPath))
-                {
-                    var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                        "Scrapiyard folder is not a valid Git repository. Cloning repository now?", new[] { CMess.yes.ToText(), CMess.no.ToText() });
-                    if (result == 0)
-                        GitHubService.CloneRepository(scrapiyardURL, scrapiyardPath);
-                }
-                else
-                {
-                    if (GitHubService.CheckForUpdates(scrapiyardPath))
-                    {
-
-                        var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                            "Updated version is available for Scrapiyard, download it?", new[] { CMess.yes.ToText(), CMess.no.ToText() });
-                        if (result == 0)
-                        {
-                            GitHubService.DownloadAndUpdate(scrapiyardPath);
-                        }
-                    }
-                    else
-                    {
-                        CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                            "No updates found for Scrapiyard.", new[] { CMess.ok.ToText() });
-                    }
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private void exportScrapiyard_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string scrapiyardPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "scrapiyard");
-                string functionResultPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "functions.txt");
-                string constantResultPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "constants.txt");
-                if (!File.Exists(functionResultPath))
-                {
-                    using (File.Create(functionResultPath)) { }
-                }
-                if (File.Exists(constantResultPath))
-                {
-                    using (File.Create(constantResultPath)) { }
-                }
-
-                ScrapiData.GetFunctionsData(System.IO.Path.Combine(scrapiyardPath, "api", "functions"), functionResultPath);
-                ScrapiData.GetConstantsData(System.IO.Path.Combine(scrapiyardPath, "api", "constants"), constantResultPath);
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification, CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private void exportFunctions_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string filePath = FileDiaLogHelper.SaveText();
-
-                if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
-                {
-                    string scrapiyardPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "scrapiyard");
-                    string functionResultPath = filePath;
-                    if (!File.Exists(functionResultPath))
-                    {
-                        try
-                        {
-                            using (File.Create(functionResultPath)) { }
-                        }
-                        catch (Exception ex)
-                        {
-                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                                $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                            // return;
-                        }
-                    }
-                    ScrapiData.GetFunctionsData(System.IO.Path.Combine(scrapiyardPath, "api", "functions"), functionResultPath);
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private void exportconstants_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string filePath = FileDiaLogHelper.SaveText();
-
-                if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
-                {
-                    string scrapiyardPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "scrapiyard");
-                    string constantResultPath = filePath;
-                    if (File.Exists(constantResultPath))
-                    {
-                        try
-                        {
-                            using (File.Create(constantResultPath)) { }
-                        }
-                        catch (Exception ex)
-                        {
-                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                                $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                            // return;
-                        }
-                    }
-                    ScrapiData.GetConstantsData(System.IO.Path.Combine(scrapiyardPath, "api", "constants"), constantResultPath);
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private void exportScript_Click(object sender, RoutedEventArgs e)
-        {
-            int resultSelect = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                $"", new[] { "Constant", "Enum", "Function", "Namespace", "Tag", "Type", CMess.cancel.ToText() });
-
-            if (resultSelect == 0)
-            {
-                var (result, message) = ScriptData.ExportConstantsToJson();
-                if (result)
-                {
-                    CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                        $"Extract Constants Suc\n{message}", new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else if (resultSelect == 1)
-            {
-                var (result, message) = ScriptData.ExportEnumsToJson();
-                if (result)
-                {
-                    CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                        $"Extract Enums Suc\n{message}", new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else if (resultSelect == 2)
-            {
-                var (result, message) = ScriptData.ExportFunctionsToJson();
-                if (result)
-                {
-                    CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                        $"Extract Functions Suc\n{message}", new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else if (resultSelect == 3)
-            {
-                var (result, message) = ScriptData.ExportNameSpacesToJson();
-                if (result)
-                {
-                    CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                        $"Extract NameSpaces Suc\n{message}", new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else if (resultSelect == 4)
-            {
-                var (result, message) = ScriptData.ExportTagToJson();
-                if (result)
-                {
-                    CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                        $"Extract Tags Suc\n{message}", new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else if (resultSelect == 5)
-            {
-                var (result, message) = ScriptData.ExportTypesToJson();
-                if (result)
-                {
-                    CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                        $"Extract Types Suc\n{message}", new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else //6
-            {
-                string[] excludedHeaders = { "---!constant", "---!enum", "---!function", "---!namespace", "---!tag", "---!type" };
-
-                try
-                {
-                    string rootPath = FileDiaLogHelper.OpenFolder("Scrapiyard Folder");
-                    var count = Directory.EnumerateFiles(rootPath, "*.yml", SearchOption.AllDirectories)
-                        .Count(filePath =>
-                        {
-                            try
-                            {
-                                // Sử dụng StreamReader để chỉ đọc dòng đầu tiên (hiệu năng cao)
-                                using (var reader = new StreamReader(filePath))
-                                {
-                                    string firstLine = reader.ReadLine()?.Trim();
-                                    // Nếu dòng đầu tiên KHÔNG thuộc danh sách loại trừ thì đếm file này
-                                    return !excludedHeaders.Contains(firstLine);
-                                }
-                            }
-                            catch (IOException)
-                            {
-                                // Xử lý trường hợp file đang bị khóa bởi chương trình khác
-                                return false;
-                            }
-                        });
-                    Debug.WriteLine($"So fil khong hop le: {count}");
-                }
-                catch (Exception)
-                {
-
-                }
-            }
-        }
-
-        private async void exportTerminology_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string selectFolder = FileDiaLogHelper.OpenFolder("Terminology Folder");
-                if (!string.IsNullOrWhiteSpace(selectFolder))
-                {
-                    await Terminology.ExtractTerminology(selectFolder, CardAppContext.Instance.DataFolderPath);
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private async void speChar_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string selectFolder = FileDiaLogHelper.OpenFolder("Data source Folder (for Special Character)");
-                if (!string.IsNullOrWhiteSpace(selectFolder))
-                {
-                    await Terminology.ExtractSpecialCharacters(selectFolder, CardAppContext.Instance.DataFolderPath);
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private async void menuviewcodebox_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string filePath = FileDiaLogHelper.OpenLua("Special Characters File");
-                if (!string.IsNullOrWhiteSpace(filePath))
-                {
-                    string outPut = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "CodeBox.txt");
-                    await Terminology.ExtractUnicodeAsync(filePath, outPut);
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-
-        private void menuchkupdateYamlYugi_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                // Đọc URL của các kho Git scrapiyard từ app.config
-                string yamlyugiURL = ConfigurationManager.AppSettings["yamlyugiURL"];
-                string yamlyugiPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, "yaml-yugi");
-
-                // Kiểm tra kho Git 'scrapiyard'
-                if (!GitHubService.IsGitRepository(yamlyugiPath))
-                {
-                    var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                        "yaml-yugi folder is not a valid Git repository. Cloning repository now?", new[] { CMess.yes.ToText(), CMess.no.ToText() });
-                    if(result == 0) GitHubService.CloneRepository(yamlyugiURL, yamlyugiPath);
-                }
-                else
-                {
-                    if (GitHubService.CheckForUpdates(yamlyugiPath))
-                    {
-                        var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                            "Updated version is available for yaml-yugi, download it?", new[] { CMess.yes.ToText(), CMess.no.ToText() });
-                        if(result == 0) GitHubService.DownloadAndUpdate(yamlyugiPath);
-                    }
-                    else
-                    {
-                        CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                            "No updates found for yaml-yugi.", new[] { CMess.ok.ToText() });
-                    }
-                }
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private async void menucreateKonamiDB_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                var (result, message) =  await GetKonamiIDService.CreateDatabase();
-                if (result) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    "Database created successfully.", new[] { CMess.ok.ToText() });
-                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private async void menuGetKonamiIDOfficial_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string selectFolder = FileDiaLogHelper.OpenFolder("Official yaml-yugi Folder");
-                await GetKonamiIDService.GetOfficialKonamiID(selectFolder);
-            }   
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-        private async void menuGetKonamiIDRush_Click(object sender, RoutedEventArgs e)
-        {
-            if (isDeveloper)
-            {
-                string selectFolder = FileDiaLogHelper.OpenFolder("Rush yaml-yugi Folder");
-                await GetKonamiIDService.GetRushKonamiID(selectFolder);
-            }
-            else CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
-        }
-
-        private async void menuListPointGenesys_Click(object sender, RoutedEventArgs e)
-        {
-            await GenesysID.ProcessCardDataAsync();
-        }
         private void DevrloperTool_Click(object sender, RoutedEventArgs e)
         {
-            if (!isDeveloper) return;
+            if (!isDeveloper)
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    CMess.noRegularUser.ToText(), new[] { CMess.ok.ToText() });
+                return;
+            }
 
             DEVWindow devWindow = new DEVWindow();
             devWindow.ShowInTaskbar = false;

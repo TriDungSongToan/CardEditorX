@@ -89,7 +89,8 @@
 0x12d	YDKE
 
 0x12e	Don't Save
-0x12f	Copy Info
+0x12f	Don’t ask again
+0x130	Copy Info
 
 #=======Config=======#
 0x201	User Settings
@@ -578,7 +579,7 @@
 0x70e	Are you sure you want to save a blank file?
 0x70f	Are you sure you want to unregister the CardEditorX file types from the Windows Registry?
 0x710	Update Available, dowload it now?
-0x711	Data source is missing or invalid, download now?
+0x711	Download Card Resource Pack now?
 0x712	How would you like to handle the selected data?
 0x713	No updates found.
 0x714	Update Complete!

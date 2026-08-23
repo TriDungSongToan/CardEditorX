@@ -3,13 +3,13 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 using System.ComponentModel;
 using CardEditor.Helpers;
 using CardEditor.Services;
-using CardEditor.Localization;
 using CardEditor.ViewModels;
+using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
-using System.Diagnostics;
 
 namespace CardEditor.UserControls
 {
@@ -58,7 +58,14 @@ namespace CardEditor.UserControls
             WebViewControl.CoreWebView2.DownloadStarting += CoreWebView2_DownloadStarting;
             WebViewControl.CoreWebView2.DocumentTitleChanged += CoreWebView2_DocumentTitleChanged;
 
-            LoadConfig();
+            if (!string.IsNullOrWhiteSpace(ConfigViewModel.Instance.imageSetting.SelectedCardMaker.Link))
+            {
+                LoadConfig();
+            }
+            else
+            {
+                MainWindowService.SettingCommand();
+            }
         }
 
         private void CoreWebView2_DownloadStarting(object sender, Microsoft.Web.WebView2.Core.CoreWebView2DownloadStartingEventArgs e)

@@ -439,6 +439,7 @@
     <Compile Include="Editor\Hover\SymbolDescriptionDocumentBuilder.cs" />
     <Compile Include="Editor\Hover\SymbolResolver.cs" />
     <Compile Include="Events\ScrollEventArgs.cs" />
+    <Compile Include="Generator\HyperlinkElement.cs" />
     <Compile Include="Helpers\APIHelper.cs" />
     <Compile Include="Helpers\BuildInfoHelper.cs" />
     <Compile Include="Helpers\ExtractorHelper.cs" />
@@ -448,11 +449,13 @@
     <Compile Include="Helpers\GetPenScaleHelp.cs" />
     <Compile Include="Helpers\LanguageDetector.cs" />
     <Compile Include="Helpers\LogHelper.cs" />
+    <Compile Include="Helpers\RegulationParser.cs" />
     <Compile Include="Helpers\SearchPattern.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
     <Compile Include="ImageGene\TextLayoutEngine.cs" />
     <Compile Include="Interfaces\IFileInterface.cs" />
     <Compile Include="Interfaces\IMasterDuelAPIInterface.cs" />
+    <Compile Include="Interfaces\IRegulationInterface.cs" />
     <Compile Include="Manager\SingleInstanceManager.cs" />
     <Compile Include="Models\AppContext.cs" />
     <Compile Include="Models\CardMasterDuel.cs" />
@@ -461,6 +464,7 @@
     <Compile Include="Models\EnumsMD.cs" />
     <Compile Include="Models\FileItem.cs" />
     <Compile Include="Models\PendulumLanguage.cs" />
+    <Compile Include="Models\Regulation.cs" />
     <Compile Include="Models\ResultItems.cs" />
     <Compile Include="Models\KonamiID.cs" />
     <Compile Include="Models\ScanAPI.cs" />
@@ -494,6 +498,7 @@
     <Compile Include="Models\TextAlignments.cs" />
     <Compile Include="Services\BrowserURL.cs" />
     <Compile Include="Services\MasterDuelAPIService.cs" />
+    <Compile Include="Services\RegulationService.cs" />
     <Compile Include="Services\ScriptData.cs" />
     <Compile Include="Services\ScriptSymbolProcessor.cs" />
     <Compile Include="UserControls\BanListEditor.xaml.cs">

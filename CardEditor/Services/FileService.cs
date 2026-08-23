@@ -14,6 +14,4 @@ namespace CardEditor.Services
             System.IO.File.WriteAllText(filePath, json);
         }
     }
-
-    
 }

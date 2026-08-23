@@ -139,7 +139,11 @@ namespace CardEditor.Editor.Hover
                 sb.AppendLine($"Suggested Links:");
                 foreach (var link in model.Links)
                 {
-                    sb.AppendLine($"{link.name}: {link.link}");
+                    //sb.AppendLine($"{link.name}: {link.link}");
+                    if (!string.IsNullOrWhiteSpace(link?.name) && !string.IsNullOrWhiteSpace(link.link))
+                    {
+                        sb.AppendLine($"[{link.name}]({link.link})");
+                    }
                 }
             }
 

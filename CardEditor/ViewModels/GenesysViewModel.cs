@@ -236,6 +236,7 @@ namespace CardEditor.ViewModels
         public RelayCommand ModifyCardCommand { get; private set; }
         public RelayCommand SaveAllCommand { get; private set; }
         public RelayCommand SortCardCommand { get; private set; }
+        public RelayCommand UnSortCardCommand { get; private set; }
         public RelayCommand ResetCardCommand { get; private set; }
         public RelayCommand ClearCardCommand { get; private set; }
         public RelayCommand DeleteSingleCardCommand { get; private set; }
@@ -301,6 +302,7 @@ namespace CardEditor.ViewModels
             ModifyCardCommand = new CardEditor.Commands.RelayCommand(async _ => await ModifyGenesysCard(), _ => CanModifyGenesysCard());
             SaveAllCommand = new CardEditor.Commands.RelayCommand(async _ => await SaveAllCard(), _ => !IsSavedCardList);
             SortCardCommand = new CardEditor.Commands.RelayCommand(_ => SortCard(), _ => CanFilterSortData());
+            UnSortCardCommand = new CardEditor.Commands.RelayCommand(_ => UnSortCard());
             ResetCardCommand = new CardEditor.Commands.RelayCommand(_ => ResetGenesysCard(), _ => CanResetClearGenesysCard());
             ClearCardCommand = new CardEditor.Commands.RelayCommand(_ => ClearGenesysCardCommand(), _ => CanResetClearGenesysCard());
             DeleteSingleCardCommand = new CardEditor.Commands.RelayCommand(async _ => await DeleteSingleGenesysCardCommand(), _ => CanDeleteSingleGenesysCard());
@@ -832,29 +834,53 @@ namespace CardEditor.ViewModels
 
         private void SortCard()
         {
-            GenesysCardsView.SortDescriptions.Clear();
-            //int arrangeValue = ConfigViewModel.Instance.Arrange;
+            var selectedSorts = SortsViewModel.Instance.SelectedSortItems;
+            if (selectedSorts == null || selectedSorts.Count <= 0) return;
 
-            //switch (arrangeValue)
-            //{
-            //    case 1: // Tăng dần theo id
-            //        GenesysCardsView.SortDescriptions.Add(new SortDescription("Id", ListSortDirection.Ascending));
-            //        break;
-            //    case 2: // Giảm dần theo id
-            //        GenesysCardsView.SortDescriptions.Add(new SortDescription("Id", ListSortDirection.Descending));
-            //        break;
-            //    case 3: // Tăng dần theo name (theo bảng chữ cái)
-            //        GenesysCardsView.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
-            //        break;
-            //    case 4: // Giảm dần theo name (ngược bảng chữ cái)
-            //        GenesysCardsView.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
-            //        break;
-            //    default: // Tăng dần theo id
-            //        GenesysCardsView.SortDescriptions.Add(new SortDescription("Id", ListSortDirection.Ascending));
-            //        break;
-            //}
+            try
+            {
+                using (GenesysCardsView.DeferRefresh())
+                {
+                    GenesysCardsView.SortDescriptions.Clear();
+                    foreach (var sort in selectedSorts)
+                    {
+                        if (sort?.SelectedItem == null) continue;
+                        if (string.IsNullOrEmpty(sort.SelectedItem.Name)) continue;
+
+                        string cardPropertyName = sort.SelectedItem.Name switch
+                        {
+                            "id" => "Id",
+                            "name" => "Name",
+                            "GPoint" => "GPoints",
+                            _ => null
+                        };
+                        if (string.IsNullOrEmpty(cardPropertyName)) continue;
+                        var direction = sort.OrderByAsc ? ListSortDirection.Ascending : ListSortDirection.Descending;
+
+                        GenesysCardsView.SortDescriptions.Add(new SortDescription(cardPropertyName, direction));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var request = new MessageBoxRequest
+                {
+                    Title = CMess.error.ToText(),
+                    IconType = CMSG.MessageBoxIconType.Error,
+                    Message = $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Sort.ToText(), CMess.Genesys.ToText())} {ex.Message}",
+                    Buttons = new[] { CMess.ok.ToText() },
+                    ResponseSource = null
+                };
+                OnMessageBoxRequested(request);
+            }
+        }
+        private void UnSortCard()
+        {
+            if (GenesysCards == null || GenesysCardsView == null) return;
+            GenesysCardsView.SortDescriptions.Clear();
             GenesysCardsView.Refresh();
         }
+
         private async void ResetGenesysCard()
         {
             if (SelectedGenesysCard != null)
