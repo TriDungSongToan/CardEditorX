@@ -2591,10 +2591,12 @@
 
                         </StackPanel>
                     </ScrollViewer>
-                    
-                    <Border Background="LightGray" Height="3" Margin="3,0,3,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                            Style="{StaticResource MaterialDesignToolBarMainPanelBorderStyle}" MouseDown="Border_MouseDown" />
 
+                    <Border Background="Transparent" Height="7" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Style="{StaticResource MaterialDesignToolBarMainPanelBorderStyle}" MouseDown="Border_MouseDown" >
+                        <Border Background="LightGray" Height="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                    </Border>
+                    
                     <Grid Grid.Row="18" x:Name="grDev" Height="0" >
 
                         <Border HorizontalAlignment="Center" VerticalAlignment="Stretch" Margin="0,5,0,0"
@@ -2863,7 +2865,8 @@
                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                 materialDesign:ButtonAssist.CornerRadius="5"
                                 Style="{StaticResource ButtonSuccess}"
-                                Command="{Binding SaveSetting}" >
+                                Command="{Binding SaveSetting}"
+                                Click="btnsave_Click">
                             <Viewbox Stretch="Uniform" StretchDirection="Both" Width="auto" >
                                 <TextBlock Text="{Lag:Localize Save}" FontSize="15"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

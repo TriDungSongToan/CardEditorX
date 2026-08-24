@@ -199,10 +199,6 @@ namespace CardEditor.UserControls
         }
         private void LoadScriptData()
         {
-            string path = System.IO.Path.Combine(CardEditor.Models.AppContext.Instance.DataFolderPath, @"scrapiyard/api");
-
-            int count = Directory.EnumerateFiles(path, "*.yml", SearchOption.AllDirectories).Count();
-
             if (!ScriptViewModel.Instance.IsLoaded)
             {
                 var (result, message) = ScriptViewModel.Instance.LoadScriptData();
@@ -625,8 +621,7 @@ namespace CardEditor.UserControls
             if (GridMiniMap.ActualWidth > 0) ConfigViewModel.Instance.displaySetting.WidthMiniMap = (int)GridMiniMap.ActualWidth;
             else ConfigViewModel.Instance.displaySetting.WidthMiniMap = 50;
             UpdateThumbPosition();
-            ConfigViewModel.Instance.UpdateSettingsProperties();
-            ConfigViewModel.Instance.SaveSettingsProperties();
+            ConfigViewModel.Instance.SaveDisplaySettingFile();
         }
         #endregion
 

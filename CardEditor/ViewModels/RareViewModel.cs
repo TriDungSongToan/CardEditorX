@@ -2795,10 +2795,6 @@ namespace CardEditor.ViewModels
                 ConfigViewModel.Instance.dataHandlingSetting = dataHandlingSetting.Clone();
                 ConfigViewModel.Instance.imageSetting = imageSetting.Clone();
 
-                ConfigViewModel.Instance.UpdateSettingsProperties();
-                ConfigViewModel.Instance.SaveSettingsProperties();
-
-                //ConfigViewModel.Instance.UpdateSettingsFile();
                 var (resultSetting, messageSetting) = ConfigViewModel.Instance.SaveAllSettingFile();
                 var (resultSorting, messageSorting) = await SortsViewModel.Instance.SaveSortingFile();
 

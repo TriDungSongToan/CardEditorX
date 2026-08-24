@@ -262,7 +262,7 @@ namespace CardEditor.ViewModels
                 .FirstOrDefault(cm => cm.DisplayName == imageSetting.SelectedCardMaker?.DisplayName);
             if (selectedCardMaker != null) imageSetting.SelectedCardMaker = selectedCardMaker;
 
-            string encryptedDevelop = ConfigViewModel.Instance.DeveloperEncrypted;
+            // string encryptedDevelop = ConfigViewModel.Instance.DeveloperEncrypted;
             // Developer = SettingsEncryption.DecryptBoolSetting(encryptedDevelop);
             InitializeEvent();
         }
@@ -498,8 +498,8 @@ namespace CardEditor.ViewModels
                 //ConfigViewModel.Instance.DeveloperEncrypted = encryptedDevelop;
                 //#endregion
 
-                ConfigViewModel.Instance.UpdateSettingsProperties();
-                ConfigViewModel.Instance.SaveSettingsProperties();
+                //ConfigViewModel.Instance.UpdateSettingsProperties();
+                //ConfigViewModel.Instance.SaveSettingsProperties();
 
                 //ConfigViewModel.Instance.UpdateSettingsFile();
                 var (resultSetting, messageSetting) = ConfigViewModel.Instance.SaveAllSettingFile();

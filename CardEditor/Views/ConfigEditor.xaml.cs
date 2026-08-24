@@ -13,8 +13,8 @@ using CardEditor.Helpers;
 using CardEditor.Services;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
-using TextBox = System.Windows.Controls.TextBox;
 using CMess = CardEditor.Localization.Language;
+using TextBox = System.Windows.Controls.TextBox;
 
 namespace CardEditor
 {
@@ -32,6 +32,7 @@ namespace CardEditor
         private DateTime _lockUntil = DateTime.MinValue;
         private const int MaxAttempts = 5;
         private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(30);
+        private string DeveloperEncrypted;
 
         public event Action ConfigChanged;
         #endregion
@@ -41,10 +42,11 @@ namespace CardEditor
             InitializeComponent();
             this.Opacity = 0;
 
+            DeveloperEncrypted = ConfigViewModel.Instance.DeveloperEncrypted;
+
             settingViewModel = SettingViewModel.CreateInstance();
             DataContext = settingViewModel;
             grDev.DataContext = this;
-            Debug.WriteLine($"[Constructor] grDev.DataContext set, is ConfigEditor: {grDev.DataContext == this}");
 
             LoadDevModeState();
             settingViewModel.CallConfigChanged += SettingViewModel_CallConfigChanged;
@@ -86,8 +88,10 @@ namespace CardEditor
         }
         private void LoadDevModeState()
         {
+
+            DeveloperEncrypted = ConfigViewModel.Instance.DeveloperEncrypted;
             bool devModeUnlocked = SettingsEncryption.DecryptBoolSetting(
-                CardEditor.Properties.Settings.Default.DeveloperEncrypted);
+                ConfigViewModel.Instance.DeveloperEncrypted);
             tbtndeveloper.IsChecked = devModeUnlocked;
         }
         #endregion
@@ -166,6 +170,17 @@ namespace CardEditor
                 blLogin.Visibility = Visibility.Collapsed;
                 blReSetPass.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void btnsave_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigViewModel.Instance.DeveloperEncrypted = DeveloperEncrypted;
+            ConfigViewModel.Instance.UpdateSettingsProperties();
+            ConfigViewModel.Instance.SaveSettingsProperties();
+        }
+        private void btncacels_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -506,19 +521,12 @@ namespace CardEditor
 
         private void SaveDevModeUnlocked(bool unlocked)
         {
-            CardEditor.Properties.Settings.Default.DeveloperEncrypted =
-                SettingsEncryption.EncryptBoolSetting(unlocked);
-            // CardEditor.Properties.Settings.Default.Save();
+            DeveloperEncrypted = SettingsEncryption.EncryptBoolSetting(unlocked);
         }
 
         #endregion
 
         #region Events
-        private void btncacels_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
