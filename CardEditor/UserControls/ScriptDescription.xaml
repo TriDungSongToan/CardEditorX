@@ -1,11 +1,13 @@
 ﻿<UserControl x:Class="CardEditor.UserControls.ScriptDescription"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:avalonEdit="clr-namespace:ICSharpCode.AvalonEdit;assembly=ICSharpCode.AvalonEdit"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:UserControls="clr-namespace:CardEditor.UserControls"
              xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
+             xmlns:Lag="clr-namespace:CardEditor.Localization"
              mc:Ignorable="d" 
              Background="Transparent"
              d:DesignHeight="450" d:DesignWidth="800">
@@ -14,11 +16,11 @@
         <ViewModels:ScriptDescriptionViewModel />
     </UserControl.DataContext>
 
-    <Border x:Name="BorderRoot" CornerRadius="3" BorderThickness="1" MaxWidth="800" Padding="10,3,0,0"
+    <Border x:Name="BorderRoot" CornerRadius="3" BorderThickness="1" MaxWidth="800" Padding="0"
             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
             BorderBrush="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
         <Grid>
-            <avalonEdit:TextEditor x:Name="ScriptDescriptionPane"
+            <avalonEdit:TextEditor x:Name="ScriptDescriptionPane" Margin="10,2,5,2"
                        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
                        Document="{Binding Document}" IsReadOnly="True" ShowLineNumbers="False"
                        Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -40,6 +42,54 @@
                     </Style>
                 </avalonEdit:TextEditor.Resources>
             </avalonEdit:TextEditor>
+
+            <Button x:Name="btnClose" Grid.Column="0" Margin="0,2,2,0" Padding="0"
+                    BorderThickness="0" Background="Transparent" Width="20" Height="20"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Click="CloseButton_Click" >
+                <Viewbox>
+                    <materialDesign:PackIcon Kind="Close" Width="20" Height="20"
+                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <materialDesign:PackIcon.Style>
+                            <Style TargetType="materialDesign:PackIcon">
+                                <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMouseOver, ElementName=btnClose}" Value="True">
+                                        <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsPressed, ElementName=btnClose}" Value="True">
+                                        <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </materialDesign:PackIcon.Style>
+                    </materialDesign:PackIcon>
+                </Viewbox>
+            </Button>
+
+            <Button x:Name="btnCopy" Grid.Column="0" Margin="0,0,2,2" Padding="0"
+                    BorderThickness="0" Background="Transparent" Width="20" Height="20"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Click="btnCopy_Click" >
+                <Viewbox>
+                    <materialDesign:PackIcon x:Name="iconCopy"
+                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <materialDesign:PackIcon.Style>
+                            <Style TargetType="materialDesign:PackIcon">
+                                <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMouseOver, ElementName=btnCopy}" Value="True">
+                                        <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsPressed, ElementName=btnCopy}" Value="True">
+                                        <Setter Property="Foreground" Value="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </materialDesign:PackIcon.Style>
+                    </materialDesign:PackIcon>
+                </Viewbox>
+            </Button>
         </Grid>
     </Border>
 </UserControl>

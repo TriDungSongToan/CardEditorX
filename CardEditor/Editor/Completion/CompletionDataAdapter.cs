@@ -3,15 +3,13 @@ using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.CodeCompletion;
-using CardEditor.Editor.Analysis;
 using CardEditor.Models;
 
 namespace CardEditor.Editor.Completion
 {
     public sealed class CompletionDataAdapter : ICompletionData
     {
-        private static readonly ISymbolDescriptionPresenter _presenter
-        = new ScriptDescriptionPresenter();
+        // private static readonly ISymbolDescriptionPresenter _presenter = new ScriptDescriptionPresenter();
         public CompletionSymbol Symbol { get; }
         public CompletionDataAdapter(CompletionSymbol symbol)
         {
@@ -20,8 +18,8 @@ namespace CardEditor.Editor.Completion
 
         public string Text => Symbol.Name;
         public object Content => Symbol.Name;
-        public object Description => _presenter.Create(Symbol);
-
+        // public object Description => _presenter.Create(Symbol);
+        public object Description => null;
         public double Priority => GetPriority();
         public ImageSource Image => IconProvider.GetIcon(Symbol.Kind);
 

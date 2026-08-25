@@ -43,9 +43,11 @@ namespace CardEditor.UserControls
             
             textEditorPane.TextArea.SelectionChanged += TextArea_SelectionChanged;
             textEditorPane.TextArea.Caret.PositionChanged += Caret_PositionChanged;
+
+            PreviewMouseDown += CodeEditorPane_PreviewMouseDown;
+
             //completionProvider = new CompletionProvider(textEditorPane);
         }
-
         #endregion
 
         #region Load
@@ -480,6 +482,10 @@ namespace CardEditor.UserControls
             // Cập nhật giao diện
             textEditorPane.TextArea.TextView.Redraw();
         }
+        private void CodeEditorPane_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _completionService?.HandleOwnerPreviewMouseDown(e);
+        }
         #endregion
 
         #region Bracket
@@ -614,6 +620,7 @@ namespace CardEditor.UserControls
         public void Dispose()
         {
             textEditorPane.SyntaxHighlighting = null;
+            PreviewMouseDown -= CodeEditorPane_PreviewMouseDown;
             textEditorPane.TextArea.SelectionChanged -= TextArea_SelectionChanged;
             textEditorPane.TextArea.Caret.PositionChanged -= Caret_PositionChanged;
             textEditorPane.TextArea.PreviewMouseWheel -= TextArea_PreviewMouseWheel;

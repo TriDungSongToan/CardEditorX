@@ -10,7 +10,6 @@ using CardEditor.Commands;
 using CardEditor.Services;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
-
 using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Views

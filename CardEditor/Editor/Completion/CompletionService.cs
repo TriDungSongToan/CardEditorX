@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using System.Collections.Generic;
 using ICSharpCode.AvalonEdit;
@@ -13,59 +14,110 @@ namespace CardEditor.Editor.Completion
     public sealed class CompletionService
     {
         private readonly TextEditor _editor;
-        private CompletionWindow _completionWindow;
+        private readonly ISymbolResolver _resolver = new SymbolResolver();
 
-        private string _lastPrefix = string.Empty;
+        private CompletionWindow _completionWindow;
+        private readonly CompletionDescriptionPopup _descriptionPopup;
 
         public CompletionService(TextEditor editor)
         {
-            _editor = editor;
-        }
+            _editor = editor ?? throw new ArgumentNullException(nameof(editor));
 
+            _descriptionPopup = new CompletionDescriptionPopup(
+                _editor.TextArea.TextView);
+
+            _descriptionPopup.CloseRequested += (_, __) =>
+            {
+                CloseDescriptionAndReturnFocus();
+            };
+        }
+        private void CloseDescriptionAndReturnFocus()
+        {
+            _descriptionPopup.Hide();
+
+            // Escape/X đóng description; Escape tiếp theo sẽ đến editor
+            // và có thể đóng Auto-suggestion.
+            _editor.TextArea.Focus();
+        }
+        private void CloseCompletionOnly()
+        {
+            _completionWindow?.Close();
+        }
         public void ShowCompletion()
         {
             CloseCompletion();
 
             string prefix = GetCurrentPrefix();
-            _completionWindow = new CompletionWindow(_editor.TextArea);
+
+            EnsureCompletionWindow();
+
             var data = _completionWindow.CompletionList.CompletionData;
 
             foreach (var symbol in ScriptViewModel.Instance.AllSymbols)
             {
-                if (!string.IsNullOrEmpty(prefix) && !symbol.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!string.IsNullOrEmpty(prefix) &&
+                    !symbol.Name.StartsWith(
+                        prefix,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 data.Add(new CompletionDataAdapter(symbol));
             }
-            if (data.Count == 0) return;
-            _completionWindow.Closed += (_, __) => _completionWindow = null;
-            _completionWindow.Show();
-        }
 
-        private void CloseCompletion()
-        {
-            _completionWindow?.Close();
-            _completionWindow = null;
-            _lastPrefix = string.Empty;
-        }
-
-        private string GetCurrentPrefix()
-        {
-            var doc = _editor.Document;
-            var offset = _editor.CaretOffset;
-
-            if (offset == 0) return string.Empty;
-            int start = offset - 1;
-            while (start >= 0)
+            if (data.Count == 0)
             {
-                char c = doc.GetCharAt(start);
-                if (!char.IsLetterOrDigit(c) && c != '_') break;
-                start--;
+                CloseCompletion();
+                return;
             }
-            start++;
-            return doc.GetText(start, offset - start);
+
+            // Dòng này sẽ chọn item phù hợp nhất.
+            // Sau đó AvalonEdit phát event SelectionChanged.
+            _completionWindow.CompletionList.SelectItem(prefix);
         }
 
+        public void HandleOwnerPreviewMouseDown(MouseButtonEventArgs e)
+        {
+            if (!_descriptionPopup.IsOpen)
+            {
+                return;
+            }
+
+            var textView = _editor.TextArea.TextView;
+            Point position = e.GetPosition(textView);
+
+            // Click nằm ngoài TextView.
+            if (position.X < 0 ||
+                position.Y < 0 ||
+                position.X > textView.ActualWidth ||
+                position.Y > textView.ActualHeight)
+            {
+                _descriptionPopup.Hide();
+                return;
+            }
+
+            // Chuyển tọa độ chuột thành vị trí trong Document.
+            var textViewPosition = textView.GetPosition(position);
+
+            if (textViewPosition == null)
+            {
+                _descriptionPopup.Hide();
+                return;
+            }
+
+            int caretLine = _editor.Document.GetLineByOffset(_editor.CaretOffset).LineNumber;
+            int clickedLine = textViewPosition.Value.Location.Line;
+            if (clickedLine != caretLine)
+            {
+                _descriptionPopup.Hide();
+            }
+        }
         public void OnTextEntered(char enteredChar)
         {
+            // Người dùng tiếp tục gõ: mô tả cũ không còn phù hợp.
+            _descriptionPopup.Hide();
+
             if (!IsIdentifierChar(enteredChar) && enteredChar != '.')
             {
                 CloseCompletion();
@@ -74,7 +126,8 @@ namespace CardEditor.Editor.Completion
 
             var context = AnalyzeContext();
 
-            if (string.IsNullOrEmpty(context.Prefix) && !context.IsDotCompletion)
+            if (string.IsNullOrEmpty(context.Prefix) &&
+                !context.IsDotCompletion)
             {
                 CloseCompletion();
                 return;
@@ -82,24 +135,143 @@ namespace CardEditor.Editor.Completion
 
             ShowOrUpdateCompletion(context);
         }
+        public void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                if (_descriptionPopup.IsOpen)
+                {
+                    CloseDescriptionAndReturnFocus();
+                }
+                else if (_completionWindow != null)
+                {
+                    CloseCompletionOnly();
+                }
 
-        private void ShowOrUpdateCompletion(CompletionContext context)
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.Back)
+            {
+                _descriptionPopup.Hide();
+
+                var context = AnalyzeContext();
+
+                if (string.IsNullOrEmpty(context.Prefix) &&
+                    !context.IsDotCompletion)
+                {
+                    CloseCompletion();
+                    return;
+                }
+
+                ShowOrUpdateCompletion(context);
+            }
+        }
+
+        private void EnsureCompletionWindow()
+        {
+            if (_completionWindow != null)
+            {
+                return;
+            }
+            _completionWindow = new CompletionWindow(_editor.TextArea);
+            
+            _completionWindow.CloseAutomatically = false;
+
+            // Đây là nơi đăng ký event.
+            // Event chạy mỗi khi người dùng đổi item đang được chọn
+            // bằng chuột, ↑/↓, hoặc SelectItem(...).
+            _completionWindow.CompletionList.SelectionChanged +=
+                CompletionList_SelectionChanged;
+
+            _completionWindow.Closed += CompletionWindow_Closed;
+
+            _completionWindow.Show();
+        }
+
+        private void CompletionList_SelectionChanged(object sender, EventArgs e)
         {
             if (_completionWindow == null)
             {
-                _completionWindow = new CompletionWindow(_editor.TextArea);
-                _completionWindow.Closed += (_, __) => _completionWindow = null;
-                _completionWindow.Show();
+                return;
             }
 
+            var selectedItem =
+                _completionWindow.CompletionList.SelectedItem
+                as CompletionDataAdapter;
+
+            if (selectedItem == null)
+            {
+                _descriptionPopup.Hide();
+                return;
+            }
+
+            // Rect tính theo TextView, cũng là PlacementTarget
+            // của CompletionDescriptionPopup.
+            Rect caretRect =
+                _editor.TextArea.Caret.CalculateCaretRectangle();
+
+            var popupPosition = new Point(
+                caretRect.Right + 12,
+                caretRect.Bottom + 8);
+
+            _descriptionPopup.Show(
+                selectedItem.Symbol,
+                popupPosition);
+        }
+
+        private void CompletionWindow_Closed(object sender, EventArgs e)
+        {
+            var closedWindow = sender as CompletionWindow;
+
+            if (closedWindow != null)
+            {
+                
+                closedWindow.CompletionList.SelectionChanged -=
+                    CompletionList_SelectionChanged;
+
+                closedWindow.Closed -= CompletionWindow_Closed;
+            }
+
+            if (ReferenceEquals(_completionWindow, closedWindow))
+            {
+                _completionWindow = null;
+            }
+
+            _descriptionPopup.Hide();
+        }
+
+        private void CloseCompletion()
+        {
+            if (_completionWindow == null)
+            {
+                _descriptionPopup.Hide();
+                return;
+            }
+
+            // CompletionWindow_Closed sẽ tự unsubscribe event,
+            // gán _completionWindow = null và đóng description.
+            _completionWindow.Close();
+        }
+
+        private void ShowOrUpdateCompletion(CompletionContext context)
+        {
+            EnsureCompletionWindow();
             UpdateCompletionList(context);
         }
 
         private void UpdateCompletionList(CompletionContext context)
         {
-            if (_completionWindow == null) return;
+            if (_completionWindow == null)
+            {
+                return;
+            }
 
             var data = _completionWindow.CompletionList.CompletionData;
+
+            // Khi Clear(), selection cũ có thể bị bỏ.
+            // Handler sẽ tự Hide popup cũ.
             data.Clear();
 
             if (context.IsDotCompletion)
@@ -110,128 +282,158 @@ namespace CardEditor.Editor.Completion
             {
                 AddGlobalCompletionItems(context, data);
             }
-            if (data.Count > 0)
+
+            if (data.Count == 0)
             {
-                _completionWindow.CompletionList.SelectItem(context.Prefix);
+                CloseCompletionOnly();
+                return;
             }
-            else
-            {
-                CloseCompletion();
-            }
+
+            // Đây là thao tác làm selection thay đổi,
+            // nên CompletionList_SelectionChanged() sẽ được gọi.
+            _completionWindow.CompletionList.SelectItem(context.Prefix);
         }
+
         private void AddGlobalCompletionItems(CompletionContext context, IList<ICompletionData> data)
         {
             foreach (var symbol in ScriptViewModel.Instance.AllSymbols)
             {
-                if (!symbol.Name.StartsWith(context.Prefix, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!symbol.Name.StartsWith(
+                    context.Prefix,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 data.Add(new CompletionDataAdapter(symbol));
             }
         }
 
-        private readonly ISymbolResolver _resolver = new SymbolResolver();
         private void AddDotCompletionItems(CompletionContext context, IList<ICompletionData> data)
         {
-            if (string.IsNullOrEmpty(context.Qualifier)) return;
-
-            string qualifier = context.Qualifier;
-
-            // 1. Resolve semantic symbol (QUAN TRỌNG NHẤT)
-            var symbol = _resolver.ResolveExpression(qualifier);
-
-            // 2. Fallback: nếu không resolve được → thử namespace lookup nhanh
-            if (symbol == null)
+            if (string.IsNullOrEmpty(context.Qualifier))
             {
-                var nsFallback = ScriptViewModel.Instance.AllSymbols
-                    .Where(s =>
-                        !string.IsNullOrEmpty(s.Namespace) &&
-                        string.Equals(s.Namespace, qualifier, StringComparison.OrdinalIgnoreCase));
-
-                foreach (var s in nsFallback)
-                {
-                    if (!IsMatchPrefix(s, context.Prefix)) continue;
-                    data.Add(new CompletionDataAdapter(s));
-                }
-
                 return;
             }
 
-            // 3. Enum members / graph members (PRIMARY PATH)
-            if (symbol.Members != null && symbol.Members.Count > 0)
+            var symbol = _resolver.ResolveExpression(context.Qualifier);
+
+            if (symbol != null &&
+                symbol.Members != null &&
+                symbol.Members.Count > 0)
             {
                 foreach (var member in symbol.Members)
                 {
-                    if (!IsMatchPrefix(member, context.Prefix)) continue;
-                    data.Add(new CompletionDataAdapter(member));
+                    if (IsMatchPrefix(member, context.Prefix))
+                    {
+                        data.Add(new CompletionDataAdapter(member));
+                    }
                 }
 
                 return;
             }
 
-            // 4. Fallback: nếu symbol không có graph → thử namespace children
-            var namespaceSymbols = ScriptViewModel.Instance.AllSymbols
-                .Where(s =>
-                    string.Equals(s.Namespace, qualifier, StringComparison.OrdinalIgnoreCase));
+            var fallbackSymbols =
+                ScriptViewModel.Instance.AllSymbols.Where(s =>
+                    string.Equals(
+                        s.Namespace,
+                        context.Qualifier,
+                        StringComparison.OrdinalIgnoreCase));
 
-            foreach (var s in namespaceSymbols)
+            foreach (var item in fallbackSymbols)
             {
-                if (!IsMatchPrefix(s, context.Prefix)) continue;
-                data.Add(new CompletionDataAdapter(s));
-            }
-
-
-
-
-            //string qualifier = context.Qualifier!;
-
-            //// EnumName.Value
-            //var enumMembers = ScriptViewModel.Instance.AllSymbols
-            //    .Where(s => s.Kind == SymbolKind.EnumMember && string.Equals(s.OwnerEnum, qualifier, StringComparison.OrdinalIgnoreCase));
-
-            //foreach (var symbol in enumMembers)
-            //{
-            //    if (!symbol.Name.StartsWith(context.Prefix, StringComparison.OrdinalIgnoreCase)) continue;
-            //    data.Add(new CompletionDataAdapter(symbol));
-            //}
-
-            //// Namespace.symbol
-            //var namespaceSymbols = ScriptViewModel.Instance.AllSymbols
-            //    .Where(s => !string.IsNullOrEmpty(s.Namespace) && string.Equals(s.Namespace, qualifier, StringComparison.OrdinalIgnoreCase));
-
-            //foreach (var symbol in namespaceSymbols)
-            //{
-            //    if (!symbol.Name.StartsWith(context.Prefix, StringComparison.OrdinalIgnoreCase)) continue;
-            //    data.Add(new CompletionDataAdapter(symbol));
-            //}
-        }
-
-        private static bool IsMatchPrefix(CompletionSymbol symbol, string prefix)
-        {
-            if (string.IsNullOrEmpty(prefix)) return true;
-
-            return symbol.Name.StartsWith(
-                prefix,
-                StringComparison.OrdinalIgnoreCase);
-        }
-
-        public void OnKeyDown(KeyEventArgs e)
-        {
-            if (e.Key == Key.Escape)
-            {
-                CloseCompletion();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Back)
-            {
-                var context = AnalyzeContext();
-
-                if (string.IsNullOrEmpty(context.Prefix) && !context.IsDotCompletion)
+                if (IsMatchPrefix(item, context.Prefix))
                 {
-                    CloseCompletion();
-                    return;
+                    data.Add(new CompletionDataAdapter(item));
+                }
+            }
+        }
+
+        private string GetCurrentPrefix()
+        {
+            var document = _editor.Document;
+            int offset = _editor.CaretOffset;
+
+            if (offset == 0)
+            {
+                return string.Empty;
+            }
+
+            int start = offset - 1;
+
+            while (start >= 0)
+            {
+                char c = document.GetCharAt(start);
+
+                if (!char.IsLetterOrDigit(c) && c != '_')
+                {
+                    break;
                 }
 
-                ShowOrUpdateCompletion(context);
+                start--;
             }
+
+            start++;
+
+            return document.GetText(start, offset - start);
+        }
+
+        private CompletionContext AnalyzeContext()
+        {
+            var document = _editor.Document;
+            int offset = _editor.CaretOffset;
+
+            if (offset == 0)
+            {
+                return new CompletionContext(null, string.Empty);
+            }
+
+            int i = offset - 1;
+
+            while (i >= 0)
+            {
+                char c = document.GetCharAt(i);
+
+                if (!char.IsLetterOrDigit(c) && c != '_')
+                {
+                    break;
+                }
+
+                i--;
+            }
+
+            int prefixStart = i + 1;
+            string prefix = document.GetText(
+                prefixStart,
+                offset - prefixStart);
+
+            if (i < 0 || document.GetCharAt(i) != '.')
+            {
+                return new CompletionContext(null, prefix);
+            }
+
+            i--; // Bỏ qua dấu '.'
+            int qualifierEnd = i;
+
+            while (i >= 0)
+            {
+                char c = document.GetCharAt(i);
+
+                if (!char.IsLetterOrDigit(c) && c != '_')
+                {
+                    break;
+                }
+
+                i--;
+            }
+
+            int qualifierStart = i + 1;
+
+            string qualifier = document.GetText(
+                qualifierStart,
+                qualifierEnd - qualifierStart + 1);
+
+            return new CompletionContext(qualifier, prefix);
         }
 
         private static bool IsIdentifierChar(char c)
@@ -239,44 +441,10 @@ namespace CardEditor.Editor.Completion
             return char.IsLetterOrDigit(c) || c == '_';
         }
 
-        private CompletionContext AnalyzeContext()
+        private static bool IsMatchPrefix(CompletionSymbol symbol, string prefix)
         {
-            var doc = _editor.Document;
-            int offset = _editor.CaretOffset;
-
-            if (offset == 0) return new CompletionContext(null, string.Empty);
-
-            int i = offset - 1;
-
-            // 1. Parse prefix (right side)
-            while (i >= 0)
-            {
-                char c = doc.GetCharAt(i);
-                if (!char.IsLetterOrDigit(c) && c != '_') break;
-                i--;
-            }
-
-            int prefixStart = i + 1;
-            string prefix = doc.GetText(prefixStart, offset - prefixStart);
-
-            // 2. Check dot
-            if (i < 0 || doc.GetCharAt(i) != '.') return new CompletionContext(null, prefix);
-
-            // 3. Parse qualifier (left side)
-            i--; // skip dot
-            int end = i;
-
-            while (i >= 0)
-            {
-                char c = doc.GetCharAt(i);
-                if (!char.IsLetterOrDigit(c) && c != '_') break;
-                i--;
-            }
-
-            int qualifierStart = i + 1;
-            string qualifier = doc.GetText(qualifierStart, end - qualifierStart + 1);
-
-            return new CompletionContext(qualifier, prefix);
+            return string.IsNullOrEmpty(prefix) ||
+                   symbol.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

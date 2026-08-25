@@ -410,7 +410,7 @@
                                     Command="{Binding CopyPenEffectCommand}" >
                                 <Viewbox>
                                     <materialDesign:PackIcon Kind="{Binding CopyPenEffIcon}"
-                                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                                         <materialDesign:PackIcon.Style>
                                             <Style TargetType="materialDesign:PackIcon">
                                                 <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>

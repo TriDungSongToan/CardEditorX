@@ -420,6 +420,7 @@
     <Compile Include="Editor\Analysis\SymbolGraphBuilder.cs" />
     <Compile Include="Editor\Completion\CompletionContext.cs" />
     <Compile Include="Editor\Completion\CompletionDataAdapter.cs" />
+    <Compile Include="Editor\Completion\CompletionDescriptionPopup.cs" />
     <Compile Include="Editor\Completion\CompletionService.cs" />
     <Compile Include="Editor\Completion\IconProvider.cs" />
     <Compile Include="Controls\MiniMap.cs" />
