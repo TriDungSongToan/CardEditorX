@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Collections;
 using CardEditor.Localization;
@@ -27,15 +28,15 @@ namespace CardEditor.ViewModels
         {
             FlowDirectionItems = new BulkObservableCollection<FlowDirectionItem>
             {
-                new FlowDirectionItem{Direction = CardEditor.Models.FlowDirection.LeftToRight, DisplayName = CardEditor.Models.FlowDirection.LeftToRight.ToFriendlyString() },
-                new FlowDirectionItem{Direction = CardEditor.Models.FlowDirection.RightToLeft, DisplayName = CardEditor.Models.FlowDirection.RightToLeft.ToFriendlyString() }
+                new FlowDirectionItem{Direction = CardEditor.Enums.FlowDirection.LeftToRight, DisplayName = CardEditor.Enums.FlowDirection.LeftToRight.ToFriendlyString() },
+                new FlowDirectionItem{Direction = CardEditor.Enums.FlowDirection.RightToLeft, DisplayName = CardEditor.Enums.FlowDirection.RightToLeft.ToFriendlyString() }
             };
             TextAlignmentItems = new BulkObservableCollection<TextAlignmentItem>
             {
-                new TextAlignmentItem{Alignment = CardEditor.Models.TextAlignment.Left, DisplayName = CardEditor.Models.TextAlignment.Left.ToFriendlyString() },
-                new TextAlignmentItem{Alignment = CardEditor.Models.TextAlignment.Right, DisplayName = CardEditor.Models.TextAlignment.Right.ToFriendlyString() },
-                new TextAlignmentItem{Alignment = CardEditor.Models.TextAlignment.Justify, DisplayName = CardEditor.Models.TextAlignment.Justify.ToFriendlyString() },
-                new TextAlignmentItem{Alignment = CardEditor.Models.TextAlignment.Center, DisplayName = CardEditor.Models.TextAlignment.Center.ToFriendlyString() }
+                new TextAlignmentItem{Alignment = CardEditor.Enums.TextAlignment.Left, DisplayName = CardEditor.Enums.TextAlignment.Left.ToFriendlyString() },
+                new TextAlignmentItem{Alignment = CardEditor.Enums.TextAlignment.Right, DisplayName = CardEditor.Enums.TextAlignment.Right.ToFriendlyString() },
+                new TextAlignmentItem{Alignment = CardEditor.Enums.TextAlignment.Justify, DisplayName = CardEditor.Enums.TextAlignment.Justify.ToFriendlyString() },
+                new TextAlignmentItem{Alignment = CardEditor.Enums.TextAlignment.Center, DisplayName = CardEditor.Enums.TextAlignment.Center.ToFriendlyString() }
             };
             StampPositionItems = new BulkObservableCollection<StampPositionItem>
             {

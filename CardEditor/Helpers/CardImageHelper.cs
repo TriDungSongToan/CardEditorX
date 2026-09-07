@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using CardEditor.Models;
+using CardEditor.Enums;
 using CardEditor.Services;
 
 namespace CardEditor.Helpers

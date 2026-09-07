@@ -17,6 +17,7 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using MaterialDesignThemes.Wpf;
+using CardEditor.Enums;
 using CardEditor.Helpers;
 using CardEditor.Services;
 using CardEditor.Collections;
@@ -133,7 +134,11 @@ namespace CardEditor.UserControls
                     ViewImageCommand.RaiseCanExecuteChanged();
                     OpenFileImageCommand.RaiseCanExecuteChanged();
                     OpenDatabaseCommand.RaiseCanExecuteChanged();
-                    OpenDatabaseCommand.RaiseCanExecuteChanged();
+                    OpenScriptCommand.RaiseCanExecuteChanged();
+
+                    OpenKonamiDBCommand?.RaiseCanExecuteChanged();
+                    OpenYugipediaCommand?.RaiseCanExecuteChanged();
+                    OpenYGOResourcesCommand?.RaiseCanExecuteChanged();
                 }
             }
         }

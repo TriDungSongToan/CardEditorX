@@ -41,9 +41,11 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="5" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="5" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Button Grid.Row="0" Width="auto" Height="25" Margin="0" Padding="0"
+            <Button Grid.Row="0" Width="auto" Height="25" Margin="0" Padding="0,0,5,0"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                     BorderThickness="1" Cursor="Hand"
@@ -69,7 +71,7 @@
                 </Button.Content>
             </Button>
 
-            <Button Grid.Row="2" Width="auto" Height="25" Margin="0" Padding="0"
+            <Button Grid.Row="2" Width="auto" Height="25" Margin="0" Padding="0,0,5,0"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                     BorderThickness="1" Cursor="Hand"
@@ -95,7 +97,39 @@
                 </Button.Content>
             </Button>
 
-            <Button Grid.Row="4" Width="auto" Height="25" Margin="0" Padding="0"
+            <Button Grid.Row="4" Width="auto" Height="25" Margin="0" Padding="0,0,5,0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    BorderThickness="1" Cursor="Hand"
+                    Background="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                    Style="{StaticResource ButtonSuccess}"
+                    Command="{Binding OmegaDataEditorCommand}" >
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="25" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Width="20" Height="20" Margin="0"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Source="pack://application:,,,/Images/Menu/Win/Dataeditor.ico"  />
+                        <TextBlock Grid.Column="1" Padding="0" Margin="3,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Text="{Lag:Localize DataEdit}" FontSize="16"
+                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        <TextBlock Grid.Column="2" Padding="0" Margin="5,0,0,0"
+                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                   Text="Ω" FontSize="16"
+                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                    </Grid>
+                </Button.Content>
+            </Button>
+
+            <Button Grid.Row="6" Width="auto" Height="25" Margin="0" Padding="0,0,5,0"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                     BorderThickness="1" Cursor="Hand"
@@ -121,7 +155,7 @@
                 </Button.Content>
             </Button>
 
-            <Button Grid.Row="6" Width="auto" Height="25" Margin="0" Padding="0"
+            <Button Grid.Row="8" Width="auto" Height="25" Margin="0" Padding="0,0,5,0"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                     BorderThickness="1" Cursor="Hand"
@@ -147,7 +181,7 @@
                 </Button.Content>
             </Button>
 
-            <Button Grid.Row="8" Width="auto" Height="25" Margin="0" Padding="0"
+            <Button Grid.Row="10" Width="auto" Height="25" Margin="0" Padding="0,0,5,0"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                     BorderThickness="1" Cursor="Hand"

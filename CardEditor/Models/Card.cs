@@ -3,6 +3,7 @@ using System.Windows.Media.Imaging;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Services;
 using CardEditor.ViewModels;
 

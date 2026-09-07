@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Configuration;
 using System.Collections.Generic;
 using LibGit2Sharp;
-using OfficeOpenXml;
 using CardEditor.Manager;
 using CardEditor.Services;
 using CardEditor.ImageGene;
@@ -49,7 +48,6 @@ namespace CardEditor
                 return;
             }
 
-            ExcelPackage.License.SetNonCommercialOrganization("CardEditorX");
             var result = await CheckDataFolder();
             await LoadSettings();
 

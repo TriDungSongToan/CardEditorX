@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using CardEditor.Models;
+using CardEditor.Enums;
 using CardEditor.Commands;
 
 namespace CardEditor
@@ -12,6 +12,7 @@ namespace CardEditor
         public EditorType SelectedOption { get; set; }
         public RelayCommand ImageEditorCommand { get; set; }
         public RelayCommand DataEditorCommand { get; set; }
+        public RelayCommand OmegaDataEditorCommand { get; set; }
         public RelayCommand DeckEditorCommand { get; set; }
         public RelayCommand CodeEditorCommand { get; set; }
         public RelayCommand BanListEditorCommand { get; set; }
@@ -35,6 +36,7 @@ namespace CardEditor
         {
             ImageEditorCommand = new RelayCommand(_ => ImageEditor());
             DataEditorCommand = new RelayCommand(_ => DataEditor());
+            OmegaDataEditorCommand = new RelayCommand(_ =>  OmegaDataEditor());
             DeckEditorCommand = new RelayCommand(_ => DeckEditor());
             CodeEditorCommand = new RelayCommand(_ => CodeEditor());
             BanListEditorCommand = new RelayCommand(_ => BanListEditor());
@@ -49,6 +51,12 @@ namespace CardEditor
         private void DataEditor()
         {
             SelectedOption = EditorType.Data;
+            this.DialogResult = true;
+            this.Close();
+        }
+        private void OmegaDataEditor()
+        {
+            SelectedOption = EditorType.Omega;
             this.DialogResult = true;
             this.Close();
         }

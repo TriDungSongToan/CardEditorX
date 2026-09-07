@@ -1,5 +1,5 @@
 ﻿using System;
-using CardEditor.Models;
+using CardEditor.Enums;
 
 namespace CardEditor.Helpers
 {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using MaterialDesignThemes.Wpf;
-using CardEditor.Models;
+using CardEditor.Enums;
 using CardEditor.Commands;
 using CardEditor.Services;
 

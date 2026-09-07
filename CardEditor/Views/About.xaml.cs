@@ -2,7 +2,6 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Reflection;
@@ -113,6 +112,45 @@ namespace CardEditor
                 }
             }
         }
+        private string _processor = string.Empty;
+        public string Processor
+        {
+            get => _processor;
+            set
+            {
+                if (_processor != value)
+                {
+                    _processor = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private string _memory = string.Empty;
+        public string Memory
+        {
+            get => _memory;
+            set
+            {
+                if (_memory != value)
+                {
+                    _memory = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private string _logicalProcessorCount = string.Empty;
+        public string LogicalProcessorCount
+        {
+            get => _logicalProcessorCount;
+            set
+            {
+                if (_logicalProcessorCount != value)
+                {
+                    _logicalProcessorCount = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         private string _operatingSystem = string.Empty;
         public string OperatingSystem
@@ -175,8 +213,10 @@ namespace CardEditor
             var framework = Assembly.GetExecutingAssembly().GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName;
             NetVersionBuild = framework?.Replace(".NETCoreApp,Version=v", ".NET ").Replace(".NETFramework,Version=v", ".NET Framework ") ?? "Unknown";
             NetRunTime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
-            OperatingSystem = RuntimeInformation.OSDescription;
-
+            OperatingSystem = SystemInfoHelper.OperatingSystem;
+            Processor = SystemInfoHelper.Processor;
+            LogicalProcessorCount = SystemInfoHelper.LogicalProcessorCount.ToString();
+            Memory = SystemInfoHelper.Memory;
             ReleaseDate = BuildInfoHelper.ReleaseDateLocal;
         }
         #endregion
@@ -199,13 +239,17 @@ namespace CardEditor
 
         private async Task CopyInfo()
         {
-            string text = $"{AppName}\n" +
+            string text =
+                $"{AppName}\n" +
                 $"Version: {Version}\n" +
                 $"License: {License}\n" +
-                $"Build Version: {NetVersionBuild}\n" +
+                $"Target Framework: {NetVersionBuild}\n" +
                 $"Release Date: {ReleaseDate:yyyy-MM-dd} (yyyy-MM-dd)\n" +
                 $"Runtime Version: {NetRunTime}\n" +
-                $"OS: {OperatingSystem}";
+                $"Operating System: {OperatingSystem}\n" +
+                $"Processor: {Processor}\n" +
+                $"Logical Processors: {LogicalProcessorCount}\n" +
+                $"Memory: {Memory}";
 
             try
             {

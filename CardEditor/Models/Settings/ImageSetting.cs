@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Runtime.Serialization;
 using System.Runtime.CompilerServices;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Collections;
 
 namespace CardEditor.Models.Settings
@@ -75,6 +76,19 @@ namespace CardEditor.Models.Settings
                 }
             }
         }
+        private BulkObservableCollection<OutPutImage> _outPutImages;
+        public BulkObservableCollection<OutPutImage> OutPutImages
+        {
+            get => _outPutImages;
+            set
+            {
+                if (!ReferenceEquals(_outPutImages, value))
+                {
+                    _outPutImages = value ?? new BulkObservableCollection<OutPutImage>();
+                    OnPropertyChanged(nameof(OutPutImages));
+                }
+            }
+        }
         public ImageSettingSource()
         {
             _series = new BulkObservableCollection<string>();
@@ -82,6 +96,7 @@ namespace CardEditor.Models.Settings
             _backgroundArts = new BulkObservableCollection<string>();
             _cardMakers = new BulkObservableCollection<CardMaker>();
             _imageFormats = new BulkObservableCollection<ImageFormat>();
+            _outPutImages = new BulkObservableCollection<OutPutImage>();
         }
         [OnDeserialized]
         internal void OnDeserialized(StreamingContext context)
@@ -91,6 +106,7 @@ namespace CardEditor.Models.Settings
             _backgroundArts ??= new BulkObservableCollection<string>();
             _cardMakers ??= new BulkObservableCollection<CardMaker>();
             _imageFormats ??= new BulkObservableCollection<ImageFormat>();
+            _outPutImages ??= new BulkObservableCollection<OutPutImage>();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -124,6 +140,19 @@ namespace CardEditor.Models.Settings
                 {
                     _outPutFolder = value;
                     OnPropertyChanged(nameof(OutPutFolder));
+                }
+            }
+        }
+        private OutPutImage _selectedOutPut = OutPutImage.pics;
+        public OutPutImage SelectedOutPut
+        {
+            get => _selectedOutPut;
+            set
+            {
+                if (_selectedOutPut != value)
+                {
+                    _selectedOutPut = value;
+                    OnPropertyChanged(nameof(SelectedOutPut));
                 }
             }
         }
@@ -315,7 +344,6 @@ namespace CardEditor.Models.Settings
                 }
             }
         }
-        private int _series = 4;
         private ImageFormat _outPutFormat = ImageFormat.PNG;
         public ImageFormat OutPutFormat
         {
@@ -329,6 +357,8 @@ namespace CardEditor.Models.Settings
                 }
             }
         }
+
+        private int _series = 4;
         public int Series
         {
             get => _series;

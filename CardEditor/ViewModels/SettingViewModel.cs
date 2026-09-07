@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Models.Settings;
 using CardEditor.Helpers;
@@ -202,7 +203,10 @@ namespace CardEditor.ViewModels
                 //else Series.Add("Series 10");
                 //imageSettingSource.Series.AddRange(Series);
 
-                List<ImageFormat> imageFormats = Enum.GetValues(typeof(ImageFormat)).Cast<ImageFormat>().ToList();
+                List<OutPutImage> iutPutImages = Enum.GetValues(typeof(OutPutImage)).Cast<OutPutImage>().ToList();
+                imageSettingSource.OutPutImages.AddRange(iutPutImages);
+
+                List <ImageFormat> imageFormats = Enum.GetValues(typeof(ImageFormat)).Cast<ImageFormat>().ToList();
                 imageSettingSource.ImageFormats.AddRange(imageFormats);
 
                 string FoildFolderPath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath,

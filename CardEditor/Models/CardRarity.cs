@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.ComponentModel;
 
 namespace CardEditor.Models
@@ -10,41 +9,82 @@ namespace CardEditor.Models
         public int IdRare
         {
             get => _idRare;
-            set { _idRare = value; OnPropertyChanged(); }
+            set
+            {
+                if (_idRare != value)
+                {
+                    _idRare = value;
+                    OnPropertyChanged(nameof(IdRare));
+                }
+            }
         }
         private string _name;
         public string Name
         {
             get => _name;
-            set { _name = value; OnPropertyChanged(); }
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged(nameof(Name));
+                }
+            }
         }
         private long _code;
         public long Code
         {
             get => _code;
-            set { _code = value; OnPropertyChanged(); }
+            set
+            {
+                if (_code != value)
+                {
+                    _code = value;
+                    OnPropertyChanged(nameof(Code));
+                    OnPropertyChanged(nameof(DisplayCode));
+                }
+            }
         }
         private string _imagePath;
         public string ImagePath
         {
             get => _imagePath;
-            set { _imagePath = value; OnPropertyChanged(); }
+            set
+            {
+                if (_imagePath != value)
+                {
+                    _imagePath = value;
+                    OnPropertyChanged(nameof(ImagePath));
+                }
+            }
         }
         public string DisplayCode
         {
             get
             {
-                if (Code <= 0 || (Code & (Code - 1)) != 0)
-                {
-                    return $"Invalid ({Code})";
-                }
-                int bit = (int)(Math.Log(Code) / Math.Log(2));
-                return $"Bit {bit} (0x{Code:X})";
+                int bit = GetBitIndex(Code);
+                return bit < 0
+                ? $"Invalid ({Code})"
+                : $"Bit {bit} (0x{Code:X})";
             }
         }
         public bool IsEnabled { get; set; } = true;
         public override string ToString() => Name;
+        private static int GetBitIndex(long value)
+        {
+            if (value <= 0 || (value & (value - 1)) != 0)
+                return -1;
 
+            int index = 0;
+
+            while (value > 1)
+            {
+                value >>= 1;
+                index++;
+            }
+
+            return index;
+        }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string propName = null)
         {

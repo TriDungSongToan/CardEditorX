@@ -160,7 +160,7 @@
                     <ColumnDefinition Width="2" />
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
-                <Border Margin="0" Grid.Column="0" Padding="0" BorderThickness="1"
+                <Border Margin="0" Grid.Column="0" Padding="0" BorderThickness="1" CornerRadius="3"
                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                         Panel.ZIndex="0" >
@@ -276,7 +276,7 @@
                                  TextOptions.TextRenderingMode="ClearType"
                                  materialDesign:TextFieldAssist.HasFilledTextField="False"
                                  materialDesign:TextFieldAssist.HasOutlinedTextField="False"
-                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                  materialDesign:ThemeAssist.Theme="Dark" />
                     </Grid>
@@ -294,11 +294,16 @@
                                 DragEnter="imagecard_DragEnter" Drop="imagecard_Drop" AllowDrop="True"
                                 MouseLeftButtonDown="imagecard_MouseLeftButtonDown" >
                             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                                <viewport:Viewport x:Name="ViewportImage" Grid.Row="0" Width="255.2" Height="372.5" Panel.ZIndex="0"
-                                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ToolTip="{Lag:Localize toolCardImg}"
-                                                   MinZoom="1" MaxZoom="10" ZoomSpeed="1.1" SnapsToDevicePixels="True" UseLayoutRounding="True" >
-                                    <Image x:Name="imagecard"
-                                           Source="pack://application:,,,/Images/Blank.png"
+                                <viewport:Viewport x:Name="ViewportImage" Grid.Row="0"
+                                                   Width="255.2" Height="372.5" Panel.ZIndex="1"
+                                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                   MinZoom="1" MaxZoom="10" ZoomSpeed="1.1"
+                                                   SnapsToDevicePixels="True" UseLayoutRounding="True"
+                                                   ToolTip="{Lag:Localize toolCardImg}"
+                                                   ToolTipService.Placement="Bottom"
+                                                   ToolTipService.HorizontalOffset="0"
+                                                   ToolTipService.VerticalOffset="2" >
+                                    <Image x:Name="imagecard" Source="pack://application:,,,/Images/Blank.png"
                                            Stretch="Uniform" Cursor="Hand" />
                                 </viewport:Viewport>
 
@@ -372,44 +377,44 @@
                                         </Grid.ColumnDefinitions>
 
                                         <sdl:MultiSelectComboBox x:Name="cmbrule" Grid.Column="0" Height="55" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding RuleItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbrule_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding RuleItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbrule_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding RuleName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbrule}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbrule}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbrule}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbrule}" />
+                                                                   Background="{Binding Background, ElementName=cmbrule}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbrule}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbrule}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbrule}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding RuleName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbrule}" />
+                                                               Foreground="{Binding Foreground, ElementName=cmbrule}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbrule" Grid.Column="0" Opacity="0.5" Margin="0,3,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                                               Text="{Lag:Localize cardLabelScope}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                   Text="{Lag:Localize cardLabelScope}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  />
                                     </Grid>
                                 </Border>
 
@@ -421,44 +426,44 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbcardtype" Grid.Column="0" Height="55" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding TypeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbcardtype_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding TypeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbcardtype_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding TypeName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbcardtype}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbcardtype}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbcardtype}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbcardtype}" />
+                                                                   Background="{Binding Background, ElementName=cmbcardtype}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbcardtype}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbcardtype}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbcardtype}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding TypeName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbcardtype}" />
+                                                               Foreground="{Binding Foreground, ElementName=cmbcardtype}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbtype" Grid.Column="0" Opacity="0.5" Margin="0,3,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                                               Text="{Lag:Localize cardLabelType}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                   Text="{Lag:Localize cardLabelType}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -479,44 +484,44 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbcardrace" Grid.Column="0" Height="35" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding RaceItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbcardrace_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding RaceItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbcardrace_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding RaceName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbcardrace}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbcardrace}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbcardrace}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbcardrace}" />
+                                                                   Background="{Binding Background, ElementName=cmbcardrace}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbcardrace}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbcardrace}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbcardrace}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding RaceName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbcardrace}" />
+                                                              Foreground="{Binding Foreground, ElementName=cmbcardrace}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbrace" Grid.Column="0" Opacity="0.5" Margin="0,0,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize cardLabelRace}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize cardLabelRace}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
                                 <Border x:Name="grChar" Grid.Column="0" BorderThickness="0.7" CornerRadius="5"
@@ -528,44 +533,44 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbcardchar" Grid.Column="0" Height="35" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding CharItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbcardchar_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding CharItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbcardchar_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding CharName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbcardchar}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbcardchar}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbcardchar}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbcardchar}" />
+                                                                   Background="{Binding Background, ElementName=cmbcardchar}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbcardchar}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbcardchar}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbcardchar}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding CharName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbcardchar}" />
+                                                               Foreground="{Binding Foreground, ElementName=cmbcardchar}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbchar" Grid.Column="0" Opacity="0.5" Margin="0,0,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize cardLabelChar}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize cardLabelChar}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
 
@@ -577,44 +582,44 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbcardattribute" Grid.Column="0" Height="35" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding AttributeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbcardattribute_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding AttributeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbcardattribute_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding AttributeName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbcardattribute}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbcardattribute}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbcardattribute}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbcardattribute}" />
+                                                                   Background="{Binding Background, ElementName=cmbcardattribute}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbcardattribute}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbcardattribute}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbcardattribute}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding AttributeName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbcardattribute}" />
+                                                               Foreground="{Binding Foreground, ElementName=cmbcardattribute}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbattribute" Grid.Column="0" Opacity="0.5" Margin="0,0,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize cardLabelAttri}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize cardLabelAttri}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -634,28 +639,28 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbsetcode" Grid.Column="0" Height="55" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding SetCodeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbsetcode_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding SetCodeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbsetcode_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding SetName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbsetcode}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbsetcode}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbsetcode}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbsetcode}" />
+                                                                   Background="{Binding Background, ElementName=cmbsetcode}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbsetcode}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbsetcode}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbsetcode}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
@@ -667,11 +672,11 @@
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbsetcode" Grid.Column="0" Opacity="0.5" Margin="0,3,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                                               Text="{Lag:Localize cardlabelSetCode}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"   />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                   Text="{Lag:Localize cardlabelSetCode}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
 
@@ -683,44 +688,44 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbcategory" Grid.Column="0" Height="55" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding CategoryItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbcategory_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding CategoryItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbcategory_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding CategoryName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbcategory}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbcategory}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbcategory}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbcategory}" />
+                                                                   Background="{Binding Background, ElementName=cmbcategory}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbcategory}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbcategory}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbcategory}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding CategoryName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbcategory}" />
+                                                               Foreground="{Binding Foreground, ElementName=cmbcategory}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbcategory" Grid.Column="0" Opacity="0.5" Margin="0,3,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Top"
-                                               Text="{Lag:Localize cardLabelCategory}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                   Text="{Lag:Localize cardLabelCategory}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -740,44 +745,44 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbflag" Grid.Column="0" Height="35" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding FlagItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbflag_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding FlagItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbflag_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding FlagName}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbflag}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbflag}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbflag}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbflag}" />
+                                                                   Background="{Binding Background, ElementName=cmbflag}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbflag}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbflag}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbflag}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding FlagName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbflag}" />
+                                                               Foreground="{Binding Foreground, ElementName=cmbflag}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbflag" Grid.Column="0" Opacity="0.5" Margin="0,0,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize cardLabelFlag}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize cardLabelFlag}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
 
@@ -789,44 +794,44 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <sdl:MultiSelectComboBox x:Name="cmbrarity" Grid.Column="0" Height="35" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding RareItemsForUI, Source={x:Static ViewModels:RareRawDataViewModel.Instance}}"
-                                                             SelectedItemsChanged="cmbrarity_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding RareItemsForUI, Source={x:Static ViewModels:RareRawDataViewModel.Instance}}"
+                                                                 SelectedItemsChanged="cmbrarity_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding Name}" Margin="5"
-                                                               Background="{Binding Background, ElementName=cmbrarity}"
-                                                               Foreground="{Binding Foreground, ElementName=cmbrarity}"
-                                                               FontFamily="{Binding FontFamily, ElementName=cmbrarity}"
-                                                               FontSize="{Binding FontSize, ElementName=cmbrarity}" />
+                                                                   Background="{Binding Background, ElementName=cmbrarity}"
+                                                                   Foreground="{Binding Foreground, ElementName=cmbrarity}"
+                                                                   FontFamily="{Binding FontFamily, ElementName=cmbrarity}"
+                                                                   FontSize="{Binding FontSize, ElementName=cmbrarity}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Name}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, ElementName=cmbrarity}" />
+                                                               Foreground="{Binding Foreground, ElementName=cmbrarity}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="tbrarity" Grid.Column="0" Opacity="0.5" Margin="0,0,25,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize Rarity}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize Rarity}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
 
@@ -1855,7 +1860,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Border Grid.Column="0" Margin="0" BorderThickness="0.7"
+                        <Border Grid.Column="0" Margin="0" BorderThickness="0.7" CornerRadius="3"
                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -2068,7 +2073,7 @@
                                             </Button>
 
                                             <Button Grid.Column="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                    Margin="0" Padding="7,3,7,3" BorderThickness="0"
+                                                    Margin="0,0,1,0" Padding="7,3,7,3" BorderThickness="0"
                                                     FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                     Style="{StaticResource ButtonSuccess}" Command="{Binding ApplyPendulumDescCommand}" >
                                                 <Button.Background>

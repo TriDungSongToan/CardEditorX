@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Models.Settings;
 using CardEditor.Services;
@@ -77,6 +78,8 @@ namespace CardEditor.ViewModels
                 {
                     _rareCards = value;
                     OnPropertyChanged();
+                    FilterCardCommand?.RaiseCanExecuteChanged();
+                    SortCardCommand?.RaiseCanExecuteChanged();
                     DeleteAllCardCommand?.RaiseCanExecuteChanged();
                 }
             }
@@ -206,6 +209,12 @@ namespace CardEditor.ViewModels
                     ResetCardCommand?.RaiseCanExecuteChanged();
                     ClearCardCommand?.RaiseCanExecuteChanged();
                     DeleteSingleCardCommand?.RaiseCanExecuteChanged();
+
+                    ViewImageCommand?.RaiseCanExecuteChanged();
+                    OpenFileCommand?.RaiseCanExecuteChanged();
+                    OpenKonamiDBCommand?.RaiseCanExecuteChanged();
+                    OpenYugipediaCommand?.RaiseCanExecuteChanged();
+                    OpenYGOResourcesCommand?.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -633,6 +642,7 @@ namespace CardEditor.ViewModels
         }
         private void InitializeEvent()
         {
+            RareCards.CollectionChanged += RareCards_CollectionChanged;
             imageSetting.PropertyChanged += ImageSetting_PropertyChanged;
             dataHandlingSetting.PropertyChanged += DataHandlingSetting_PropertyChanged;
         }
@@ -1699,40 +1709,7 @@ namespace CardEditor.ViewModels
                 else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 2) Overwrite = false;
                 else return;
 
-                string extension = System.IO.Path.GetExtension(filePath).ToLowerInvariant();
-
-                switch (extension)
-                {
-                    case ".cdb":
-                    case ".db":
-                        if (filePath != CardAppContext.Instance.RareCardDBPath)
-                            await RareRawDataViewModel.Instance.BrowseDataCardDataBase(filePath, Overwrite);
-                        break;
-
-                    case ".ceds":
-                        await RareRawDataViewModel.Instance.BrowseDataCeds(filePath, Overwrite);
-                        break;
-
-                    case ".xlsx":
-                        await RareRawDataViewModel.Instance.BrowseDataExcel(filePath, Overwrite);
-                        break;
-                    
-                    case ".ydk":
-                        await RareRawDataViewModel.Instance.BrowseDataDeck(filePath, Overwrite);
-                        break;
-
-                    default:
-                        var request = new MessageBoxRequest
-                        {
-                            Title = CMess.notifi.ToText(),
-                            IconType = CMSG.MessageBoxIconType.Notification,
-                            Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()),
-                            Buttons = new[] { CMess.ok.ToText() },
-                            ResponseSource = null
-                        };
-                        OnMessageBoxRequested(request);
-                        break;
-                }
+                await RareRawDataViewModel.Instance.BrowseDataRarity(filePath, Overwrite);
                 IsSavedCardList = RareRawDataViewModel.Instance.IsSaveRareCardListToDB;
             }
         }
@@ -2851,6 +2828,12 @@ namespace CardEditor.ViewModels
         #endregion
 
         #region Event
+        private void RareCards_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            FilterCardCommand?.RaiseCanExecuteChanged();
+            SortCardCommand?.RaiseCanExecuteChanged();
+            DeleteAllCardCommand?.RaiseCanExecuteChanged();
+        }
         private void DataHandlingSetting_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ClearOriginalPathCommand?.RaiseCanExecuteChanged();
@@ -2953,6 +2936,8 @@ namespace CardEditor.ViewModels
                 _selectedRareCards.CollectionChanged -= SelectedRareCards_CollectionChanged;
             if (_selectedComboRareItems != null)
                 _selectedComboRareItems.CollectionChanged -= SelectedComboRareItems_CollectionChanged;
+            if (RareCards != null)
+                RareCards.CollectionChanged -= RareCards_CollectionChanged;
 
             SelectedRareItem = null;
             SelectedRareCard = null;

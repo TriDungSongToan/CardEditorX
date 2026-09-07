@@ -201,6 +201,22 @@
                 </Style.Triggers>
             </Style>
 
+            <Style TargetType="ToolTip">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToolTip">
+                            <Border Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderThickness="0.5" Padding="6" CornerRadius="4">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                              TextElement.Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              TextElement.FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/Styles/MultiSelectComboBox.Custom.ControlTemplate.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/Styles/MultiSelectComboBox.Custom.DropdownItemTemplate.xaml"/>
@@ -1434,9 +1450,14 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition />
                                                     </Grid.RowDefinitions>
-                                                    <viewport:Viewport x:Name="ViewportImage" Grid.Row="0" ToolTip="{Binding ImagecardTooltip}"
+                                                    <viewport:Viewport x:Name="ViewportImage" Grid.Row="0"
                                                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                                       MinZoom="1" MaxZoom="10" ZoomSpeed="1.1" SnapsToDevicePixels="True" UseLayoutRounding="True" >
+                                                                       MinZoom="1" MaxZoom="10" ZoomSpeed="1.1"
+                                                                       SnapsToDevicePixels="True" UseLayoutRounding="True"
+                                                                       ToolTip="{Binding ImagecardTooltip}"
+                                                                       ToolTipService.Placement="Top"
+                                                                       ToolTipService.HorizontalOffset="0"
+                                                                       ToolTipService.VerticalOffset="2" >
                                                         <Image x:Name="imagecard" 
                                                                d:Source="pack://application:,,,/Images/Blank.png"
                                                                Source="{Binding ImageCardSource}"

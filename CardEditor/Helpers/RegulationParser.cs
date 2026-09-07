@@ -10,7 +10,7 @@ namespace CardEditor.Helpers
         public static YamiYugiRegulation Parse(string json)
         {
             var raw = JsonConvert.DeserializeObject<RegulationRawDto>(json)
-                       ?? throw new InvalidOperationException("JSON không hợp lệ.");
+                       ?? throw new InvalidOperationException("Invalid JSON format.");
 
             var result = new YamiYugiRegulation
             {

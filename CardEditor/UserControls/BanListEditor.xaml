@@ -792,9 +792,15 @@
                                 <ColumnDefinition Width="auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
-                            <viewport:Viewport x:Name="ViewportImage" Width="262" Height="382" Grid.Column="0"
-                                               HorizontalAlignment="Stretch" VerticalAlignment="Top" ToolTip="{Lag:Localize toolCardImg}"
-                                               MinZoom="1" MaxZoom="10" ZoomSpeed="1.1" SnapsToDevicePixels="True" UseLayoutRounding="True" >
+                            <viewport:Viewport x:Name="ViewportImage" Grid.Column="0"
+                                               Width="262" Height="382" Panel.ZIndex="1"
+                                               MinZoom="1" MaxZoom="10" ZoomSpeed="1.1"
+                                               SnapsToDevicePixels="True" UseLayoutRounding="True"
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                               ToolTip="{Lag:Localize toolCardImg}"
+                                               ToolTipService.Placement="Top"
+                                               ToolTipService.HorizontalOffset="0"
+                                               ToolTipService.VerticalOffset="2" >
                                 <Image x:Name="imagecard" 
                                        Source="pack://application:,,,/Images/Blank.png"
                                        Stretch="Uniform" Cursor="Hand" />

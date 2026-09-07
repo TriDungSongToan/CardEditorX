@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace CardEditor.Models.MasterDuel
+namespace CardEditor.Enums.MasterDuel
 {
     public enum CardType
     {

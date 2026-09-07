@@ -5,6 +5,8 @@ using System.Windows.Media.Imaging;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using CardEditor.Helpers;
+using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.ViewModels
 {
@@ -33,70 +35,107 @@ namespace CardEditor.ViewModels
             _imagePathDict = new Dictionary<ulong, string>();
         }
 
-        public async Task PreloadImagesAsync(IProgress<(int current, int total, string status)> progress = null)
+        public async Task<(bool, string)> PreloadImagesAsync()
         {
-            if (_isLoaded) return;
+            if (_isLoaded) return (true, string.Empty);
 
-            await Task.Run(() =>
+            return await Task.Run(() =>
             {
                 lock (_lock)
                 {
-                    if (_isLoaded) return;
+                    if (_isLoaded) return (true, string.Empty);
 
                     try
                     {
                         string dataSourcePath = ConfigViewModel.Instance.userSetting.DataSource;
 
                         if (string.IsNullOrWhiteSpace(dataSourcePath) || !Directory.Exists(dataSourcePath))
-                        {
-                            return;
-                        }
+                            return (false, CMess.dataSourceMiss.ToText());
 
                         // Tìm tất cả file ảnh có pattern: {số}.jpg hoặc {số}.png
                         string[] validExtensions = { ".jpg", ".png", ".jpeg", ".webp" };
 
-                        var allFiles = Directory.EnumerateFiles(dataSourcePath, "*.*", SearchOption.AllDirectories);
-
-                        var filteredFiles = allFiles.Where(f =>
+                        foreach (var filePath in Directory.EnumerateFiles(dataSourcePath, "*.*", SearchOption.AllDirectories))
                         {
-                            string dir = Path.GetDirectoryName(f);
-                            var dirs = dir.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
-                            return !dirs.Any(d =>
-                                d.Equals("thumbnail", StringComparison.OrdinalIgnoreCase) ||
-                                d.Equals("field", StringComparison.OrdinalIgnoreCase));
-                        });
+                            string extension = Path.GetExtension(filePath);
 
-                        var imageFiles = filteredFiles
-                        .Where(f => validExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
-                        .ToList();
+                            if (!validExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase)) continue;
 
-                        progress?.Report((0, imageFiles.Count, "Scanning images..."));
+                            string directory = Path.GetDirectoryName(filePath);
+                            if (IsExcludedDirectory(directory)) continue;
 
-                        int processed = 0;
-                        foreach (var filePath in imageFiles)
-                        {
                             string fileName = Path.GetFileNameWithoutExtension(filePath);
                             if (ulong.TryParse(fileName, out ulong cardId))
                             {
                                 _imagePathDict[cardId] = filePath;
                             }
-
-                            processed++;
-                            if (processed % 100 == 0) // Report mỗi 100 files
-                            {
-                                progress?.Report((processed, imageFiles.Count, $"Loading images... {processed}/{imageFiles.Count}"));
-                            }
                         }
 
                         _isLoaded = true;
-                        progress?.Report((imageFiles.Count, imageFiles.Count, $"Loaded {_imageCache.Count} images"));
+                        return (true, string.Empty);
+
+
+                        //var allFiles = Directory.EnumerateFiles(dataSourcePath, "*.*", SearchOption.AllDirectories);
+
+                        //var filteredFiles = allFiles.Where(f =>
+                        //{
+                        //    string dir = Path.GetDirectoryName(f);
+                        //    var dirs = dir.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+                        //    return !dirs.Any(d =>
+                        //        d.Equals("thumbnail", StringComparison.OrdinalIgnoreCase) ||
+                        //        d.Equals("field", StringComparison.OrdinalIgnoreCase));
+                        //});
+
+                        //var imageFiles = filteredFiles
+                        //.Where(f => validExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
+                        //.ToList();
+
+                        //progress?.Report((0, imageFiles.Count, "Scanning images..."));
+
+                        //int processed = 0;
+                        //foreach (var filePath in imageFiles)
+                        //{
+                        //    string fileName = Path.GetFileNameWithoutExtension(filePath);
+                        //    if (ulong.TryParse(fileName, out ulong cardId))
+                        //    {
+                        //        _imagePathDict[cardId] = filePath;
+                        //    }
+
+                        //    processed++;
+                        //    if (processed % 100 == 0) // Report mỗi 100 files
+                        //    {
+                        //        progress?.Report((processed, imageFiles.Count, $"Loading images... {processed}/{imageFiles.Count}"));
+                        //    }
+                        //}
+
+                        //_isLoaded = true;
+                        //progress?.Report((imageFiles.Count, imageFiles.Count, $"Loaded {_imageCache.Count} images"));
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Error preloading images: {ex.Message}");
+                        return (false, ex.Message);
                     }
                 }
             });
+        }
+        private bool IsExcludedDirectory(string directory)
+        {
+            if (string.IsNullOrEmpty(directory)) return false;
+
+            var dirInfo = new DirectoryInfo(directory);
+
+            while (dirInfo != null)
+            {
+                if (dirInfo.Name.Equals("thumbnail", StringComparison.OrdinalIgnoreCase) ||
+                    dirInfo.Name.Equals("field", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                dirInfo = dirInfo.Parent;
+            }
+
+            return false;
         }
 
         private List<(ulong cardId, string filePath)> ScanImagePaths(string rootPath)
@@ -194,13 +233,13 @@ namespace CardEditor.ViewModels
             return BlankImage;
         }
 
-        public BitmapImage GetFullCardImage(ulong cardId)
+        public (BitmapImage image, string path) GetFullCardImage(ulong cardId)
         {
             if (_imagePathDict.TryGetValue(cardId, out var path))
             {
                 try
                 {
-                    if (!File.Exists(path)) return BlankImage;
+                    if (!File.Exists(path)) return (BlankImage, null);
                     byte[] imgBytes = File.ReadAllBytes(path);
                     var bitmap = new BitmapImage();
 
@@ -218,14 +257,14 @@ namespace CardEditor.ViewModels
                         _imageCache[cardId] = (bitmap, DateTime.Now);
                         EnsureCacheLimit();
                     }
-                    return bitmap;
+                    return (bitmap, path);
                 }
                 catch
                 {
-                    return BlankImage;
+                    return (BlankImage, null);
                 }
             }
-            return BlankImage;
+            return (BlankImage, null);
         }
         public string GetImagePath(ulong cardID)
         {

@@ -39,13 +39,13 @@ namespace CardEditor.ViewModels
         {
             if (IsLoadedCard) return (true, string.Empty);
 
-            var (success, allCards, allPaths, message) = await LoadDataServices.LoadAllCdbFiles();
-            if (!success) return (false, message);
+            LoadAllCdbFilesResult resultLoad = await LoadDataServices.LoadAllDatabaseFiles();
+            if (!resultLoad.Result) return (false, resultLoad.Message);
 
             _idToAlias = new Dictionary<ulong, List<ulong>>();
             _aliasToId = new Dictionary<ulong, ulong>();
 
-            foreach (var item in allCards)
+            foreach (var item in resultLoad.CardList)
             {
                 if (item.alias == 0) continue;
 
@@ -66,7 +66,7 @@ namespace CardEditor.ViewModels
             var genesysDict = GenesysRawDataViewModel.Instance.GenesysCardsData;
 
             // Merge data
-            var cardEXList = allCards.Select(card => new CardEX
+            var cardEXList = resultLoad.CardList.Select(card => new CardEX
             {
                 BaseCard = card,
                 Rare = rareDict.TryGetValue(card.id, out var rareCard) ? rareCard.rare : 0,
@@ -74,7 +74,7 @@ namespace CardEditor.ViewModels
             });
 
             _allCards = cardEXList.ToDictionary(c => c.ID);
-            CardPaths = allPaths;
+            CardPaths = resultLoad.CardPaths;
 
             IsLoadedCard = true;
             return (true, string.Empty);
@@ -85,14 +85,14 @@ namespace CardEditor.ViewModels
 
             await Task.Run(async () =>
             {
-                var (loadedScripts, message) = await LoadDataServices.LoadAllScriptPaths();
-                if (loadedScripts == null)
+                LoadScriptPathsResult loadedScripts = await LoadDataServices.LoadAllScriptPaths();
+                if (!loadedScripts.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
+                        $"{CMess.errorOcc.ToText()} {loadedScripts.Message}", new[] { CMess.ok.ToText() });
                     return;
                 }
-                ScriptPaths = loadedScripts;
+                ScriptPaths = loadedScripts.Paths;
             });
             IsLoadedScript = true;
         }
@@ -145,11 +145,11 @@ namespace CardEditor.ViewModels
             }
             return result;
         }
-        public async Task ReloadCardsAsync()
+        public async Task<(bool, string)> ReloadCardsAsync()
         {
             IsLoadedCard = false;
             _allCards = null;
-            await LoadCardsEXAsync();
+            return await LoadCardsEXAsync();
         }
 
         public void Dispose()

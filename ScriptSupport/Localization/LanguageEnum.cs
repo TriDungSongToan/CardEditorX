@@ -346,16 +346,17 @@ namespace ScriptSupport.Localization
         #endregion
 
         #region Tooltip
-        newzip = 0x501,         //Create a new Archive.
-        toolSaveDB = 0x502,     //Save all cards in the list to the original Card Database file.
-        toolSaveCeds = 0x503,   //Save all cards in the list to the original CardEditorSet file.
-        toolSaveExcel = 0x504,  //Save all cards in the list to the original Excel file.
-        toolSaveAsDB = 0x505,   //Save all cards to a new Card Database file.
+        toolSaveDB = 0x502,     //Save all cards in the current list to the original Card Database file.
+        toolSaveCeds = 0x503,   //Save all cards in the current list to the original CardEditorSet file.
+        toolSaveExcel = 0x504,  //Save all cards in the current list to the original Excel file.
+        toolSaveAsDB = 0x505,   //Save all cards in the current list to a new Card Database file.
+        toolSaveAsCeds = 0x506, //Save all cards in the current list to a new CardEditorSet file.
+        toolSaveAsExcel = 0x507,//Save all cards in the current list to a new Excel file.
 
         toolScriptSP = 0x50a,   //Open the Script Support Window.
 
-        toolCopy = 0x511,       //Copy cards to the clipboard.
-        toolPaste = 0x512,      //Paste cards from the clipboard into the list.
+        toolCopy = 0x511,       //Copy cards from the current list to the clipboard.
+        toolPaste = 0x512,      //Paste cards from the clipboard into the current list.
 
         toolFilterCDB = 0x51a,      //Filter and display cards on the list using a Card Database file.
         toolFilDupliCDB = 0x51b,    //Filter and display cards on the list that APPEAR in the selected Card Database.
@@ -370,12 +371,6 @@ namespace ScriptSupport.Localization
         toolFilExclude = 0x522,     //Filter and display cards on the list that EXCLUDE the specified language.
 
         toolExportZIP = 0x525,      //Export Database (and all Images, Scripts of each card in Database) as ZIP file.
-
-        toolExportCeds = 0x52a,     //Export cards as CardEditorSet file.
-        toolImportCeds = 0x52b,     //Import cards from the CardEditorSet file into the list.
-
-        toolExportExcel = 0x52c,    //Export cards as Excel file.
-        toolImportExcel = 0x52d,    //Import cards from the Excel file into the list.
 
         toolAnalyze = 0x531,        //Analyze code for formatting issues and fix any detected inconsistencies.
         toolRegistry = 0x532,       //Export Windows Registry Key file.
@@ -392,10 +387,10 @@ namespace ScriptSupport.Localization
 
         selectOpenFile = 0x545,         //Select File to Open:
 
-        toolPureAND = 0x54a,    //The card must satisfy all filter conditions.
-        toolPureOR = 0x54b,     //The card only needs to satisfy any one of the filter conditions.
-        toolMixedANDOR = 0x54c, //Applies AND between groups and OR within each group.
-        toolMixedORAND = 0x54d, //Applies OR between groups and AND within each group.
+        toolPureAND = 0x54a,        //The card must satisfy all filter conditions.
+        toolPureOR = 0x54b,         //The card only needs to satisfy any one of the filter conditions.
+        toolMixedANDOR = 0x54c,     //Applies AND between groups and OR within each group.
+        toolMixedORAND = 0x54d,     //Applies OR between groups and AND within each group.
 
         toolReplaceText = 0x551,    //Replaces the effect descriptions of the Cards.
         toolReplaceField = 0x552,   //Replace only the selected fields in the current list with data from the imported database file, matched by ID. New cards will be added only if “Add New Card” is turned on.
@@ -404,11 +399,15 @@ namespace ScriptSupport.Localization
         #endregion
 
         #region Object
-        PlaceholderFIle = 0x5a1,    //{0} File
-        PlaceholderSave = 0x5a2,    //Save {0}
-        PlaceholderSelect = 0x5a3,  //Select {0}
+        PlaceholderFIle = 0x591,    //{0} File
+        PlaceholderSave = 0x592,    //Save {0}
+        TwoPlaceholderSave = 0x593, //Save {0} {1}
+        PlaceholderOpen = 0x594,    //Open {0}
+        TwoPlaceholderOpen = 0x595, //Open {0} {1}
+        PlaceholderSelect = 0x596,  //Select {0}
 
-        CardArchive = 0x5a4,//Card Archive
+        CardArchive = 0x5a3,//Card Archive
+        CardList = 0x5a4,   //Card List
         CardDB = 0x5a5,     //Card Database
         CardRareDB = 0x5a6, //Card Rare Database
         ListRareDB = 0x5a7, //List Rare Database
@@ -476,8 +475,9 @@ namespace ScriptSupport.Localization
         #endregion
 
         #region Script Support
-        CardText = 0x5f8,       //Card Text
-        CardData = 0x5f9,       //Card Data
+        CardText = 0x5f7,       //Card Text
+        CardData = 0x5f8,       //Card Data
+        CardImage = 0x5f9,      //Card Image
         CardInfo = 0x5fa,       //Card Information
 
         SearchCard = 0x5fb,     //Search Card
@@ -606,10 +606,11 @@ namespace ScriptSupport.Localization
         originaData = 0x6e6,            //Original Data
         unSavedData = 0x6e7,            //Unsaved Data
 
-        NumberCloseTab = 0x701,         //You are closing {0} tabs.
-        HasUnSaveData = 0x702,          //There is unsaved data.
-        HasSnapshot = 0x703,            //There is one snapshot that hasn't been rolled back from the previous run.
-        HasDuplicateIDs = 0x704,        //There are {0} duplicate IDs in the Card List.
+        NumberCloseTab = 0x700,         //You are closing {0} tabs.
+        HasUnSaveData = 0x701,          //There is unsaved data.
+        HasSnapshot = 0x702,            //There is one snapshot that hasn't been rolled back from the previous run.
+        HasDuplicateIDs = 0x703,        //There are {0} duplicate IDs in the Card List.
+        QuestHasFlag = 0x704,           //Do you want to include a "flag" column?
         QuestContinue = 0x705,          //Do you want to continue?
         QuestOpen = 0x706,              //Do you want to open it?
         QuestOverwrite = 0x707,         //Do you want to overwrite it?

@@ -140,92 +140,91 @@ namespace ScriptSupport.Services
         }
         public string OpenCardList()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.CardDB.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.lflist.conf)", "*.lflist.conf"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())}", "*.cdb;*.db;*.bytes;*.sqlite"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())}", "*.ceds;*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())}", "*.xlsx;*.xlsm;*.xltx;*.xltm"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())}", "*.lflist.conf"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenDataBase()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.CardDB.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())}", "*.cdb;*.db;*.bytes;*.sqlite"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())}", "*.ceds;*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())}", "*.xlsx;*.xlsm;*.xltx;*.xltm"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenDeck()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.Deck.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.Deck.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())}", "*.ydk"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenRare()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb)", "*.cdb"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.ydk)", "*.ydk"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())}", "*.cdb;*.db;*.bytes;*.sqlite"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())}", "*.ceds;*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())}", "*.xlsx;*.xlsm;*.xltx;*.xltm"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.ydk"));
         }
         public string OpenGenesys()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb)", "*.cdb"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())}", "*.cdb;*.db;*.bytes;*.sqlite"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())}", "*.ydk"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenScript()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())} (*.lua)", "*.lua"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())} (*.md)", "*.md"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())} (*.log)", "*.log"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())} (*.yml)", "*.yml"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.conf)", "*.conf"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.CardScript.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())}", "*.lua"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())}", "*.md"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())}", "*.log"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())}", "*.ydk"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())}", "*.yml"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())}", "*.conf"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public IEnumerable<string> OpenScripts()
         {
             return OpenFiles($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())} (*.lua)", "*.lua"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())} (*.md)", "*.md"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())} (*.log)", "*.log"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())} (*.yml)", "*.yml"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.conf)", "*.conf"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())}", "*.lua"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())}", "*.md"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())}", "*.log"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())}", "*.ydk"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())}", "*.yml"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())}", "*.conf"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenCeds()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.Ceds.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.Ceds.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())}", "*.ceds;*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenExcel()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.Excel.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.Excel.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())}", "*.xlsx;*.xlsm;*.xltx;*.xltm"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenLua(string filter = "")
         {
             CommonOpenFileDialog openFileDialog = new CommonOpenFileDialog()
             {
-                Title = $"{CMess.Open.ToText()} {CMess.File.ToText()} {CMess.cardlabelSetCode.ToText()}",
+                Title = string.Format(CMess.TwoPlaceholderOpen.ToText(), filter, CMess.File.ToText()),
                 EnsureFileExists = true,
                 EnsurePathExists = true,
                 Multiselect = false,
             };
             string filterDiaLog = string.IsNullOrWhiteSpace(filter) ? CMess.cardlabelSetCode.ToText() : filter;
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog} (*.lua)", "*.lua"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog}", "*.lua"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             return (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -236,13 +235,13 @@ namespace ScriptSupport.Services
         {
             CommonOpenFileDialog openFileDialog = new CommonOpenFileDialog()
             {
-                Title = $"{CMess.Open.ToText()} {CMess.File.ToText()}",
+                Title = string.Format(CMess.TwoPlaceholderOpen.ToText(), filter, CMess.File.ToText()),
                 EnsureFileExists = true,
                 EnsurePathExists = true,
                 Multiselect = false,
             };
             string filterDiaLog = string.IsNullOrWhiteSpace(filter) ? CMess.cardlabelSetCode.ToText() : filter;
-            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog} (*.conf)", "*.conf"));
+            openFileDialog.Filters.Add(new CommonFileDialogFilter($"{filterDiaLog}", "*.conf"));
             openFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
 
             return (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
@@ -251,32 +250,38 @@ namespace ScriptSupport.Services
         }
         public string OpenBanList()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.lflist.conf)", "*.lflist.conf"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.BanList.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())}", "*.lflist.conf"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenImage()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Image.ToText())} (*.png, *.jpg, *.jpeg, *.bmp)", "*.jpg;*.jpeg;*.png;*.bmp"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.Image.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Image.ToText())}", "*.jpg;*.jpeg;*.png;*.bmp"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenVideo()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Video.ToText())} (*.mp4, *.avi)", "*.mp4;*.avi"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.Video.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Video.ToText())}", "*.mp4;*.avi"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenText()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.Text.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
+        }
+        public string OpenJSON()
+        {
+            return OpenFile(string.Format(CMess.TwoPlaceholderOpen.ToText(), CMess.Json.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.json"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string OpenFile()
         {
-            return OpenFile($"{CMess.Open.ToText()} {CMess.File.ToText()}",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return OpenFile(string.Format(CMess.PlaceholderOpen.ToText(), CMess.File.ToText()),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
 
         public string OpenFolder(string title = "")
@@ -329,62 +334,68 @@ namespace ScriptSupport.Services
         }
         public string SaveDataBase()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.CardDB.ToText()}", "cdb",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())} (*.cdb; *.db; *.sqlite)", "*.cdb;*.db;*.sqlite"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()), "cdb",
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardDB.ToText())}", "*.cdb;*.db;*.bytes;*.sqlite"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveDeck()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.Deck.ToText()}", "ydk",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.Deck.ToText(), CMess.File.ToText()), "ydk",
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())}", "*.ydk"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())})", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveScript()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.CardScript.ToText()}", "lua",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())} (*.lua)", "*.lua"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())} (*.md)", "*.md"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())} (*.log)", "*.log"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())} (*.ydk)", "*.ydk"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())} (*.yml)", "*.yml"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.conf)", "*.conf"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.CardScript.ToText(), CMess.File.ToText()), "lua",
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.CardScript.ToText())}", "*.lua"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Md.ToText())}", "*.md"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Log.ToText())}", "*.log"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Deck.ToText())}", "*.ydk"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Yaml.ToText())}", "*.yml"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())}", "*.conf"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveRes()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.File.ToText()}", "res",
-                ($"Registry (*.res)", "*.res"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), "Registry", CMess.File.ToText()), "res",
+                ($"Registry", "*.res"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveText()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.File.ToText()}", "txt",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())} (*.txt)", "*.txt"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.Text.ToText(), CMess.File.ToText()), "txt",
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Text.ToText())}", "*.txt"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveCeds()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.Ceds.ToText()}", "ceds",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())} (*.ceds)", "*.ceds"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.Ceds.ToText(), CMess.File.ToText()), "ceds",
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Ceds.ToText())}", "*.ceds"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveZip()
         {
-            return SaveFile($"{CMess.newzip.ToText()}", "zip",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())} (*.zip)", "*.zip"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.Zip.ToText(), CMess.File.ToText()), "zip",
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())}", "*.zip"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveExcel()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.CardScript.ToText()}", "xlsx",
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())} (*.xlsx)", "*.xlsx"),
-                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.Excel.ToText(), CMess.File.ToText()), "xlsx",
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Excel.ToText())}", "*.xlsx;*.xlsm;*.xltx;*.xltm"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
+        }
+        public string SaveJSON()
+        {
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.Json.ToText(), CMess.File.ToText()), "json",
+                ($"{CMess.File.ToText()}", "*.json"),
+                ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
         }
         public string SaveBanList()
         {
-            return SaveFile($"{CMess.Save.ToText()} {CMess.File.ToText()}", "lflist.conf",
+            return SaveFile(string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.BanList.ToText(), CMess.File.ToText()), "lflist.conf",
                 ($"{CMess.File.ToText()} (*.lflist.conf)", "*.lflist.conf"),
                 ($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())} (*.*)", "*.*"));
         }

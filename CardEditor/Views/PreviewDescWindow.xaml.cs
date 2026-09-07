@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using MaterialDesignThemes.Wpf;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Commands;

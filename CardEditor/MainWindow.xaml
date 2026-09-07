@@ -28,61 +28,68 @@
                  Closing="MetroWindow_Closing"
                  mc:Ignorable="d"
                  Title="CardEditor X"
-                 Width="1220" Height="800"
-                 >
+                 Width="1220" Height="800" >
 
-    <mah:MetroWindow.WindowButtonCommands>
-        <mah:WindowButtonCommands/>
-    </mah:MetroWindow.WindowButtonCommands>
     <Window.Resources>
         <system:String x:Key="Partition">Beginning</system:String>
 
         <Converter:PositiveBoolToVisibilityConverter x:Key="PositiveBoolToVis"/>
         <Converter:NegativeBoolToVisibilityConverter x:Key="NegativeBoolToVis"/>
+
+        <Style TargetType="ToolTip">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderThickness="0.5" Padding="6" CornerRadius="4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              TextElement.Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              TextElement.FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
-
-    <Window.CommandBindings>
-        <CommandBinding Command="{x:Static Commands:CustomCommands.NewDatabase}" Executed="CommandNewDatabase_Executed" CanExecute="CommandBindingNew_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.NewScript}" Executed="CommandNewScript_Executed" CanExecute="CommandBindingNew_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.NewDeck}" Executed="CommandNewDeck_Executed" CanExecute="CommandBindingNew_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.NewBanList}" Executed="CommandNewBanList_Executed" CanExecute="CommandBindingNew_CanExecute" />
-
-        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenArchive}" Executed="CommandOpenArchive_Executed" CanExecute="CommandBindingOpen_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenDatabase}" Executed="CommandOpenDatabase_Executed" CanExecute="CommandBindingOpen_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenScript}" Executed="CommandOpenScript_Executed" CanExecute="CommandBindingOpen_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenDeck}" Executed="CommandOpenDeck_Executed" CanExecute="CommandBindingOpen_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenBanList}" Executed="CommandOpenBanList_Executed" CanExecute="CommandBindingOpen_CanExecute" />
-        
-        <CommandBinding Command="{x:Static Commands:CustomCommands.Save}" Executed="CommandSave_Executed" CanExecute="CommandSave_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.SaveAs}" Executed="CommandSaveAs_Executed" CanExecute="CommandSaveAs_CanExecute" />
-        <CommandBinding Command="{x:Static Commands:CustomCommands.Setting}" Executed="CommandSetting_Executed" CanExecute="CommandBindingSetting_CanExecute" />
-    </Window.CommandBindings>
-
+    
+    <mah:MetroWindow.WindowButtonCommands>
+        <mah:WindowButtonCommands/>
+    </mah:MetroWindow.WindowButtonCommands>
     <mah:MetroWindow.LeftWindowCommands>
         <mah:WindowCommands Background="Transparent">
             <Border x:Name="BorderLeftWindowCommands" Background="Transparent"
                     BorderBrush="Transparent" BorderThickness="0"
                     MouseLeftButtonDown="BorderLeftWindowCommands_MouseLeftButtonDown" >
                 <StackPanel Orientation="Horizontal" >
-                    <TextBlock x:Name="txtTitle" IsHitTestVisible="False" Margin="3,0,5,0"
-                               Background="Transparent"
+                    <TextBlock x:Name="txtTitle" IsHitTestVisible="False" Margin="3,0,0,0"
+                               Background="Transparent" Text="{Binding MainWindowTitle}"
                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-                    <TextBlock Text="*" IsHitTestVisible="False" Margin="0,0,5,0"
+                    <TextBlock Text="*" IsHitTestVisible="False" Margin="3,0,3,0"
                                Background="Transparent"
                                Visibility="{Binding IsSaved, Converter={StaticResource PositiveBoolToVis}}"
                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                    <Button x:Name="btnBrowseTitle" IsHitTestVisible="True" Margin="0" Cursor="Hand"
+                            Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                            Visibility="{Binding CanBrowseWindowTitle, Converter={StaticResource NegativeBoolToVis}}"
+                            Style="{StaticResource ButtonSuccess}"
+                            Command="{Binding BrowseFileCommand}">
+                        <materialDesign:PackIcon Kind="OpenInNew" Width="20" Height="20"
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                    </Button>
                 </StackPanel>
-                
             </Border>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
-    
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands Background="Transparent">
             <Button x:Name="btnAbout" Width="46" Height="auto" OverridesDefaultStyle="True"
@@ -124,6 +131,25 @@
             </Button>
         </mah:WindowCommands>
     </mah:MetroWindow.RightWindowCommands>
+    
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static Commands:CustomCommands.NewDatabase}" Executed="CommandNewDatabase_Executed" CanExecute="CommandBindingNew_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.NewExcel}" Executed="CommandNewExcel_Executed" CanExecute="CommandBindingNew_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.NewCeds}" Executed="CommandNewCeds_Executed" CanExecute="CommandBindingNew_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.NewScript}" Executed="CommandNewScript_Executed" CanExecute="CommandBindingNew_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.NewDeck}" Executed="CommandNewDeck_Executed" CanExecute="CommandBindingNew_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.NewBanList}" Executed="CommandNewBanList_Executed" CanExecute="CommandBindingNew_CanExecute" />
+
+        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenArchive}" Executed="CommandOpenArchive_Executed" CanExecute="CommandBindingOpen_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenDatabase}" Executed="CommandOpenDatabase_Executed" CanExecute="CommandBindingOpen_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenScript}" Executed="CommandOpenScript_Executed" CanExecute="CommandBindingOpen_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenDeck}" Executed="CommandOpenDeck_Executed" CanExecute="CommandBindingOpen_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.OpenBanList}" Executed="CommandOpenBanList_Executed" CanExecute="CommandBindingOpen_CanExecute" />
+
+        <CommandBinding Command="{x:Static Commands:CustomCommands.Save}" Executed="CommandSave_Executed" CanExecute="CommandSave_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.SaveAs}" Executed="CommandSaveAs_Executed" CanExecute="CommandSaveAs_CanExecute" />
+        <CommandBinding Command="{x:Static Commands:CustomCommands.Setting}" Executed="CommandSetting_Executed" CanExecute="CommandBindingSetting_CanExecute" />
+    </Window.CommandBindings>
 
     <Grid FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
           d:FlowDirection="LeftToRight">
@@ -141,21 +167,39 @@
                   HorizontalAlignment="Stretch" Style="{DynamicResource MaterialDesignMenu}" >
 
                 <MenuItem Header="{Lag:Localize File}" Margin="0" Padding="10,0,10,0" >
+                    
                     <!--New-->
                     <MenuItem Header="{Lag:Localize tNew}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/New/New.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
 
-                        <!--New Database-->
-                        <MenuItem Header="{Lag:Localize CardDB}" InputGestureText="Ctrl + N + D  "
-                                  Command="{x:Static Commands:CustomCommands.NewDatabase}"
-                                  Margin="0" Padding="10,0,0,0" >
+                        <!--New Card List-->
+                        <MenuItem Header="{Lag:Localize CardList}" Margin="0" Padding="10,0,15,0" >
                             <MenuItem.Icon>
                                 <Image Source="pack://application:,,,/Images/Menu/File/New/NewDatabase.ico" Width="auto" Height="auto" />
                             </MenuItem.Icon>
-                        </MenuItem>
 
+                            <MenuItem Header="{Lag:Localize CardDB}" InputGestureText="Ctrl + N + D  "
+                                      Command="{x:Static Commands:CustomCommands.NewDatabase}" Margin="0" Padding="10,0,0,0" >
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Menu/File/New/NewDatabase.ico" Width="auto" Height="auto" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{Lag:Localize Excel}" InputGestureText="Ctrl + N + E  "
+                                      Command="{x:Static Commands:CustomCommands.NewExcel}" Margin="0" Padding="10,0,0,0" >
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Menu/File/New/NewDatabase.ico" Width="auto" Height="auto" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{Lag:Localize Ceds}" InputGestureText="Ctrl + N + C  "
+                                      Command="{x:Static Commands:CustomCommands.NewCeds}" Margin="0" Padding="10,0,0,0" >
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Menu/File/New/NewDatabase.ico" Width="auto" Height="auto" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuItem>
+                        
                         <!--New Script-->
                         <MenuItem Header="{Lag:Localize CardScript}" InputGestureText="Ctrl + N + S  "
                                   Command="{x:Static Commands:CustomCommands.NewScript}"
@@ -186,7 +230,6 @@
 
                     <!--Open-->
                     <MenuItem Header="{Lag:Localize Open}" Margin="0" Padding="10,0,15,0" >
-
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Open/Open.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
@@ -200,8 +243,8 @@
                             </MenuItem.Icon>
                         </MenuItem>
 
-                        <!--Open DB-->
-                        <MenuItem Header="{Lag:Localize cardDB}" InputGestureText="Ctrl + O + D  "
+                        <!--Open Card List-->
+                        <MenuItem Header="{Lag:Localize CardList}" InputGestureText="Ctrl + O + D  "
                                   Command="{x:Static Commands:CustomCommands.OpenDatabase}"
                                   Margin="0" Padding="10,0,0,0" >
                             <MenuItem.Icon>
@@ -248,7 +291,7 @@
                                 <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenDatabase.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem x:Name="menuRecentDatabases" Header="{Lag:Localize cardDB}" Margin="0" Padding="10,0,15,0" >
+                        <MenuItem x:Name="menuRecentDatabases" Header="{Lag:Localize CardList}" Margin="0" Padding="10,0,15,0" >
                             <MenuItem.Icon>
                                 <Image Source="pack://application:,,,/Images/Menu/File/Open/OpenDatabase.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
@@ -270,8 +313,8 @@
                         </MenuItem>
                     </MenuItem>
 
-                    <!--Save cdb-->
-                    <MenuItem x:Name="menuSaveCdb" Header="{Lag:Localize Save}"
+                    <!--Save DataEditor-->
+                    <MenuItem x:Name="menuSaveDataEditor" Header="{Lag:Localize Save}"
                               Visibility="{Binding DataEditVisibility}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Save/Save.ico" Width="auto" Height="auto" Margin="0" />
@@ -292,7 +335,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <!--excel-->
-                        <MenuItem Header="{Lag:Localize Excel}" Click="menuSaveExcel_Click"
+                        <MenuItem x:Name="menuSaveExcel" Header="{Lag:Localize Excel}" Click="menuSaveExcel_Click"
                                   ToolTip="{Lag:Localize toolSaveExcel}" Margin="0" Padding="10,0,15,0" >
                             <MenuItem.Icon>
                                 <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveExcel.ico" Width="auto" Height="auto" Margin="0" />
@@ -300,7 +343,7 @@
                         </MenuItem>
                     </MenuItem>
 
-                    <!--Save-->
+                    <!--Save Non-DataEditor -->
                     <MenuItem x:Name="menuSave" Header="{Lag:Localize Save}" InputGestureText="Ctrl + S  "
                               Visibility="{Binding SaveVisibility}" Command="{x:Static Commands:CustomCommands.Save}"
                               Margin="0" Padding="10,0,15,0" >
@@ -309,31 +352,90 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <!--save as cdb-->
-                    <MenuItem x:Name="menuSaveAsCdb" Header="{Lag:Localize SaveAs}"
-                              Visibility="{Binding DataEditVisibility}" Margin="0" Padding="10,0,15,0"
-                              ToolTip="{Lag:Localize toolSaveAsDB}" >
+                    <!--Save As DataEditor-->
+                    <MenuItem x:Name="menuSaveAsDataEditor" Header="{Lag:Localize SaveAs}"
+                              Visibility="{Binding DataEditVisibility}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveAs.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
-                        <MenuItem x:Name="menuSaveAsSelectedCard" Header="{Lag:Localize SelectCards}" Margin="0" Padding="10,0,15,0"
-                                  ToolTip="{Lag:Localize toolSelectCards}" Click="menuSaveAsSelectedCard_Click" >
+
+                        <MenuItem x:Name="menuSaveAsCDB" Header="{Lag:Localize CardDB}" Margin="0" Padding="10,0,15,0"
+                                  ToolTip="{Lag:Localize toolSaveAsDB}">
                             <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Scope/Selected.ico" Width="auto" Height="auto" Margin="0" />
+                                <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveCdb.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
+                            
+                            <MenuItem x:Name="menuSaveAsCDBSelectedCard" Header="{Lag:Localize SelectCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolSelectCards}" Click="menuSaveAsCDBSelectedCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/Selected.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="menuSaveAsCDBFiltedCard" Header="{Lag:Localize foundCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolFoundCards}" Click="menuSaveAsCDBFiltedCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/Found.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="menuSaveAsCDBAllCard" Header="{Lag:Localize allCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolAllCards}" Click="menuSaveAsCDBAllCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/All.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </MenuItem>
-                        <MenuItem x:Name="menuSaveAsFiltedCard" Header="{Lag:Localize foundCards}" Margin="0" Padding="10,0,15,0"
-                                  ToolTip="{Lag:Localize toolFoundCards}" Click="menuSaveAsFiltedCard_Click" >
+
+                        <MenuItem x:Name="menuSaveAsXLSX" Header="{Lag:Localize Excel}" Margin="0" Padding="10,0,15,0"
+                                  ToolTip="{Lag:Localize toolSaveAsExcel}">
                             <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Scope/Found.ico" Width="auto" Height="auto" Margin="0" />
+                                <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveExcel.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
+                            <MenuItem x:Name="menuSaveAsXLSXSelectedCard" Header="{Lag:Localize SelectCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolSelectCards}" Click="menuSaveAsXLSXSelectedCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/Selected.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="menuSaveAsXLSXFiltedCard" Header="{Lag:Localize foundCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolFoundCards}" Click="menuSaveAsXLSXFiltedCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/Found.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="menuSaveAsXLSXAllCard" Header="{Lag:Localize allCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolAllCards}" Click="menuSaveAsXLSXAllCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/All.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </MenuItem>
-                        <MenuItem x:Name="menuSaveAsAllCard" Header="{Lag:Localize allCards}" Margin="0" Padding="10,0,15,0"
-                                  ToolTip="{Lag:Localize toolAllCards}" Click="menuSaveAsAllCard_Click" >
+
+                        <MenuItem x:Name="menuSaveAsCEDS" Header="{Lag:Localize Ceds}" Margin="0" Padding="10,0,15,0"
+                                  ToolTip="{Lag:Localize toolSaveAsCeds}">
                             <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Scope/All.ico" Width="auto" Height="auto" Margin="0" />
+                                <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveCeds.ico" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
+
+                            <MenuItem x:Name="mmenuSaveAsCEDSSelectedCard" Header="{Lag:Localize SelectCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolSelectCards}" Click="mmenuSaveAsCEDSSelectedCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/Selected.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="menuSaveAsCEDSFiltedCard" Header="{Lag:Localize foundCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolFoundCards}" Click="menuSaveAsCEDSFiltedCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/Found.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="menuSaveAsCEDSAllCard" Header="{Lag:Localize allCards}" Margin="0" Padding="10,0,15,0"
+                                      ToolTip="{Lag:Localize toolAllCards}" Click="menuSaveAsCEDSAllCard_Click">
+                                <MenuItem.Icon>
+                                    <Image Source="pack://application:,,,/Images/Scope/All.ico" Width="auto" Height="auto" Margin="0" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </MenuItem>
+                        
                     </MenuItem>
 
                     <!--save as-->
@@ -365,6 +467,17 @@
                             <Image Source="pack://application:,,,/Images/Menu/Win/Dataeditor.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
+                    <MenuItem Margin="0" Padding="10,0,15,0" Click="menuomegadataeditor_Click" >
+                        <MenuItem.Icon>
+                            <Image Source="pack://application:,,,/Images/Menu/Win/Dataeditor.ico" Width="auto" Height="auto" Margin="0" />
+                        </MenuItem.Icon>
+                        <MenuItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Lag:Localize DataEdit}" />
+                                <TextBlock Text="Ω" Margin="5,0,0,0" />
+                            </StackPanel>
+                        </MenuItem.Header>
+                    </MenuItem>
                     <MenuItem Header="{Lag:Localize DeckEdit}" Margin="0" Padding="10,0,15,0"  Click="menudeckeditor_Click" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Win/Deckeditor.ico" Width="auto" Height="auto" Margin="0" />
@@ -385,7 +498,8 @@
                             <materialDesign:PackIcon Kind="Robot" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="{Lag:Localize ScriptSupport}" ToolTip="{Lag:Localize toolScriptSP}" Margin="0" Padding="10,0,15,0" Click="menuScriptSupport_Click" >
+                    <MenuItem Header="{Lag:Localize ScriptSupport}" ToolTip="{Lag:Localize toolScriptSP}"
+                              Margin="0" Padding="10,0,15,0" Click="menuScriptSupport_Click" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/SSS.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
@@ -443,44 +557,6 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <MenuItem Header="Filter With CDB File" ToolTip="{Lag:Localize toolFilterCDB}" Visibility="Collapsed"
-                              Margin="0" Padding="10,0,15,0" >
-                        <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Card/Filter.ico" Width="auto" Height="auto" Margin="0" />
-                        </MenuItem.Icon>
-                        <MenuItem x:Name="filterCDBDuplicate" Header="{Lag:Localize DupliCards}" Margin="0" Padding="10,0,15,0"
-                                  ToolTip="{Lag:Localize toolFilDupliCDB}" Click="filterCDBDuplicate_Click" >
-                            <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Menu/Card/Duplicate.ico" Width="auto" Height="auto" Margin="0" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem x:Name="filterCDBDifferent" Header="{Lag:Localize DiffCards}" Margin="0" Padding="10,0,15,0"
-                                  ToolTip="{Lag:Localize toolFilDiffCDB}" Click="filterCDBDifferent_Click" >
-                            <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Menu/Card/Different.ico" Width="auto" Height="auto" Margin="0" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                    </MenuItem>
-
-                    <MenuItem Header="Filter With YDK File" ToolTip="{Lag:Localize toolFilterYDK}" Visibility="Collapsed"
-                              Margin="0" Padding="10,0,15,0" >
-                        <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Card/Filter.ico" Width="auto" Height="auto" Margin="0" />
-                        </MenuItem.Icon>
-                        <MenuItem x:Name="filterYDKDuplicate" Header="{Lag:Localize DupliCards}" Margin="0" Padding="10,0,15,0"
-                                  ToolTip="{Lag:Localize toolFilDupliYDK}" Click="filterYDKDuplicate_Click" >
-                            <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Menu/Card/Duplicate.ico" Width="auto" Height="auto" Margin="0" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem x:Name="filterYDKDifferent" Header="{Lag:Localize DiffCards}" Margin="0" Padding="10,0,15,0"
-                                  ToolTip="{Lag:Localize toolFilDiffYDK}" Click="filterYDKDifferent_Click" >
-                            <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Menu/Card/Different.ico" Width="auto" Height="auto" Margin="0" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                    </MenuItem>
-
                     <MenuItem x:Name="menuCreateImage" Header="{Lag:Localize CreateImage}" Margin="0" Padding="10,0,15,0"
                               Visibility="{Binding DataEditVisibility}"
                               ToolTip="{Lag:Localize toolCreateImage}" Click="menuCreateImage_Click" >
@@ -517,54 +593,6 @@
                             </MenuItem>
                             <MenuItem x:Name="exportzipAll" Header="{Lag:Localize allCards}" Margin="0" Padding="10,0,15,0"
                                       ToolTip="{Lag:Localize toolAllCards}" Click="exportzipAll_Click" >
-                                <MenuItem.Icon>
-                                    <Image Source="pack://application:,,,/Images/Scope/All.ico" Width="auto" Height="auto" Margin="0" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </MenuItem>
-                        <MenuItem Header="{Lag:Localize ExpoCeds}" Visibility="{Binding DataEditVisibility}"
-                                  Margin="0" Padding="10,0,15,0" ToolTip="{Lag:Localize toolExportCeds}" >
-                            <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Menu/Data/Export/ExportCeds.ico" Width="auto" Height="auto" Margin="0" />
-                            </MenuItem.Icon>
-                            <MenuItem x:Name="exportcedsSelected" Header="{Lag:Localize SelectCards}" Margin="0" Padding="10,0,15,0"
-                                      ToolTip="{Lag:Localize toolSelectCards}" Click="exportcedsSelected_Click" >
-                                <MenuItem.Icon>
-                                    <Image Source="pack://application:,,,/Images/Scope/Selected.ico" Width="auto" Height="auto" Margin="0" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="exportcedsFilted" Header="{Lag:Localize foundCards}" Margin="0" Padding="10,0,15,0"
-                                      ToolTip="{Lag:Localize toolFoundCards}" Click="exportcedsFilted_Click" >
-                                <MenuItem.Icon>
-                                    <Image Source="pack://application:,,,/Images/Scope/Found.ico" Width="auto" Height="auto" Margin="0" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="exportcedsAll" Header="{Lag:Localize allCards}" Margin="0" Padding="10,0,15,0"
-                                      ToolTip="{Lag:Localize toolAllCards}" Click="exportcedsAll_Click" >
-                                <MenuItem.Icon>
-                                    <Image Source="pack://application:,,,/Images/Scope/All.ico" Width="auto" Height="auto" Margin="0" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </MenuItem>
-                        <MenuItem Header="{Lag:Localize ExpoExcel}" Visibility="{Binding DataEditVisibility}"
-                                  Margin="0" Padding="10,0,15,0" ToolTip="{Lag:Localize toolExportExcel}">
-                            <MenuItem.Icon>
-                                <Image Source="pack://application:,,,/Images/Menu/Data/Export/ExportExcel.ico" Width="auto" Height="auto" Margin="0" />
-                            </MenuItem.Icon>
-                            <MenuItem x:Name="exportExcelSelected" Header="{Lag:Localize SelectCards}" Margin="0" Padding="10,0,15,0"
-                                      ToolTip="{Lag:Localize toolSelectCards}" Click="exportExcelSelected_Click" >
-                                <MenuItem.Icon>
-                                    <Image Source="pack://application:,,,/Images/Scope/Selected.ico" Width="auto" Height="auto" Margin="0" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="exportExcelFilted" Header="{Lag:Localize foundCards}" Margin="0" Padding="10,0,15,0"
-                                      ToolTip="{Lag:Localize toolFoundCards}" Click="exportExcelFilted_Click" >
-                                <MenuItem.Icon>
-                                    <Image Source="pack://application:,,,/Images/Scope/Found.ico" Width="auto" Height="auto" Margin="0" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="exportExcelAll" Header="{Lag:Localize allCards}" Margin="0" Padding="10,0,15,0"
-                                      ToolTip="{Lag:Localize toolAllCards}" Click="exportExcelAll_Click" >
                                 <MenuItem.Icon>
                                     <Image Source="pack://application:,,,/Images/Scope/All.ico" Width="auto" Height="auto" Margin="0" />
                                 </MenuItem.Icon>
@@ -622,12 +650,12 @@
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/Help/Update.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
-                        <MenuItem Header="Card Data" Margin="0" Padding="10,0,15,0" Click="CardDataChkUpdate_Click" >
+                        <MenuItem Header="{Lag:Localize CardData}" Margin="0" Padding="10,0,15,0" Click="CardDataChkUpdate_Click" >
                             <MenuItem.Icon>
                                 <materialDesign:PackIcon Kind="DatabaseSyncOutline" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="Card Image" Margin="0" Padding="10,0,15,0" Click="CardImageChkUpdate_Click" >
+                        <MenuItem Header="{Lag:Localize CardImage}" Margin="0" Padding="10,0,15,0" Click="CardImageChkUpdate_Click" >
                             <MenuItem.Icon>
                                 <materialDesign:PackIcon Kind="ImageRefresh" Width="auto" Height="auto" Margin="0" />
                             </MenuItem.Icon>
@@ -663,6 +691,26 @@
                 </MenuItem>
             </Menu>
         </Grid>
+
+        <Border x:Name="LoadingIndicator" Width="20" Height="20" Margin="0,0,5,0"
+                HorizontalAlignment="Right" VerticalAlignment="Center"
+                Background="Transparent" CornerRadius="0" Panel.ZIndex="9999">
+
+            <Grid>
+                <Ellipse x:Name="LoadingCircle" Width="20" Height="20"
+                         Stroke="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                         StrokeThickness="3" StrokeDashArray="2 3" RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.RenderTransform>
+                        <RotateTransform x:Name="LoadingRotation"/>
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+
+                <TextBlock x:Name="SuccessIcon" Text="✓" FontWeight="Bold"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                           FontSize="23" Visibility="Collapsed" />
+            </Grid>
+        </Border>
 
         <Grid Grid.Row="1" >
             

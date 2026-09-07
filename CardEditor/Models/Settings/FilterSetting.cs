@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.ComponentModel;
+using CardEditor.Enums;
 
 namespace CardEditor.Models.Settings
 {

@@ -8,15 +8,15 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
-using CardEditor.Models;
+using CardEditor.Enums;
 using CardEditor.Helpers;
 using CardEditor.ImageGene;
 using CardEditor.Services;
 using CardEditor.Commands;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
-using CardAppContext = CardEditor.Models.AppContext;
 using CMess = CardEditor.Localization.Language;
+using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor
 {
@@ -110,6 +110,9 @@ namespace CardEditor
                 //else Series.Add("Series 10");
                 //imageSettingSource.Series.AddRange(Series);
 
+                List<OutPutImage> iutPutImages = Enum.GetValues(typeof(OutPutImage)).Cast<OutPutImage>().ToList();
+                imageSettingSource.OutPutImages.AddRange(iutPutImages);
+
                 List<ImageFormat> imageFormats = Enum.GetValues(typeof(ImageFormat)).Cast<ImageFormat>().ToList();
                 imageSettingSource.ImageFormats.AddRange(imageFormats);
 
@@ -152,8 +155,21 @@ namespace CardEditor
         {
             try
             {
-                ConfigViewModel.Instance.imageSetting = imageSetting;
+                ConfigViewModel.Instance.imageSetting = imageSetting.Clone();
                 var (result, message) = ConfigViewModel.Instance.SaveSingleSettingFile("ImageSetting", ConfigViewModel.Instance.imageSetting);
+                if (result)
+                {
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()), new[] { CMess.ok.ToText() });
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Setting.ToText())} {message}",
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
+
                 GeneraImageViewModel.Instance.IsChangedSeries = false;
                 GeneraImageViewModel.Instance.IsLoadedImageCache = false;
                 RareRawDataViewModel.Instance.IsLoadedImageRareCache = false;

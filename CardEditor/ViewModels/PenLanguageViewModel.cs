@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Collections;

@@ -27,12 +27,12 @@ namespace CardEditor.Services
             WriteIndented = true, // để file JSON offline dễ đọc/diff khi mở tay
             Converters =
         {
-            new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.CardType>(),
-            new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.Rarity>(),
-            new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.Attribute>(),
-            new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.LinkArrow>(),
-            new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.MonsterType>(),
-            new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.Race>(),
+            new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.CardType>(),
+            new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.Rarity>(),
+            new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.Attribute>(),
+            new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.LinkArrow>(),
+            new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.MonsterType>(),
+            new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.Race>(),
         }
         };
 

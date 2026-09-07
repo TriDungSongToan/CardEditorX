@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Models.Settings;
 using CardEditor.Helpers;

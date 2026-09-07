@@ -74,6 +74,22 @@
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="FontFamily" Value="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
             </Style>
+
+            <Style TargetType="ToolTip">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToolTip">
+                            <Border Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderThickness="0.5" Padding="6" CornerRadius="4">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                              TextElement.Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              TextElement.FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -1006,6 +1022,12 @@
                                     </Grid>
 
                                     <Grid Width="500" Margin="0,0,0,2" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="2" />
+                                            <ColumnDefinition Width="auto" />
+                                        </Grid.ColumnDefinitions>
+                                        
                                         <TextBox x:Name="txtOutPutPath" Height="auto" MinHeight="43"
                                                  Text="{Binding imageSetting.OutPutFolder, UpdateSourceTrigger=PropertyChanged}"
                                                  BorderThickness="0.7" Padding="10,13,3,0"
@@ -1036,6 +1058,25 @@
                                                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                             </Button.Content>
                                         </Button>
+
+                                        <ComboBox x:Name="cmbOutPut" Grid.Column="2" Height="auto" MinHeight="43" Width="110"
+                                                  BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  ItemsSource="{Binding imageSettingSource.OutPutImages}"
+                                                  SelectedItem="{Binding imageSetting.SelectedOutPut}"
+                                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                  materialDesign:ColorZoneAssist.Mode="Custom"
+                                                  materialDesign:HintAssist.Hint="OutPut"
+                                                  Style="{StaticResource MaterialDesignFilledComboBox}"
+                                                  TextOptions.TextFormattingMode="Display"
+                                                  TextOptions.TextRenderingMode="ClearType"
+                                                  materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
                                     </Grid>
 
                                     <Grid Width="500" Margin="0,0,0,2" >

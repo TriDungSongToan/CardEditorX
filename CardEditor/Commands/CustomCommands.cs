@@ -5,6 +5,8 @@ namespace CardEditor.Commands
     public class CustomCommands
     {
         public static readonly RoutedCommand NewDatabase = new RoutedCommand("NewDatabase", typeof(CustomCommands));
+        public static readonly RoutedCommand NewExcel = new RoutedCommand("NewExcel", typeof(CustomCommands));
+        public static readonly RoutedCommand NewCeds = new RoutedCommand("NewCeds", typeof(CustomCommands));
         public static readonly RoutedCommand NewDeck = new RoutedCommand("NewDeck", typeof(CustomCommands));
         public static readonly RoutedCommand NewScript = new RoutedCommand("NewScript", typeof(CustomCommands));
         public static readonly RoutedCommand NewBanList = new RoutedCommand("NewBanList", typeof(CustomCommands));
@@ -20,6 +22,5 @@ namespace CardEditor.Commands
         public static readonly RoutedCommand Setting = new RoutedCommand("Setting", typeof(CustomCommands));
         public static readonly RoutedCommand Exit = new RoutedCommand("Exit", typeof(CustomCommands));
 
-        // public static readonly RoutedCommand SaveCeds = new RoutedCommand("SaveCeds", typeof(CustomCommands));
     }
 }

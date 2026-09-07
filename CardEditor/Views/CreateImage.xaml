@@ -28,6 +28,24 @@
         Loaded="Window_Loaded"
         Title="Create Image">
 
+    <Window.Resources>
+        <Style TargetType="ToolTip">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToolTip">
+                        <Border Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                BorderThickness="0.5" Padding="6" CornerRadius="4">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              TextElement.Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              TextElement.FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <materialDesign:Card UniformCornerRadius="5" Width="auto" Padding="0" BorderThickness="1,0,1,1"
                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -71,7 +89,7 @@
 
                 <Grid Grid.Row="0" >
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="txtArtWorkFolder" Grid.Column="0" Height="auto" MinHeight="47"
                              Margin="0" Padding="10,10,3,2" BorderThickness="0.7"
@@ -103,11 +121,14 @@
                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                         </Button.Content>
                     </Button>
+
                 </Grid>
 
                 <Grid Grid.Row="2" >
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="3" />
+                        <ColumnDefinition Width="auto" />
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="txtOutPutFolder" Grid.Column="0" Height="auto" MinHeight="47"
                              Margin="0" Padding="10,10,3,2" BorderThickness="0.7"
@@ -139,6 +160,24 @@
                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                         </Button.Content>
                     </Button>
+                    <ComboBox x:Name="cmbOutPut" Grid.Column="2" Height="auto" MinHeight="43" Width="110"
+                              BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                              ItemsSource="{Binding imageSettingSource.OutPutImages}"
+                              SelectedItem="{Binding imageSetting.SelectedOutPut}"
+                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                              materialDesign:ColorZoneAssist.Mode="Custom"
+                              materialDesign:HintAssist.Hint="OutPut"
+                              Style="{StaticResource MaterialDesignFilledComboBox}"
+                              TextOptions.TextFormattingMode="Display"
+                              TextOptions.TextRenderingMode="ClearType"
+                              materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                              materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
                 </Grid>
 
                 <Grid Grid.Row="4" Margin="0">

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Manager;
 using CardEditor.Collections;

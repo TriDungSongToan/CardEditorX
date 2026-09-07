@@ -25,8 +25,8 @@ namespace CardEditor.ViewModels
         private List<CardMasterDuel> _cardList = new();
         public IReadOnlyList<CardMasterDuel> CardList => _cardList;
 
-        private Dictionary<ulong, CardEditor.Models.MasterDuel.Rarity> _mapRarity = new();
-        public Dictionary<ulong, CardEditor.Models.MasterDuel.Rarity> MapRarity => _mapRarity;
+        private Dictionary<ulong, CardEditor.Enums.MasterDuel.Rarity> _mapRarity = new();
+        public Dictionary<ulong, CardEditor.Enums.MasterDuel.Rarity> MapRarity => _mapRarity;
 
 
 
@@ -38,12 +38,12 @@ namespace CardEditor.ViewModels
             WriteIndented = true,
             Converters =
             {
-                new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.CardType>(),
-                new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.Rarity>(),
-                new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.Attribute>(),
-                new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.LinkArrow>(),
-                new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.MonsterType>(),
-                new EnumMemberJsonConverter<CardEditor.Models.MasterDuel.Race>()
+                new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.CardType>(),
+                new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.Rarity>(),
+                new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.Attribute>(),
+                new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.LinkArrow>(),
+                new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.MonsterType>(),
+                new EnumMemberJsonConverter<CardEditor.Enums.MasterDuel.Race>()
             }
         };
         private static readonly JsonSerializerOptions RarityJsonOptions = new()

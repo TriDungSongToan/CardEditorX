@@ -40,38 +40,47 @@ namespace CardEditor.ViewModels
 
         }
 
-        public async Task<bool> LoadDeckAsync()
+        public async Task<(bool, string)> LoadDeckAsync()
         {
+            if (IsLoadedDecksList) return (true, string.Empty);
+
             string dataSourcePath = ConfigViewModel.Instance.userSetting.DataSource;
             if (string.IsNullOrWhiteSpace(dataSourcePath) || !System.IO.Directory.Exists(dataSourcePath))
-            {
-                return false;
-            }
+                return (false, CMess.dataSourceMiss.ToText());
 
-            var deckFolders = Directory.GetDirectories(dataSourcePath, "deck", SearchOption.AllDirectories);
-            if (deckFolders.Length == 0)
+            try
             {
-                string newDeckFolder = Path.Combine(dataSourcePath, "deck");
-                Directory.CreateDirectory(newDeckFolder);
-                DeckFolderPath = newDeckFolder;
-                return false;
-            }
-            DeckFolderPath = deckFolders[0];
-            var tempDecks = new List<Deck>();
-
-            foreach (var deckFolder in deckFolders)
-            {
-                var ydkFiles = Directory.GetFiles(deckFolder, "*.ydk", SearchOption.TopDirectoryOnly);
-
-                foreach (var file in ydkFiles)
+                var deckFolders = Directory.GetDirectories(dataSourcePath, "deck", SearchOption.AllDirectories);
+                if (deckFolders.Length == 0)
                 {
-                    Deck deck = await LoadDeckFromFile(file);
-                    tempDecks.Add(deck);
+                    string newDeckFolder = Path.Combine(dataSourcePath, "deck");
+                    Directory.CreateDirectory(newDeckFolder);
+                    DeckFolderPath = newDeckFolder;
+                    return (false, CMess.noDeckFound.ToText());
                 }
+                DeckFolderPath = deckFolders[0];
+
+                var tempDecks = new List<Deck>();
+
+                foreach (var deckFolder in deckFolders)
+                {
+                    var ydkFiles = Directory.GetFiles(deckFolder, "*.ydk", SearchOption.TopDirectoryOnly);
+
+                    foreach (var file in ydkFiles)
+                    {
+                        Deck deck = await LoadDeckFromFile(file);
+                        tempDecks.Add(deck);
+                    }
+                }
+                Decks.AddRange(tempDecks);
+                IsLoadedDecksList = true;
+                return (true, string.Empty);
             }
-            Decks.AddRange(tempDecks);
-            IsLoadedDecksList = true;
-            return true;
+            catch (Exception ex)
+            {
+                IsLoadedDecksList = false;
+                return (false, ex.Message);
+            }
         }
         public async Task<Deck> LoadDeckFromFile(string filePath, string archiveFilePath = null, string archiveEntryName = null)
         {

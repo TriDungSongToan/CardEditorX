@@ -13,7 +13,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Commands;
@@ -48,6 +50,8 @@ namespace CardEditor.ViewModels
                 {
                     _genesysCards = value;
                     OnPropertyChanged();
+                    SortCardCommand?.RaiseCanExecuteChanged();
+                    SaveAllCommand?.RaiseCanExecuteChanged();
                     DeleteAllCardCommand?.RaiseCanExecuteChanged();
                 }
             }
@@ -98,6 +102,12 @@ namespace CardEditor.ViewModels
                     ResetCardCommand?.RaiseCanExecuteChanged();
                     ClearCardCommand?.RaiseCanExecuteChanged();
                     DeleteSingleCardCommand?.RaiseCanExecuteChanged();
+
+                    ViewImageCommand?.RaiseCanExecuteChanged();
+                    OpenFileCommand?.RaiseCanExecuteChanged();
+                    OpenKonamiDBCommand?.RaiseCanExecuteChanged();
+                    OpenYugipediaCommand?.RaiseCanExecuteChanged();
+                    OpenYGOResourcesCommand?.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -262,6 +272,7 @@ namespace CardEditor.ViewModels
 
             InitializeCollections();
             InitializeCommands();
+            InitializeEvent();
             SubscribeToDataChanges();
 
             CancelLoadGenesysCard = Visibility.Collapsed;
@@ -314,6 +325,10 @@ namespace CardEditor.ViewModels
             OpenKonamiDBCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenKonamiDB(), _ => SelectedCardExist());
             OpenYugipediaCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenYugipedia(), _ => SelectedCardExist());
             OpenYGOResourcesCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenYGOResources(), _ => SelectedCardExist());
+        }
+        private void InitializeEvent()
+        {
+            GenesysCards.CollectionChanged += GenesysCards_CollectionChanged;
         }
         private void SubscribeToDataChanges()
         {
@@ -477,7 +492,6 @@ namespace CardEditor.ViewModels
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     GenesysCards?.Clear();
-                    // GenesysCards = new BulkObservableCollection<GenesysCard>();
 
                     _genesysCardsView = (ListCollectionView)CollectionViewSource.GetDefaultView(GenesysCards);
                     _genesysCardsView.IsLiveFiltering = false;
@@ -1383,6 +1397,13 @@ namespace CardEditor.ViewModels
         #endregion
 
         #region Event
+        private void GenesysCards_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            SortCardCommand?.RaiseCanExecuteChanged();
+            SaveAllCommand?.RaiseCanExecuteChanged();
+            DeleteAllCardCommand?.RaiseCanExecuteChanged();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler<MessageBoxRequest> MessageBoxRequested;
         public event EventHandler<string> SnackbarRequested;

@@ -1451,7 +1451,7 @@ namespace CardEditor.ImageGene
                         var cardFilted = CardEXDataViewModel.Instance.GetCardOrNull(cardItem.id);
                         if (cardFilted != null)
                         {
-                            bool isPendulum = FindIInfoService.CheckCardInfo(cardFilted.BaseCard.type, CardEditor.Models.CardType.Pendulum);
+                            bool isPendulum = FindIInfoService.CheckCardInfo(cardFilted.BaseCard.type, CardEditor.Enums.CardType.Pendulum);
                             if (ConfigViewModel.Instance.imageSetting.Secret == 1)
                             {
                                 if (isPendulum)

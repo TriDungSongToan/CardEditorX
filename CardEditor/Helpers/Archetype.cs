@@ -51,14 +51,10 @@ namespace CardEditor.Helpers
                 }
 
                 return (true, outputFilePath);
-                //CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                    //$"{string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText())}", new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
                 return (false, ex.Message);
-                //CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    //$"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
         static string CapitalizeWords(string input)
@@ -122,16 +118,11 @@ namespace CardEditor.Helpers
                         }
                     }
                 }
-                //CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                    //string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
-
                 return (true, outputFilePath);
             }
             catch (Exception ex)
             {
                 return (false, ex.Message);
-                //CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    //$"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
     }

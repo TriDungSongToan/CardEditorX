@@ -8,9 +8,6 @@ namespace CardEditor.Helpers
 {
     public static class APIHelper
     {
-        // .NET Framework 4.8.1 không có SocketsHttpHandler (chỉ có từ .NET Core trở lên).
-        // Dùng HttpClientHandler thay thế. Việc quản lý pooled connection lifetime
-        // trên Framework thường được xử lý qua ServicePointManager (xem ghi chú bên dưới).
         private static readonly HttpClient _client = new HttpClient(new HttpClientHandler())
         {
             Timeout = TimeSpan.FromSeconds(30)
@@ -30,7 +27,7 @@ namespace CardEditor.Helpers
                 if (response.IsSuccessStatusCode)
                     return response;
 
-                // 429 Too Many Requests -> tôn trọng Retry-After nếu API trả về
+                // 429 Too Many Requests -> Retry-After
                 if ((int)response.StatusCode == 429)
                 {
                     int wait = response.Headers.RetryAfter?.Delta?.Milliseconds ?? delayMs;
@@ -39,7 +36,7 @@ namespace CardEditor.Helpers
                     continue;
                 }
 
-                // Lỗi 5xx tạm thời -> retry
+                // Lỗi 5xx -> retry
                 if ((int)response.StatusCode >= 500)
                 {
                     await Task.Delay(delayMs, ct).ConfigureAwait(false);
@@ -47,7 +44,7 @@ namespace CardEditor.Helpers
                     continue;
                 }
 
-                // Lỗi khác (400, 401, 403...) -> không retry, trả lỗi luôn
+                // Lỗi khác (400, 401, 403...) -> không retry
                 return response;
             }
 

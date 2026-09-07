@@ -1,14 +1,10 @@
 ﻿using System;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.Encodings.Web;
-using System.Text.RegularExpressions;
 using System.Data;
 using System.Data.SQLite;
-using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -17,17 +13,18 @@ using System.Windows.Media.Imaging;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Threading;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.ComponentModel;
-using ICSharpCode.AvalonEdit.Document;
-using OfficeOpenXml;
 using MaterialDesignThemes.Wpf;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Manager;
+using CardEditor.Constants;
 using CardEditor.Commands;
 using CardEditor.Services;
 using CardEditor.ImageGene;
@@ -105,7 +102,10 @@ namespace CardEditor.UserControls
         public string archiveFilePath;
         public string archiveEntryName;
 
-        private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
+        public bool _cdbFileHasFlag = false;
+        public bool _cedsFileHasFlag = false;
+        public bool _xlsxFileHasFlag = false;
+
         private SnackbarMessageQueue MessageNotifi = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
         private SnackbarMessageQueue MessageDelete = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
         private DateTime lastClickTime = DateTime.MinValue;
@@ -138,6 +138,9 @@ namespace CardEditor.UserControls
                 {
                     _isPendulumIntf = value;
                     OnPropertyChanged(nameof(IsPendulumIntf));
+
+                    PreViewPendulumDescCommand?.RaiseCanExecuteChanged();
+                    ApplyPendulumDescCommand?.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -297,6 +300,9 @@ namespace CardEditor.UserControls
             OpenKonamiDBCommand?.RaiseCanExecuteChanged();
             OpenYugipediaCommand?.RaiseCanExecuteChanged();
             OpenYGOResourcesCommand?.RaiseCanExecuteChanged();
+
+            PreViewPendulumDescCommand?.RaiseCanExecuteChanged();
+            ApplyPendulumDescCommand?.RaiseCanExecuteChanged();
         }
         private void ListCommandCanExecute()
         {
@@ -440,34 +446,140 @@ namespace CardEditor.UserControls
         private async void datagrMain_Drop(object sender, DragEventArgs e)
         {
             var files = e.Data.GetData(DataFormats.FileDrop) as string[];
-            if (files != null && files.Length > 0)
+            if (files == null || files.Length == 0) return;
+
+            string filePath = files[0];
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return;
+
+            await LoadFileCardList(filePath);
+        }
+
+        public async Task LoadFileCardList(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return;
+
+            try
             {
-                string filePath = files[0];
-                if (CheckDatabase.IsDatabaseFile(filePath))
+                Mouse.OverrideCursor = Cursors.Wait;
+                LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
-                    if(System.IO.Path.GetExtension(filePath) == ".ceds")
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
+                    _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                };
+
+                if (resultCard.Result && resultCard.CardList != null)
+                {
+                    switch (Path.GetExtension(filePath).ToLowerInvariant())
                     {
-                        var (CardList, message) = await LoadDataServices.LoadCedsCard(filePath);
-                        if (CardList != null) ImportCardList(CardList);
-                        else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
+                        case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                            cdbFilePath = filePath;
+                            _cdbFileHasFlag = resultCard.HasFlag;
+                            break;
+
+                        case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                            xlsxFilePath = filePath;
+                            _xlsxFileHasFlag = resultCard.HasFlag;
+                            break;
+
+                        case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                            cedsFilePath = filePath;
+                            _cedsFileHasFlag = resultCard.HasFlag;
+                            break;
                     }
-                    else if(System.IO.Path.GetExtension(filePath) == ".xlsx")
+
+                    if (Cards == null) Cards = new();
+                    if (Cards.Count() == 0)
                     {
-                        var (CardList, message) = await LoadDataServices.LoadExcelCard(filePath);
-                        if (CardList != null) ImportCardList(CardList);
-                        else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
+                        ImportCreateNew(resultCard.CardList);
+                        IsSaved = true;
                     }
-                    else
-                    {
-                        await LoadDatabase(filePath);
-                    }
+                    else ImportCardList(resultCard.CardList);
+                    RebuildWindowTitle();
                 }
-                else CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.notDatabase.ToText(), new[] { CMess.ok.ToText() });
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        resultCard.Message, new[] { CMess.ok.ToText() });
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+                IsSaved = true;
             }
         }
-        
+        public async Task LoadDatabaseArchive(string filePath, string sourceArchivePath, string sourceEntryName)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return;
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                {
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
+                    _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                };
+
+                if (resultCard.Result && resultCard.CardList != null)
+                {
+                    switch (Path.GetExtension(filePath).ToLowerInvariant())
+                    {
+                        case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                            cdbFilePath = filePath;
+                            _cdbFileHasFlag = resultCard.HasFlag;
+                            break;
+
+                        case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                            xlsxFilePath = filePath;
+                            _xlsxFileHasFlag = resultCard.HasFlag;
+                            break;
+
+                        case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                            cedsFilePath = filePath;
+                            _cedsFileHasFlag = resultCard.HasFlag;
+                            break;
+                    }
+
+                    if (Cards == null) Cards = new();
+                    if (Cards.Count() == 0)
+                    {
+                        ImportCreateNew(resultCard.CardList);
+                        IsSaved = true;
+                    }
+                    else ImportCardList(resultCard.CardList);
+
+                    archiveFilePath = sourceArchivePath;
+                    archiveEntryName = sourceEntryName;
+                    RebuildWindowTitle();
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        resultCard.Message, new[] { CMess.ok.ToText() });
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+                IsSaved = true;
+            }
+        }
+
         private void ImportCardList(IEnumerable<CardEditor.Models.Card> CardList)
         {
             try
@@ -515,67 +627,6 @@ namespace CardEditor.UserControls
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task LoadDatabase(string filePath)
-        {
-            if (string.IsNullOrWhiteSpace(filePath)) return;
-
-            try
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-                var (ListResult, messageResult) = await LoadDataServices.LoadDatabaseCard(filePath);
-                Mouse.OverrideCursor = null;
-                if (ListResult == null)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messageResult, new[] { CMess.ok.ToText() });
-                    return;
-                }
-                cdbFilePath = filePath;
-                Cards.Clear();
-                Cards.AddRange(ListResult);
-                CollectionViewCollection.Refresh();
-                RebuildWindowTitle();
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            finally
-            {
-                IsSaved = true;
-            }
-        }
-        public async Task LoadDatabaseArchive(string cdbFilePath, string sourceArchivePath, string sourceEntryName)
-        {
-            if (string.IsNullOrWhiteSpace(cdbFilePath)) return;
-
-            try
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-                var (ListResult, messageResult) = await LoadDataServices.LoadDatabaseCard(cdbFilePath);
-                Mouse.OverrideCursor = null;
-                if (ListResult == null)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messageResult, new[] { CMess.ok.ToText() });
-                    return;
-                }
-                Cards.Clear();
-                Cards.AddRange(ListResult);
-                CollectionViewCollection.Refresh();
-
-                archiveFilePath = sourceArchivePath;
-                archiveEntryName = sourceEntryName;
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            finally
-            {
-                IsSaved = true;
             }
         }
         #endregion
@@ -1358,61 +1409,226 @@ namespace CardEditor.UserControls
         }
         #endregion
 
-        #region Save Card
-        public async Task<bool> Save()
+        #region Change
+        private async void datagrMain_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string createdDbPath = string.Empty;
-            if (string.IsNullOrWhiteSpace(cdbFilePath) || !System.IO.File.Exists(cdbFilePath))
-            {
-                try
-                {
-                    string filePath = FileDiaLogHelper.SaveDataBase();
-
-                    if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
-                    {
-                        string dbFilePath = filePath;
-
-                        string[] validExtensions = { ".cdb", ".db", ".sqlite" };
-                        string extension = System.IO.Path.GetExtension(dbFilePath).ToLower();
-
-                        if (string.IsNullOrEmpty(extension) || !validExtensions.Contains(extension))
-                        {
-                            dbFilePath += ".cdb";
-                        }
-                        string folderPath = System.IO.Path.GetDirectoryName(dbFilePath);
-                        string cdbFileName = System.IO.Path.GetFileName(dbFilePath);
-
-                        var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateDatabase(folderPath, cdbFileName));
-                        if (resultCreate) createdDbPath = messageCreate;
-                        else
-                        {
-                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                                $"{CMess.errorOcc.ToText()} {messageCreate}", new[] { CMess.ok.ToText() });
-                            return false;
-                        }
-                    }
-                    else return false;
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                    return false;
-                }
-            }
-            else createdDbPath = cdbFilePath;
-
+            if (isDeleting) return;
+            isChangedGrid = true;
             try
             {
-                if (await SaveAllCardsInCard(createdDbPath)) return true;
-                else return false;
+                if (datagrMain.SelectedItem is CardEditor.Models.Card selectedCard)
+                {
+                    CurrentCard = selectedCard;
+                    LoadCardData();
+                    LoadCardRare();
+                    LoadGenesysPoint();
+                    await LoadCardImage();
+                }
+                else
+                {
+                    CurrentCard = null;
+                    ClearAll();
+                }
+                LoadPendulumLanguage();
             }
             catch (Exception ex)
             {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            HiddenArtWork();
+            isChangedID = false;
+            isChangedGrid = false;
+            ResetUndoRedoCommand();
+        }
+        private void DataGridCell_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
+        {
+            e.Handled = true;
+        }
+        private void txtid_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            isChangedID = true;
+        }
+        public void FocusCardById(ulong cardID)
+        {
+            var foundCard = Cards.FirstOrDefault(c => c.id == cardID);
+            if (foundCard == null) return;
+
+            CurrentCard = foundCard;
+            datagrMain.SelectedItem = foundCard;
+            datagrMain.ScrollIntoView(foundCard);
+
+            datagrMain.UpdateLayout();
+            datagrMain.Focus();
+        }
+        private void linkCenter_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            SetLinkArrow(false);
+        }
+
+        private void UpdateWindowSavedFlag()
+        {
+            if (MainWindowService != null)
+            {
+                MainWindowService.UpdateWindowSavedFlag(IsSaved);
+            }
+        }
+
+        #region Visibility
+        private void cmbrule_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if(cmbrule.SelectedItems != null && cmbrule.SelectedItems.Count > 0)
+                tbrule.Visibility = Visibility.Collapsed;
+            else tbrule.Visibility = Visibility.Visible;
+        }
+        private void cmbcardtype_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if (cmbcardtype.SelectedItems != null && cmbcardtype.SelectedItems.Count >0) tbtype.Visibility = Visibility.Collapsed;
+            else tbtype.Visibility = Visibility.Visible;
+
+            //if (!isChangedGrid)
+            {
+                bool isxyz = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.eXceed);
+                bool isnonxyz = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item =>
+                    item.TypeCode == (ulong)CardType.Fusion ||
+                    item.TypeCode == (ulong)CardType.Ritual ||
+                    item.TypeCode == (ulong)CardType.Synchro);
+
+                IsLinkIntf = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Link);
+
+                if (isxyz && !isnonxyz)
+                {
+                    imgLvRk.Source = ImageCacheService.Instance.Get(AppImage.RankStar);
+                    txtLvRk.ToolTip = CMess.Rank.ToText();
+                }
+                else if (isxyz && isnonxyz)
+                {
+                    imgLvRk.Source = ImageCacheService.Instance.Get(AppImage.LevelRankStar);
+                    txtLvRk.ToolTip = $"{CMess.Level.ToText()}/{CMess.Rank.ToText()}";
+                }
+                else
+                {
+                    imgLvRk.Source = ImageCacheService.Instance.Get(AppImage.LevelStar);
+                    txtLvRk.ToolTip = CMess.Level.ToText();
+                }
+
+                IsPendulumIntf = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Pendulum);
+                IsSkillIntf = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Skill);
+            }
+        }
+
+        private void cmbcardrace_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if (cmbcardrace.SelectedItems != null && cmbcardrace.SelectedItems.Count > 0)
+                tbrace.Visibility = Visibility.Collapsed;
+            else tbrace.Visibility = Visibility.Visible;
+        }
+        private void cmbcardchar_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if(cmbcardchar.SelectedItems != null && cmbcardchar.SelectedItems.Count > 0)
+                tbchar.Visibility = Visibility.Collapsed;
+            else tbchar.Visibility = Visibility.Visible;
+        }
+        private void cmbcardattribute_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if(cmbcardattribute.SelectedItems != null && cmbcardattribute.SelectedItems.Count > 0)
+                tbattribute.Visibility = Visibility.Collapsed;
+            else tbattribute.Visibility = Visibility.Visible;
+        }
+        private void cmbsetcode_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if(cmbsetcode.SelectedItems != null && cmbsetcode.SelectedItems.Count > 0)
+                tbsetcode.Visibility = Visibility.Collapsed;
+            else tbsetcode.Visibility = Visibility.Visible;
+        }
+        private void cmbcategory_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if (cmbcategory.SelectedItems != null && cmbcategory.SelectedItems.Count > 0)
+                tbcategory.Visibility = Visibility.Collapsed;
+            else tbcategory.Visibility = Visibility.Visible;
+        }
+        private void cmbflag_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if (cmbflag.SelectedItems != null && cmbflag.SelectedItems.Count > 0)
+                tbflag.Visibility = Visibility.Collapsed;
+            else tbflag.Visibility = Visibility.Visible;
+        }
+        private void cmbrarity_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if (cmbrarity.SelectedItems != null && cmbrarity.SelectedItems.Count > 0)
+                tbrarity.Visibility = Visibility.Collapsed;
+            else tbrarity.Visibility = Visibility.Visible;
+        }
+        #endregion
+
+        #region Can Execute
+        private bool CurrentCardExists()
+        {
+            return CurrentCard != null;
+        }
+        private bool ListCardExists()
+        {
+            return Cards != null && Cards.Count >= 1;
+        }
+        private bool ValidCardInfor()
+        {
+            if (CurrentCard.id <= 0) return false;
+            return true;
+        }
+        #endregion
+
+        #endregion
+
+        #region Save
+        public async Task<bool> Save()
+        {
+            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+
+            if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
+                saveResult = await SaveDatabaseServices.SaveCardList(Cards.ToList(), cdbFilePath);
+            else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
+                saveResult = await SaveExcelService.SaveCardList(Cards.ToList(), xlsxFilePath);
+            else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
+                saveResult = await SaveCedsService.SaveCardList(Cards.ToList(), cedsFilePath);
+            else
+            {
+                string dbFilePath = FileDiaLogHelper.SaveDataBase();
+                if (string.IsNullOrEmpty(dbFilePath) || !System.IO.File.Exists(dbFilePath)) return false;
+                string folderPath = System.IO.Path.GetDirectoryName(dbFilePath);
+                string cdbFileName = System.IO.Path.GetFileName(dbFilePath);
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateDatabase(folderPath, cdbFileName));
+                if (!resultCreate)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText())} {messageCreate}",
+                        new[] { CMess.ok.ToText() });
+                    return false;
+                }
+                cdbFilePath = messageCreate;
+                saveResult = await SaveDatabaseServices.SaveCardList(Cards.ToList(), cdbFilePath);
+            }
+
+            if (saveResult == null) return false;
+            if (!saveResult.Value.resultSaveDB)
+            {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText())} {saveResult.Value.messageSaveDB}",
+                    new[] { CMess.ok.ToText() });
                 return false;
             }
+
+            if (string.IsNullOrEmpty(archiveFilePath) || !System.IO.File.Exists(archiveFilePath) || string.IsNullOrEmpty(archiveEntryName))
+            {
+                var (resultSaveArchive, messageSaveArchive) = await SaveToArchive();
+                if (resultSaveArchive) return true;
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardArchive.ToText())} {messageSaveArchive}",
+                        new[] { CMess.ok.ToText() });
+                    return false;
+                }
+            }
+            return true;
         }
 
         #region Archive
@@ -1433,6 +1649,366 @@ namespace CardEditor.UserControls
         }
         #endregion
 
+        #region CDB
+        public async Task SaveCardDBFile()
+        {
+            if (Cards == null) Cards = new();
+            if (Cards.Count() == 0)
+            {
+                int chooseSave =  CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.confirmSaveBlank.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText() });
+                if (chooseSave != 0) return;
+            }
+
+            if (string.IsNullOrEmpty(cdbFilePath) || !System.IO.File.Exists(cdbFilePath))
+            {
+                string dbFilePath = FileDiaLogHelper.SaveDataBase();
+                if (string.IsNullOrEmpty(dbFilePath)) return;
+
+                bool hasFlag;
+                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
+                if (chooseFlag == 0) hasFlag = true;
+                else if (chooseFlag == 1) hasFlag = false;
+                else return;
+
+                _cdbFileHasFlag = hasFlag;
+
+                var (resultCreate, messageCreate) = await CreateFileServices.CreateDatabaseCommand(dbFilePath, hasFlag);
+                if (!resultCreate)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
+                cdbFilePath = messageCreate;
+            }
+
+            var (resultSave, messageSave) = await SaveAsCardDBFileAllData(cdbFilePath);
+            if (resultSave) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()),
+                new[] { CMess.ok.ToText() });
+            else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageSave}",
+                new[] { CMess.ok.ToText() });
+        }
+        public async Task<(bool, string)> SaveAsCardDBFileSelectedData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (datagrMain.SelectedItems == null) return (false, CMess.noCardSelec.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await SaveCardDBFileCommand(selectedItems, filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> SaveAsCardDBFileFiltedData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await SaveCardDBFileCommand(filteredItems, filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> SaveAsCardDBFileAllData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (Cards == null) Cards = new();
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                return await SaveCardDBFileCommand(Cards.ToList(), filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        private async Task<(bool, string)> SaveCardDBFileCommand(List<CardEditor.Models.Card> cardList, string filePath)
+        {
+            if (cardList == null) return (false, CMess.noCardExport.ToText());
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+
+            var (resultSave, messageSave) = await Task.Run(() => SaveDatabaseServices.SaveCardList(cardList, filePath, _cdbFileHasFlag));
+            if (resultSave) return await SaveToArchive();
+            else return (false, messageSave);
+        }
+        #endregion
+
+        #region Excel
+        public async Task SaveExcelFile()
+        {
+            if (Cards == null) Cards = new();
+            if (Cards.Count() == 0)
+            {
+                int chooseSave = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.confirmSaveBlank.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText() });
+                if (chooseSave != 0) return;
+            }
+
+            if (string.IsNullOrEmpty(xlsxFilePath) || !System.IO.File.Exists(xlsxFilePath))
+            {
+                string excelFilepath = FileDiaLogHelper.SaveExcel();
+                if (string.IsNullOrEmpty(excelFilepath)) return;
+
+                bool hasFlag;
+                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
+                if (chooseFlag == 0) hasFlag = true;
+                else if (chooseFlag == 1) hasFlag = false;
+                else return;
+
+                _xlsxFileHasFlag = hasFlag;
+
+                var (resultCreate, messageCreate) = await CreateFileServices.CreateExcelCommand(excelFilepath, hasFlag);
+                if (!resultCreate)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
+                xlsxFilePath = messageCreate;
+            }
+
+            var (resultSave, messageSave) = await SaveAsExcelFileAllData(xlsxFilePath);
+            if (resultSave) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Excel.ToText(), CMess.File.ToText()),
+                new[] { CMess.ok.ToText() });
+            else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Save.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {messageSave}",
+                new[] { CMess.ok.ToText() });
+        }
+        public async Task<(bool, string)> SaveAsExcelFileSelectedData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (datagrMain.SelectedItems == null) return (false, CMess.noCardSelec.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await SaveExcelFileCommand(selectedItems, filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> SaveAsExcelFileFiltedData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await SaveExcelFileCommand(filteredItems, filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> SaveAsExcelFileAllData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (Cards == null) Cards = new();
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                return await SaveExcelFileCommand(Cards.ToList(), filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        private async Task<(bool, string)> SaveExcelFileCommand(List<CardEditor.Models.Card> cardList, string filePath)
+        {
+            if (cardList == null) return (false, CMess.noCardExport.ToText());
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+
+            var(resultSave, messageSave) = await Task.Run(() => SaveExcelService.SaveCardList(cardList, filePath, _xlsxFileHasFlag));
+            if (resultSave) return await SaveToArchive();
+            else return (false, messageSave);
+        }
+        #endregion
+
+        #region Ceds
+        public async Task SaveCedsFile()
+        {
+            if (Cards == null) Cards = new();
+            if (Cards.Count() == 0)
+            {
+                int chooseSave = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.confirmSaveBlank.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText() });
+                if (chooseSave != 0) return;
+            }
+
+            if (string.IsNullOrEmpty(cedsFilePath) || !System.IO.File.Exists(cedsFilePath))
+            {
+                string cedsFilePath = FileDiaLogHelper.SaveCeds();
+                if (string.IsNullOrEmpty(cedsFilePath)) return;
+
+                bool hasFlag;
+                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
+                if (chooseFlag == 0) hasFlag = true;
+                else if (chooseFlag == 1) hasFlag = false;
+                else return;
+
+                _cedsFileHasFlag = hasFlag;
+
+                var (resultCreate, messageCreate) = await CreateFileServices.CreateCedsCommand(cedsFilePath);
+                if (!resultCreate)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
+                cedsFilePath = messageCreate;
+            }
+
+            var (resultSave, messageSave) = await SaveAsCedsFileAllData(cedsFilePath);
+            if (resultSave) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()),
+                new[] { CMess.ok.ToText() });
+            else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageSave}",
+                new[] { CMess.ok.ToText() });
+        }
+
+        public async Task<(bool, string)> SaveAsCedsFileSelectedData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (datagrMain.SelectedItems == null) return (false, CMess.noCardSelec.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await SaveCedsFileCommand(selectedItems, filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> SaveAsCedsFileFiltedData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await SaveCedsFileCommand(filteredItems, filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> SaveAsCedsFileAllData(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+            if (Cards == null) Cards = new();
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                return await SaveCedsFileCommand(Cards.ToList(), filePath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        private async Task<(bool, string)> SaveCedsFileCommand(List<CardEditor.Models.Card> cardList, string filePath)
+        {
+            if (cardList == null) return (false, CMess.noCardExport.ToText());
+            if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
+
+            var (resultSave, messageSave) = await Task.Run(() => SaveCedsService.SaveCardList(cardList, filePath));
+            if (resultSave) return await SaveToArchive();
+            else return (false, messageSave);
+        }
+        #endregion
+
+        #endregion
+
         #region Current Card
 
         #region Add New Card
@@ -1447,7 +2023,7 @@ namespace CardEditor.UserControls
 
             CardEditor.Models.Card newCard = ExtractCardFromForm();
             if (newCard == null) return;
-            if (newCard.id < 10000)
+            if (newCard.id <= 10000)
             {
                 var addQuest = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmAdd.ToText(),
                     new[] { CMess.add.ToText(), CMess.cancel.ToText() });
@@ -1476,135 +2052,29 @@ namespace CardEditor.UserControls
             else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                 $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Card.ToText())} {messageAdd}", new[] { CMess.ok.ToText() });
         }
-        public async Task<(bool, string)> AddNewCardCommand(CardEditor.Models.Card newCard = null)
+        public async Task<(bool, string)> AddNewCardCommand(CardEditor.Models.Card newCard )
         {
-            if (newCard == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
+            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
 
-            if (!string.IsNullOrWhiteSpace(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
+            if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
+                saveResult = await SaveDatabaseServices.AddNewCard(newCard, cdbFilePath);
+            else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
+                saveResult = await SaveExcelService.AddNewCard(newCard, xlsxFilePath);
+            else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
+                saveResult = await SaveCedsService.AddNewCard(newCard, cedsFilePath);
+
+            if (saveResult != null)
             {
-                var (resultDB, messageDB) = await AddNewCardDB(newCard);
-                if (!resultDB) return (false, messageDB);
+                if (!saveResult.Value.resultSaveDB) return (false, saveResult.Value.messageSaveDB);
                 var (resultArchive, messageArchive) = await SaveToArchive();
                 if (!resultArchive) return (false, messageArchive);
-                var (resultGrid, messageGrid) = AddNewCardGrid(newCard);
-                if (!resultGrid) return (false, messageGrid);
-
-                IsSaved = true;
-                return (true, string.Empty);
             }
-            else
-            {
-                var (resultGrid, messageGrid) = AddNewCardGrid(newCard);
-                if (!resultGrid) return (false, messageGrid);
-                IsSaved = true;
-                return (true, string.Empty);
-            }
-        }
-        private async Task<(bool, string)> AddNewCardDB(CardEditor.Models.Card newCard)
-        {
-            string connectionString = $"Data Source={cdbFilePath};Version=3;";
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            {
-                await connection.OpenAsync();
-                if (!CheckDatabase.CheckDatabaseValidity(connection))
-                {
-                    return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
-                }
-                
-                if (await CheckIfIdExists(connection, newCard.id))
-                {
-                    return (false, CMess.cardIDExist.ToText());
-                }
-                
-                using (SQLiteTransaction transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        string insertTextsQuery = @"
-                            INSERT INTO texts (id, name, desc, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16)
-                            VALUES (@id, @name, @desc, @str1, @str2, @str3, @str4, @str5, @str6, @str7, @str8, @str9, @str10, @str11, @str12, @str13, @str14, @str15, @str16)";
 
-                        using (SQLiteCommand cmd = new SQLiteCommand(insertTextsQuery, connection))
-                        {
-                            cmd.Parameters.AddWithValue("@id", newCard.id);
-                            cmd.Parameters.AddWithValue("@name", newCard.name);
-                            cmd.Parameters.AddWithValue("@desc", newCard.desc);
-                            cmd.Parameters.AddWithValue("@str1", newCard.str1);
-                            cmd.Parameters.AddWithValue("@str2", newCard.str2);
-                            cmd.Parameters.AddWithValue("@str3", newCard.str3);
-                            cmd.Parameters.AddWithValue("@str4", newCard.str4);
-                            cmd.Parameters.AddWithValue("@str5", newCard.str5);
-                            cmd.Parameters.AddWithValue("@str6", newCard.str6);
-                            cmd.Parameters.AddWithValue("@str7", newCard.str7);
-                            cmd.Parameters.AddWithValue("@str8", newCard.str8);
-                            cmd.Parameters.AddWithValue("@str9", newCard.str9);
-                            cmd.Parameters.AddWithValue("@str10", newCard.str10);
-                            cmd.Parameters.AddWithValue("@str11", newCard.str11);
-                            cmd.Parameters.AddWithValue("@str12", newCard.str12);
-                            cmd.Parameters.AddWithValue("@str13", newCard.str13);
-                            cmd.Parameters.AddWithValue("@str14", newCard.str14);
-                            cmd.Parameters.AddWithValue("@str15", newCard.str15);
-                            cmd.Parameters.AddWithValue("@str16", newCard.str16);
+            var (resultGrid, messageGrid) = AddNewCardGrid(newCard);
+            if (!resultGrid) return (false, messageGrid);
 
-                            await cmd.ExecuteNonQueryAsync();
-                        }
-
-                        string insertDatasQuery = @"
-                            INSERT INTO datas (id, ot, alias, setcode, type, atk, def, level, race, attribute, category)
-                            VALUES (@id, @ot, @alias, @setcode, @type, @atk, @def, @level, @race, @attribute, @category)";
-
-                        using (SQLiteCommand cmd = new SQLiteCommand(insertDatasQuery, connection))
-                        {
-                            cmd.Parameters.AddWithValue("@id", newCard.id);
-                            cmd.Parameters.AddWithValue("@ot", newCard.ot);
-                            cmd.Parameters.AddWithValue("@alias", newCard.alias);
-                            cmd.Parameters.AddWithValue("@setcode", newCard.setcode);
-                            cmd.Parameters.AddWithValue("@type", newCard.type);
-                            cmd.Parameters.AddWithValue("@atk", newCard.atk);
-                            cmd.Parameters.AddWithValue("@def", newCard.def);
-                            cmd.Parameters.AddWithValue("@level", newCard.level);
-                            cmd.Parameters.AddWithValue("@race", newCard.race);
-                            cmd.Parameters.AddWithValue("@attribute", newCard.attribute);
-                            cmd.Parameters.AddWithValue("@category", newCard.category);
-
-                            await cmd.ExecuteNonQueryAsync();
-                        }
-
-                        // Nếu không có lỗi, commit giao dịch
-                        transaction.Commit();
-                        return (true, string.Empty);
-                    }
-                    catch (SQLiteException ex)
-                    {
-                        transaction.Rollback();
-                        return (false, $"{CMess.errorConDB.ToText()} {ex.Message}");
-                    }
-                    catch (FormatException ex)
-                    {
-                        transaction.Rollback();
-                        return (false, $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText())} {ex.Message}");
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        transaction.Rollback();
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Operation.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                        return (false, $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Operation.ToText())} {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                        return (false, $"{CMess.errorOcc.ToText()} {ex.Message}");
-                    }
-                    finally
-                    {
-                        if (connection != null && connection.State != System.Data.ConnectionState.Closed)
-                        {
-                            connection.Close();
-                        }
-                    }
-                }
-            }
+            IsSaved = true;
+            return (true, string.Empty);
         }
         private (bool, string) AddNewCardGrid(CardEditor.Models.Card newCard)
         {
@@ -1637,8 +2107,7 @@ namespace CardEditor.UserControls
         #region Modify Current Card
         private async Task ModifyCardFunction()
         {
-            if (string.IsNullOrWhiteSpace(txtid.Text) ||
-                !ulong.TryParse(txtid.Text, out ulong cardid) || cardid <= 0)
+            if (string.IsNullOrWhiteSpace(txtid.Text) || !ulong.TryParse(txtid.Text, out ulong cardid) || cardid <= 0)
             {
                 CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
                     string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()), new[] { CMess.ok.ToText() });
@@ -1673,114 +2142,28 @@ namespace CardEditor.UserControls
         {
             if (newCard == null) newCard = ExtractCardFromForm();
             if (newCard == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
-            if (!string.IsNullOrWhiteSpace(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
+
+            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+
+            if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
+                saveResult = await SaveDatabaseServices.ModifyCurrentCard(newCard, cdbFilePath);
+            else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
+                saveResult = await SaveExcelService.ModifyCurrentCard(newCard, xlsxFilePath);
+            else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
+                saveResult = await SaveCedsService.ModifyCurrentCard(newCard, cedsFilePath);
+
+            if (saveResult != null)
             {
-                var (resultDB, messageDB) = await ModifyCardDB(newCard);
-                if (!resultDB) return (false, messageDB);
+                if (!saveResult.Value.resultSaveDB) return (false, saveResult.Value.messageSaveDB);
                 var (resultArchive, messageArchive) = await SaveToArchive();
                 if (!resultArchive) return (false, messageArchive);
-
-                var (resultGrid, messageGrid) = ModifyCardGrid(newCard);
-                if (!resultGrid) return (false, messageGrid);
-
-                IsSaved = true;
-                return (true, string.Empty);
             }
-            else
-            {
-                var (resultGrid, messageGrid) = ModifyCardGrid(newCard);
-                if (!resultGrid) return (false, messageGrid);
-                IsSaved = true;
-                return (true, string.Empty);
-            }
-        }
-        private async Task<(bool, string)> ModifyCardDB(CardEditor.Models.Card newCard)
-        {
-            string connectionString = $"Data Source={cdbFilePath};Version=3;";
-            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
-            {
-                await connection.OpenAsync();
-                if (!CheckDatabase.CheckDatabaseValidity(connection))
-                {
-                    return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
-                }
 
-                if (!await CheckIfIdExists(connection, newCard.id))
-                {
-                    return (false, CMess.cardIDNotExist.ToText());
-                }
-                using (SQLiteTransaction transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        string updateTextsQuery = @"
-                                UPDATE texts SET name = @name, desc = @desc, str1 = @str1, str2 = @str2, str3 = @str3, str4 = @str4, str5 = @str5, str6 = @str6, str7 = @str7, str8 = @str8, str9 = @str9, str10 = @str10, str11 = @str11, str12 = @str12, str13 = @str13, str14 = @str14, str15 = @str15, str16 = @str16 WHERE id = @id";
-                        using (SQLiteCommand cmd = new SQLiteCommand(updateTextsQuery, connection))
-                        {
-                            cmd.Parameters.AddWithValue("@id", newCard.id);
-                            cmd.Parameters.AddWithValue("@name", newCard.name);
-                            cmd.Parameters.AddWithValue("@desc", newCard.desc);
-                            cmd.Parameters.AddWithValue("@str1", newCard.str1);
-                            cmd.Parameters.AddWithValue("@str2", newCard.str2);
-                            cmd.Parameters.AddWithValue("@str3", newCard.str3);
-                            cmd.Parameters.AddWithValue("@str4", newCard.str4);
-                            cmd.Parameters.AddWithValue("@str5", newCard.str5);
-                            cmd.Parameters.AddWithValue("@str6", newCard.str6);
-                            cmd.Parameters.AddWithValue("@str7", newCard.str7);
-                            cmd.Parameters.AddWithValue("@str8", newCard.str8);
-                            cmd.Parameters.AddWithValue("@str9", newCard.str9);
-                            cmd.Parameters.AddWithValue("@str10", newCard.str10);
-                            cmd.Parameters.AddWithValue("@str11", newCard.str11);
-                            cmd.Parameters.AddWithValue("@str12", newCard.str12);
-                            cmd.Parameters.AddWithValue("@str13", newCard.str13);
-                            cmd.Parameters.AddWithValue("@str14", newCard.str14);
-                            cmd.Parameters.AddWithValue("@str15", newCard.str15);
-                            cmd.Parameters.AddWithValue("@str16", newCard.str16);
+            var (resultGrid, messageGrid) = ModifyCardGrid(newCard);
+            if (!resultGrid) return (false, messageGrid);
 
-                            await cmd.ExecuteNonQueryAsync();
-                        }
-
-                        string updateDatasQuery = @"
-                                UPDATE datas SET ot = @ot, alias = @alias, setcode = @setcode, type = @type, atk = @atk, def = @def, level = @level, race = @race, attribute = @attribute, category = @category WHERE id = @id";
-                        using (SQLiteCommand cmd = new SQLiteCommand(updateDatasQuery, connection))
-                        {
-                            cmd.Parameters.AddWithValue("@id", newCard.id);  // Dùng ID cũ
-                            cmd.Parameters.AddWithValue("@ot", newCard.ot);
-                            cmd.Parameters.AddWithValue("@alias", newCard.alias);
-                            cmd.Parameters.AddWithValue("@setcode", newCard.setcode);
-                            cmd.Parameters.AddWithValue("@type", newCard.type);
-                            cmd.Parameters.AddWithValue("@atk", newCard.atk);
-                            cmd.Parameters.AddWithValue("@def", newCard.def);
-                            cmd.Parameters.AddWithValue("@level", newCard.level);
-                            cmd.Parameters.AddWithValue("@race", newCard.race);
-                            cmd.Parameters.AddWithValue("@attribute", newCard.attribute);
-                            cmd.Parameters.AddWithValue("@category", newCard.category);
-
-                            await cmd.ExecuteNonQueryAsync();
-                        }
-
-                        transaction.Commit();
-                        return (true, string.Empty);
-                    }
-                    catch (SQLiteException ex)
-                    {
-                        transaction.Rollback();
-                        return (false, $"{CMess.errorConDB.ToText()} {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        transaction.Rollback();
-                        return (false, $"{CMess.errorOcc.ToText()} {ex.Message}");
-                    }
-                    finally
-                    {
-                        if (connection != null && connection.State != System.Data.ConnectionState.Closed)
-                        {
-                            connection.Close();
-                        }
-                    }
-                }
-            }
+            IsSaved = true;
+            return (true, string.Empty);
         }
         private (bool, string) ModifyCardGrid(CardEditor.Models.Card newCard)
         {
@@ -1862,633 +2245,6 @@ namespace CardEditor.UserControls
             }
             else return (false, messageDB);
         }
-        private async Task<bool> CheckIfIdExists(SQLiteConnection connection, ulong id)
-        {
-            string query = "SELECT COUNT(1) FROM texts WHERE id = @id";
-            using (SQLiteCommand cmd = new SQLiteCommand(query, connection))
-            {
-                cmd.Parameters.AddWithValue("@id", id);
-                var result = await cmd.ExecuteScalarAsync();
-                return Convert.ToInt32(result) > 0;
-            }
-        }
-        #endregion
-
-        #region Cards Grid
-        public void SaveAllCard()
-        {
-            string connectionString = $"Data Source={cdbFilePath};Version=3;";
-
-            const string checkExistenceQuery = "SELECT COUNT(*) FROM datas WHERE id = @Id";
-
-            const string updateDatasQuery = @"UPDATE datas 
-                SET ot = @Ot, alias = @Alias, setcode = @Setcode, type = @Type, 
-                atk = @Atk, def = @Def, level = @Level, race = @Race, 
-                attribute = @Attribute, category = @Category
-                WHERE id = @Id";
-            const string updateTextsQuery = @"UPDATE texts 
-                SET name = @Name, desc = @Desc,
-                str1 = @Str1, str2 = @Str2, str3 = @Str3, str4 = @Str4,
-                str5 = @Str5, str6 = @Str6, str7 = @Str7, str8 = @Str8,
-                str9 = @Str9, str10 = @Str10, str11 = @Str11, str12 = @Str12,
-                str13 = @Str13, str14 = @Str14, str15 = @Str15, str16 = @Str16
-                WHERE id = @Id";
-
-            const string insertDatasQuery = @"INSERT INTO datas (id, ot, alias, setcode, type, atk, def, level, race, attribute, category)
-                VALUES (@Id, @Ot, @Alias, @Setcode, @Type, @Atk, @Def, @Level, @Race, @Attribute, @Category)";
-
-            const string insertTextsQuery = @"INSERT INTO texts (id, name, desc, str1, str2, str3, str4, str5, str6, str7, str8,
-                str9, str10, str11, str12, str13, str14, str15, str16)
-                VALUES (@Id, @Name, @Desc, @Str1, @Str2, @Str3, @Str4, @Str5, @Str6, @Str7, @Str8,
-                @Str9, @Str10, @Str11, @Str12, @Str13, @Str14, @Str15, @Str16)";
-
-            using (var connection = new SQLiteConnection(connectionString))
-            {
-                connection.Open();
-                using (var transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        foreach (var card in Cards)
-                        {
-                            bool cardExists;
-                            using (var checkCommand = new SQLiteCommand(checkExistenceQuery, connection, transaction))
-                            {
-                                checkCommand.Parameters.AddWithValue("@Id", card.id);
-                                cardExists = Convert.ToInt32(checkCommand.ExecuteScalar()) > 0;
-                            }
-
-                            if (cardExists)
-                            {
-                                using (var updateDatasCommand = new SQLiteCommand(updateDatasQuery, connection, transaction))
-                                {
-                                    updateDatasCommand.Parameters.AddWithValue("@Id", card.id);
-                                    updateDatasCommand.Parameters.AddWithValue("@Ot", card.ot);
-                                    updateDatasCommand.Parameters.AddWithValue("@Alias", card.alias);
-                                    updateDatasCommand.Parameters.AddWithValue("@Setcode", card.setcode);
-                                    updateDatasCommand.Parameters.AddWithValue("@Type", card.type);
-                                    updateDatasCommand.Parameters.AddWithValue("@Atk", card.atk);
-                                    updateDatasCommand.Parameters.AddWithValue("@Def", card.def);
-                                    updateDatasCommand.Parameters.AddWithValue("@Level", card.level);
-                                    updateDatasCommand.Parameters.AddWithValue("@Race", card.race);
-                                    updateDatasCommand.Parameters.AddWithValue("@Attribute", card.attribute);
-                                    updateDatasCommand.Parameters.AddWithValue("@Category", card.category);
-                                    updateDatasCommand.ExecuteNonQuery();
-                                }
-                                using (var updateTextsCommand = new SQLiteCommand(updateTextsQuery, connection, transaction))
-                                {
-                                    updateTextsCommand.Parameters.AddWithValue("@Id", card.id);
-                                    updateTextsCommand.Parameters.AddWithValue("@Name", card.name);
-                                    updateTextsCommand.Parameters.AddWithValue("@Desc", card.desc);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str1", card.str1);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str2", card.str2);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str3", card.str3);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str4", card.str4);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str5", card.str5);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str6", card.str6);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str7", card.str7);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str8", card.str8);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str9", card.str9);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str10", card.str10);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str11", card.str11);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str12", card.str12);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str13", card.str13);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str14", card.str14);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str15", card.str15);
-                                    updateTextsCommand.Parameters.AddWithValue("@Str16", card.str16);
-                                    updateTextsCommand.ExecuteNonQuery();
-                                }
-                            }
-                            else
-                            {
-                                using (var insertDatasCommand = new SQLiteCommand(insertDatasQuery, connection, transaction))
-                                {
-                                    insertDatasCommand.Parameters.AddWithValue("@Id", card.id);
-                                    insertDatasCommand.Parameters.AddWithValue("@Ot", card.ot);
-                                    insertDatasCommand.Parameters.AddWithValue("@Alias", card.alias);
-                                    insertDatasCommand.Parameters.AddWithValue("@Setcode", card.setcode);
-                                    insertDatasCommand.Parameters.AddWithValue("@Type", card.type);
-                                    insertDatasCommand.Parameters.AddWithValue("@Atk", card.atk);
-                                    insertDatasCommand.Parameters.AddWithValue("@Def", card.def);
-                                    insertDatasCommand.Parameters.AddWithValue("@Level", card.level);
-                                    insertDatasCommand.Parameters.AddWithValue("@Race", card.race);
-                                    insertDatasCommand.Parameters.AddWithValue("@Attribute", card.attribute);
-                                    insertDatasCommand.Parameters.AddWithValue("@Category", card.category);
-                                    insertDatasCommand.ExecuteNonQuery();
-                                }
-                                using (var insertTextsCommand = new SQLiteCommand(insertTextsQuery, connection, transaction))
-                                {
-                                    insertTextsCommand.Parameters.AddWithValue("@Id", card.id);
-                                    insertTextsCommand.Parameters.AddWithValue("@Name", card.name);
-                                    insertTextsCommand.Parameters.AddWithValue("@Desc", card.desc);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str1", card.str1);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str2", card.str2);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str3", card.str3);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str4", card.str4);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str5", card.str5);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str6", card.str6);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str7", card.str7);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str8", card.str8);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str9", card.str9);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str10", card.str10);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str11", card.str11);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str12", card.str12);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str13", card.str13);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str14", card.str14);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str15", card.str15);
-                                    insertTextsCommand.Parameters.AddWithValue("@Str16", card.str16);
-                                    insertTextsCommand.ExecuteNonQuery();
-                                }
-                            }
-                        }
-                        transaction.Commit();
-                    }
-                    catch
-                    {
-                        transaction.Rollback();
-                        throw;
-                    }
-                }
-            }
-        } // Bỏ
-
-        #region Get Selected Card
-        public async Task<bool> SaveSelectedCardsOnDataGrid(string targetedPath = null)
-        {
-            string filePath = targetedPath ?? cdbFilePath;
-
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noSelecDB.ToText(), new[] { CMess.ok.ToText() });
-                return false;
-            }
-
-            if (datagrMain.SelectedItems == null)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noCardSelec.ToText(), new[] { CMess.ok.ToText() });
-                return false;
-            }
-
-            try
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
-                if (selectedItems.Any())
-                {
-                    if (await SaveAllCards(selectedItems, filePath)) return true;
-                    else return false;
-                }
-                else
-                {
-                    CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noCardSelec.ToText(), new[] { CMess.ok.ToText() });
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                return false;
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-        public async Task<bool> SaveFiltedCardOnDataGrid(string targetedPath = null)
-        {
-            string filePath = targetedPath ?? cdbFilePath;
-
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noSelecDB.ToText(), new[] { CMess.ok.ToText() });
-                return false;
-            }
-            if (CollectionViewCollection != null && CollectionViewCollection.Cast<CardEditor.Models.Card>().Any())
-            {
-                try
-                {
-                    Mouse.OverrideCursor = Cursors.Wait;
-                    var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
-                    if (await SaveAllCards(filteredItems, filePath)) return true;
-                    else return false;
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                    return false;
-                }
-                finally
-                {
-                    Mouse.OverrideCursor = null;
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noCardExport.ToText(), new[] { CMess.ok.ToText() });
-                return true;
-            }
-        }
-        public async Task<bool> SaveAllCardsInCard(string targetedPath = null)
-        {
-            string filePath = targetedPath ?? cdbFilePath;
-
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noSelecDB.ToText(), new[] { CMess.ok.ToText() });
-                return false;
-            }
-            if (Cards != null && Cards.Any())
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-                try
-                {
-                    if (await SaveAllCards(Cards.ToList(), filePath)) return true;
-                    else return false;
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                    return false;
-                }
-                finally
-                {
-                    Mouse.OverrideCursor = null;
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noCardExport.ToText(), new[] { CMess.ok.ToText() });
-                return true;
-            }
-        }
-        #endregion
-
-        #region Save Cards Selected
-        public async Task<bool> SaveAllCards(List<CardEditor.Models.Card> selectedItems, string targetPath)
-        {
-            if (selectedItems == null || !selectedItems.Any())
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noCardSave.ToText(), new[] { CMess.ok.ToText() });
-                return false;
-            }
-            if(string.IsNullOrWhiteSpace(targetPath) || !System.IO.File.Exists(targetPath))
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noSelecDB.ToText(), new[] { CMess.ok.ToText() });
-                return false;
-            }    
-            string connectionString = $"Data Source={targetPath};Version=3;";
-
-            const string checkExistenceQuery = "SELECT id FROM datas";
-
-            const string updateDatasQuery = @"UPDATE datas 
-                SET ot = @Ot, alias = @Alias, setcode = @Setcode, type = @Type, 
-                atk = @Atk, def = @Def, level = @Level, race = @Race, 
-                attribute = @Attribute, category = @Category
-                WHERE id = @Id";
-            const string updateTextsQuery = @"UPDATE texts 
-                SET name = @Name, desc = @Desc,
-                str1 = @Str1, str2 = @Str2, str3 = @Str3, str4 = @Str4,
-                str5 = @Str5, str6 = @Str6, str7 = @Str7, str8 = @Str8,
-                str9 = @Str9, str10 = @Str10, str11 = @Str11, str12 = @Str12,
-                str13 = @Str13, str14 = @Str14, str15 = @Str15, str16 = @Str16
-                WHERE id = @Id";
-
-            const string insertDatasQuery = @"INSERT INTO datas (id, ot, alias, setcode, type, atk, def, level, race, attribute, category)
-                VALUES (@Id, @Ot, @Alias, @Setcode, @Type, @Atk, @Def, @Level, @Race, @Attribute, @Category)";
-
-            const string insertTextsQuery = @"INSERT INTO texts (id, name, desc, str1, str2, str3, str4, str5, str6, str7, str8,
-                str9, str10, str11, str12, str13, str14, str15, str16)
-                VALUES (@Id, @Name, @Desc, @Str1, @Str2, @Str3, @Str4, @Str5, @Str6, @Str7, @Str8,
-                @Str9, @Str10, @Str11, @Str12, @Str13, @Str14, @Str15, @Str16)";
-
-            using (var connection = new SQLiteConnection(connectionString))
-            {
-                await connection.OpenAsync();
-                using (var transaction = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        // **Lấy danh sách ID hiện có để tránh truy vấn nhiều lần**
-                        List<ulong> existingIds = new List<ulong>();
-                        using (var checkCommand = new SQLiteCommand(checkExistenceQuery, connection, transaction))
-                        using (var reader = await checkCommand.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                existingIds.Add((ulong)reader.GetInt64(0));
-                            }
-                        }
-
-                        foreach (var card in selectedItems)
-                        {
-                            if (card.id < 0 || card.id > (1UL << 32) - 1) continue;
-                            bool cardExists = existingIds.Contains(card.id);
-
-                            string queryToUse = cardExists ? updateDatasQuery : insertDatasQuery;
-                            using (var command = new SQLiteCommand(queryToUse, connection, transaction))
-                            {
-                                AddParameters(command, card);
-                                await command.ExecuteNonQueryAsync();
-                            }
-
-                            queryToUse = cardExists ? updateTextsQuery : insertTextsQuery;
-                            using (var command = new SQLiteCommand(queryToUse, connection, transaction))
-                            {
-                                AddTextParameters(command, card);
-                                await command.ExecuteNonQueryAsync();
-                            }
-                        }
-                        transaction.Commit();
-
-                        CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                            string.Format(CMess.ThreePlaceholderSuccess.ToText(), selectedItems.Count.ToString(), CMess.Card.ToText(), CMess.Save.ToText()),
-                            new[] { CMess.ok.ToText() });
-                        IsSaved = true;
-                        return true;
-                    }
-                    catch(Exception)
-                    {
-                        transaction.Rollback();
-                        throw;
-                    }
-                }
-            }
-        }
-        private void AddParameters(SQLiteCommand command, CardEditor.Models.Card card)
-        {
-            command.Parameters.AddWithValue("@Id", card.id);
-            command.Parameters.AddWithValue("@Ot", card.ot);
-            command.Parameters.AddWithValue("@Alias", card.alias);
-            command.Parameters.AddWithValue("@Setcode", card.setcode);
-            command.Parameters.AddWithValue("@Type", card.type);
-            command.Parameters.AddWithValue("@Atk", card.atk);
-            command.Parameters.AddWithValue("@Def", card.def);
-            command.Parameters.AddWithValue("@Level", card.level);
-            command.Parameters.AddWithValue("@Race", card.race);
-            command.Parameters.AddWithValue("@Attribute", card.attribute);
-            command.Parameters.AddWithValue("@Category", card.category);
-        }
-        private void AddTextParameters(SQLiteCommand command, CardEditor.Models.Card card)
-        {
-            command.Parameters.AddWithValue("@Id", card.id);
-            command.Parameters.AddWithValue("@Name", card.name ?? string.Empty);
-            command.Parameters.AddWithValue("@Desc", card.desc ?? string.Empty);
-            command.Parameters.AddWithValue("@Str1", card.str1 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str2", card.str2 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str3", card.str3 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str4", card.str4 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str5", card.str5 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str6", card.str6 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str7", card.str7 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str8", card.str8 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str9", card.str9 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str10", card.str10 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str11", card.str11 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str12", card.str12 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str13", card.str13 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str14", card.str14 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str15", card.str15 ?? string.Empty);
-            command.Parameters.AddWithValue("@Str16", card.str16 ?? string.Empty);
-        }
-        #endregion
-
-        #endregion
-
-        #endregion
-
-        #region Scriot Card
-        private (ulong, ulong) GetCardPassword()
-        {
-            if (string.IsNullOrWhiteSpace(txtid.Text)) return (0, 0);
-            if (!ulong.TryParse(txtid.Text, out ulong passWord) || !ulong.TryParse(txtalias.Text, out ulong alias)) return (0, 0);
-            if (CurrentCard != null)
-            {
-                if (isChangedID)
-                {
-                    var chooseID = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                        $"{CMess.idChanged} {CMess.quesSelectCreaScript.ToText()}",
-                        new[] { CMess.SelectCards.ToText(), CMess.newIDCard.ToText(), CMess.cancel.ToText() });
-
-                    if (chooseID == 0) return (CurrentCard.id, CurrentCard.alias);
-                    else if (chooseID == 1) return (passWord, alias);
-                    else return (0, 0);
-                }
-                else return (CurrentCard.id, CurrentCard.alias);
-            }
-            else return (passWord, alias);
-        }
-        private (string, LanguageArea) GetCardScriptContent()
-        {
-            string luaContent = CurrentCard != null
-                ? CurrentCard.name
-                : (string.IsNullOrEmpty(txtcardname.Text) ? string.Empty : txtcardname.Text);
-
-            LanguageArea Area = LanguageDetectorHelper.CheckLanguageArea(luaContent);
-            return (luaContent, Area);
-        }
-        private string GetDirectoryPath()
-        {
-            var firstValidFile = new[] { cdbFilePath, cedsFilePath, xlsxFilePath }
-            .FirstOrDefault(path => !string.IsNullOrWhiteSpace(path) && System.IO.File.Exists(path));
-
-            if (!string.IsNullOrWhiteSpace(firstValidFile))
-                return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(firstValidFile), "script");
-
-            string folderPath = FileDiaLogHelper.OpenFolder();
-            return !string.IsNullOrWhiteSpace(folderPath)
-                ? System.IO.Path.Combine(folderPath, "script")
-                : string.Empty;
-        }
-
-        private (bool, string) CreateScriptFile(string DirectoryPath, ulong password, string luaContent, LanguageArea Area)
-        {
-            var (resultCreate, messageCreate) = CreateFileServices.CreateScript(DirectoryPath, $"c{password}.lua", newScript: true, luaContent, Area);
-            if (resultCreate)
-            {
-                CardEXDataViewModel.Instance.AddScriptPath(password, messageCreate);
-                return (true, messageCreate);
-            }
-            else return (false, messageCreate);
-        }
-        private async Task ScriptCardHandler(ulong password, string luaContent, LanguageArea Area, string DirectoryPath)
-        {
-            var candidates = new List<(string fullPath, string archiveFilePath, string archiveEntryName)>();
-
-            #region Archive
-            if (!string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath))
-            {
-                var resultFilterArchive = await LoadDataServices.FindEntriesByName(archiveFilePath, $"c{password}", "lua");
-                if (resultFilterArchive.success)
-                {
-                    if (resultFilterArchive.fileLists.Count() > 0)
-                    {
-                        var resultExtract = await LoadDataServices.ExtractTempEntry(archiveFilePath, resultFilterArchive.fileLists);
-                        if (resultExtract.result && resultExtract.extractedEntries.Count() > 0)
-                        {
-                            foreach (var entry in resultExtract.extractedEntries)
-                            {
-                                candidates.Add((entry.TempPath, archiveFilePath, entry.EntryFullName));
-                            }
-                        }
-                    }
-                    //else
-                    //{
-                    //    string tempDir = Path.Combine(Path.GetTempPath(), "CardEditorTemp", "script");
-                    //    var (resultCreate, messageCreate) = CreateScriptFile(tempDir, password, luaContent, Area);
-                    //    if (resultCreate) await MainWindowService.OpenCodeEditorTab(messageCreate, archiveFilePath, $"script/{System.IO.Path.GetFileName(messageCreate)}");
-                    //    else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    //        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {messageCreate}",
-                    //        new[] { CMess.ok.ToText() });
-                    //}
-                }
-                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.CardScript.ToText())} {resultFilterArchive.message}",
-                    new[] { CMess.ok.ToText() });
-            }
-            #endregion
-
-            #region Physical files
-            var ScriptList = CardEXDataViewModel.Instance.TryGetScriptpath(password)?.ToList() ?? new List<string>();
-            string foundScriptPath = FindIInfoService.FindScriptFile(password.ToString(), Path.GetDirectoryName(DirectoryPath), false);
-            if (!string.IsNullOrWhiteSpace(foundScriptPath) && System.IO.File.Exists(foundScriptPath) && !ScriptList.Contains(foundScriptPath))
-                ScriptList.Add(foundScriptPath);
-
-            foreach (var path in ScriptList)
-                candidates.Add((path, null, null));
-            #endregion
-
-            if (candidates.Count == 0) // Không tìm thấy ở đâu cả -> tạo mới
-            {
-                // Nếu có archiveFilePath, script mới nên nằm trong temp (giữ hành vi cũ);
-                // ngược lại tạo trực tiếp trong DirectoryPath.
-                string createDir = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
-                    ? Path.Combine(Path.GetTempPath(), "CardEditorTemp", "script")
-                    : DirectoryPath;
-
-                var (resultCreate, messageCreate) = CreateScriptFile(createDir, password, luaContent, Area);
-                if (resultCreate)
-                {
-                    string entryName = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
-                        ? $"script/{System.IO.Path.GetFileName(messageCreate)}"
-                        : null;
-                    await MainWindowService.OpenCodeEditorTab(messageCreate,
-                        entryName != null ? archiveFilePath : null, entryName);
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {messageCreate}",
-                        new[] { CMess.ok.ToText() });
-                }
-            }
-            else if (candidates.Count == 1) // Chỉ có 1 -> mở thẳng
-            {
-                var c = candidates[0];
-                await MainWindowService.OpenCodeEditorTab(c.fullPath, c.archiveFilePath, c.archiveEntryName);
-            }
-            else // Nhiều -> cho user chọn
-            {
-                var (selectResult, selectedItems) = MainWindowService.SelectFileToOpen(candidates);
-                if (selectResult)
-                {
-                    foreach (var item in selectedItems)
-                    {
-                        if (!File.Exists(item.FullPath))
-                        {
-                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                                CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
-                            continue;
-                        }
-                        await MainWindowService.OpenCodeEditorTab(item.FullPath, item.ArchiveFilePath, item.ArchiveEntryName);
-                    }
-                }
-            }
-        }
-        private async Task ScriptCard()
-        {
-            if (MainWindowService == null) return;
-            var (password, aliasPassword) = GetCardPassword();
-            if (password == 0)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()),
-                    new[] { CMess.ok.ToText() });
-                return;
-            }
-            var (luaContent, Area) = GetCardScriptContent();
-            string DirectoryPath = GetDirectoryPath();
-            if (string.IsNullOrWhiteSpace(DirectoryPath)) return;
-            if (!Directory.Exists(DirectoryPath)) Directory.CreateDirectory(DirectoryPath);
-
-            try
-            {
-                if (!CardEXDataViewModel.Instance.IsLoadedScript) await CardEXDataViewModel.Instance.LoadScriptAsync();
-                foreach (var id in new[] { aliasPassword, password }.Where(x => x > 0).Distinct())
-                {
-                    await ScriptCardHandler(id, luaContent, Area, DirectoryPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {ex.Message}",
-                    new[] { CMess.ok.ToText() });
-            }
-        }
-        #endregion
-
-        #region Sort
-        private void SortCard()
-        {
-            ApplySorting();
-        }
-        private void ApplySorting()
-        {
-            var selectedSorts = SortsViewModel.Instance.SelectedSortItems;
-            if (selectedSorts == null || selectedSorts.Count <= 0) return;
-
-            try
-            {
-                using (CollectionViewCollection.DeferRefresh())
-                {
-                    CollectionViewCollection.SortDescriptions.Clear();
-
-                    foreach (var sort in selectedSorts)
-                    {
-                        if (sort?.SelectedItem == null) continue;
-
-                        string cardPropertyName = sort.SelectedItem.Name;
-                        if (cardPropertyName == null || string.IsNullOrEmpty(cardPropertyName)) continue;
-                        if (cardPropertyName == "Rare" || cardPropertyName == "GPoint") continue;
-
-                        var direction = sort.OrderByAsc ? ListSortDirection.Ascending : ListSortDirection.Descending;
-
-                        CollectionViewCollection.SortDescriptions.Add(new SortDescription(cardPropertyName, direction));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        private void btnSort_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            CollectionViewCollection.SortDescriptions.Clear();
-            CollectionViewCollection.Refresh();
-        }
-        #endregion
-
-        #region undo
-        private void UndoAction()
-        {
-            Undo();
-        }
-        private void btnundo_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            RedoCommand();
-        }
-        #endregion
 
         #region Reset Card
         private void ResetCurrentCard()
@@ -2663,7 +2419,7 @@ namespace CardEditor.UserControls
                 btndelete.Visibility = Visibility.Visible;
                 btnUndoDelete.Click -= undoHandler;
                 btnDeleteNow.Click -= deleteNowHandler;
-                await DeleteCard(cardIdToDelete);
+                await DeleteCardFunction(cardIdToDelete);
             };
             btnUndoDelete.Click += undoHandler;
             btnDeleteNow.Click += deleteNowHandler;
@@ -2676,7 +2432,7 @@ namespace CardEditor.UserControls
                 btndelete.Visibility = Visibility.Visible;
                 btnUndoDelete.Click -= undoHandler;
                 btnDeleteNow.Click -= deleteNowHandler;
-                await DeleteCard(cardIdToDelete);
+                await DeleteCardFunction(cardIdToDelete);
             }
         }
         private async Task RunUndoProgress()
@@ -2692,34 +2448,18 @@ namespace CardEditor.UserControls
             progressBar.Value = 100;
         }
 
-        private async Task DeleteCard(ulong cardIdToDelete)
+        private async Task DeleteCardFunction(ulong cardIdToDelete)
         {
             try
             {
-                bool databaseExists = !string.IsNullOrWhiteSpace(cdbFilePath) && System.IO.File.Exists(cdbFilePath);
-                if (databaseExists)
-                {
-                    if (await DeleteCardDB(cardIdToDelete))
-                    {
-                        var (resultArchive, messArchive) = await SaveToArchive();
-                        if (!resultArchive)
-                        {
-                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                                messArchive, new[] { CMess.ok.ToText() });
-                            return;
-                        }
-
-                        DeleteCardGrid(cardIdToDelete);
-                        IsSaved = true;
-                    }
-                    else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText()),
-                        new[] { CMess.ok.ToText() });
-                }
+                var (resultDelete, messageDelete) = await DeleteCard(cardIdToDelete);
+                if (resultDelete)
+                    MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), 1.ToString(), CMess.Card.ToText(), CMess.tlDelete.ToText()));
                 else
                 {
-                    DeleteCardGrid(cardIdToDelete);
-                    IsSaved = true;
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.Card.ToText())} {messageDelete}",
+                        new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -2728,112 +2468,914 @@ namespace CardEditor.UserControls
                     $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
-        private async Task<bool> DeleteCardDB(ulong cardId)
+
+        public async Task<(bool, string)> DeleteCard(ulong cardID)
         {
-            if (cardId <= 0)
+            if (cardID <= 0) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()));
+
+            (bool resultDelete, string messageDelete)? deleteResult = null;
+
+            if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
+                deleteResult = await SaveDatabaseServices.DeleteCard(cardID, cdbFilePath);
+            else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
+                deleteResult = await SaveExcelService.DeleteCard(cardID, xlsxFilePath);
+            else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
+                deleteResult = await SaveCedsService.DeleteCard(cardID, cedsFilePath);
+
+            if (deleteResult != null)
             {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()),
-                    new[] { CMess.ok.ToText() });
-                return false;
+                if (!deleteResult.Value.resultDelete) return (false, deleteResult.Value.messageDelete);
+                var (resultAtchive, messageArchive) = await SaveToArchive();
+                if (!resultAtchive) return (false, messageArchive);
             }
 
-            try
-            {
-                using (SQLiteConnection connection = new SQLiteConnection($"Data Source={cdbFilePath};Version=3;"))
-                {
-                    await connection.OpenAsync();
-                    // Kiểm tra xem id có tồn tại trong database không
-                    string checkQuery = "SELECT COUNT(*) FROM texts WHERE id = @id";
-                    using (SQLiteCommand checkCommand = new SQLiteCommand(checkQuery, connection))
-                    {
-                        checkCommand.Parameters.AddWithValue("@id", cardId);
-                        long count = (long)await checkCommand.ExecuteScalarAsync();
-                        if (count == 0)
-                        {
-                            CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                                CMess.cardNotExit.ToText(), new[] { CMess.ok.ToText() });
-                            return false;
-                        }
-                    }
+            var (resultGrid, messageGrid) = DeleteCardGrid(cardID);
+            if (!resultGrid) return (false, messageGrid);
 
-                    using (var transaction = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            string deleteQuery = @"DELETE FROM texts WHERE id = @id; DELETE FROM datas WHERE id = @id;";
-
-                            using (SQLiteCommand deleteCommand = new SQLiteCommand(deleteQuery, connection, transaction))
-                            {
-                                deleteCommand.Parameters.AddWithValue("@id", cardId);
-                                await deleteCommand.ExecuteNonQueryAsync();
-                            }
-                            transaction.Commit();
-                            return true;
-                        }
-                        catch
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
-                    }
-
-                    //// Xóa dòng có id đó trong database
-                    //string deleteQuery = "DELETE FROM texts WHERE id = @id; DELETE FROM datas WHERE id = @id;";
-                    //using (SQLiteCommand deleteCommand = new SQLiteCommand(deleteQuery, connection))
-                    //{
-                    //    deleteCommand.Parameters.AddWithValue("@id", cardId);
-                    //    await deleteCommand.ExecuteNonQueryAsync();
-                    //}
-                }
-                // return true;
-            }
-            catch(Exception ex)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                return false;
-            }
+            IsSaved = true;
+            return (true, string.Empty);
         }
-        private void DeleteCardGrid(ulong cardId)
+        private (bool, string) DeleteCardGrid(ulong cardId)
         {
             try
             {
                 isDeleting = true;
                 var cardToRemove = Cards.FirstOrDefault(c => c.id == cardId);
-                if (cardToRemove != null)
-                {
-                    Cards.Remove(cardToRemove);
-                    CurrentCard = null;
-                    CollectionViewCollection.Refresh();
+                if (cardToRemove == null) return (false, CMess.cardIDNotExist.ToText());
 
-                    MessageDelete.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.tlDelete.ToText(), 1.ToString(), CMess.Card.ToText()));
+                Cards.Remove(cardToRemove);
+                CurrentCard = null;
+                CollectionViewCollection.Refresh();
 
-                    var result = CMSG.Show(CMess.conClear.ToText(), CMSG.MessageBoxIconType.Question,
-                        string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectCards.ToText()),
-                        new[] { CMess.yes.ToText(), CMess.no.ToText() });
-                    if (result == 0)
-                    {
-                        ClearAll();
-                        isChangedID = false;
-                    }
-                }
-                else
+                MessageDelete.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.tlDelete.ToText(), 1.ToString(), CMess.Card.ToText()));
+
+                var result = CMSG.Show(CMess.conClear.ToText(), CMSG.MessageBoxIconType.Question,
+                    string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlClear.ToText(), CMess.SelectCards.ToText()),
+                    new[] { CMess.yes.ToText(), CMess.no.ToText() });
+                if (result == 0)
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        CMess.cardIDNotExistList.ToText(), new[] { CMess.ok.ToText() });
+                    ClearAll();
+                    isChangedID = false;
                 }
+
+                return (true, string.Empty);
+            }
+            catch (FormatException ex)
+            {
+                return (false, $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText())} {ex.Message}");
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                return (false, ex.Message);
             }
             finally
             {
                 isDeleting = false;
             }
         }
+        #endregion
+
+        #endregion
+
+        #region Copy
+        public async Task CopySelectedCard()
+        {
+            if (datagrMain.SelectedItems == null)
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                if (!selectedItems.Any())
+                {
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                    return;
+                }
+
+                var (resultCopy, messageCopy) = await CopyCardsCommand(selectedItems);
+                if (resultCopy)
+                {
+                    MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+        }
+        public async Task CopyAllFilterCard()
+        {
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any())
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                if (!filteredItems.Any())
+                {
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                    return;
+                }
+
+                var (resultCopy, messageCopy) = await CopyCardsCommand(filteredItems);
+                if (resultCopy)
+                {
+                    MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+        }
+        public async Task CopyAllCard()
+        {
+            if (Cards == null || !Cards.Any())
+            {
+                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var (resultCopy, messageCopy) = await CopyCardsCommand(Cards.ToList());
+                if (resultCopy)
+                {
+                    MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+        }
+
+        private async Task<(bool, string)> CopyCardsCommand(List<CardEditor.Models.Card> cardList)
+        {
+            if (cardList == null || !cardList.Any()) return (false, CMess.noCardExport.ToText());
+
+            return await Task.Run(() => ClipboardService.CopyCardJSON(cardList));
+        }
+
+        private async Task CopyCardDescExecute()
+        {
+            bool success = CopyCardDesc();
+            if (!success) return;
+
+            CopyCardDescIcon = PackIconKind.Check;
+
+            await Task.Delay(3000);
+            CopyCardDescIcon = PackIconKind.ContentCopy;
+        }
+        private bool CopyCardDesc()
+        {
+            try
+            {
+                var (resultCopy, messageCopy) = ClipboardService.CopyTextToClipboard(txtcarddesc.Text);
+                return resultCopy;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        #endregion
+
+        #region Export
+
+        #region ZIP
+        public async Task<(bool, string)> ExportCompressedSelectedData(string targetPath)
+        {
+            if (string.IsNullOrEmpty(targetPath)) return (false, CMess.noFileFound.ToText());
+            if (datagrMain.SelectedItems == null) return (false, CMess.noCardSelec.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await CreateCompressedFile(selectedItems, targetPath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> ExportCompressedFiltedData(string targetPath)
+        {
+            if (string.IsNullOrEmpty(targetPath)) return (false, CMess.noFileFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
+
+                return await CreateCompressedFile(filteredItems, targetPath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+        public async Task<(bool, string)> ExportCompressedAllData(string targetPath)
+        {
+            if (string.IsNullOrEmpty(targetPath)) return (false, CMess.noFileFound.ToText());
+            if (Cards == null || !Cards.Any()) return (false, CMess.noCardSelec.ToText());
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                return await CreateCompressedFile(Cards.ToList(), targetPath);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
+
+        private async Task<(bool, string)> CreateCompressedFile(List<CardEditor.Models.Card> cardList, string targetPath)
+        {
+            if (cardList == null || !cardList.Any()) return (false, CMess.noCardExport.ToText());
+            if (string.IsNullOrEmpty(targetPath)) return (false, CMess.noFileFound.ToText());
+
+            string dbFilePath =
+                !string.IsNullOrWhiteSpace(cdbFilePath) ? cdbFilePath :
+                !string.IsNullOrWhiteSpace(xlsxFilePath) ? xlsxFilePath :
+                !string.IsNullOrWhiteSpace(cedsFilePath) ? cedsFilePath :
+                null;
+
+            return await Task.Run(() => SaveArchiveService.SaveCompressed(cardList, targetPath, dbFilePath));
+        }
+        #endregion
+
+        #endregion
+
+        #region Items Editor
+
+        #region Replace Description
+        public async Task<ResultItem> ReplaceText1(string findWhat, string replaceWith, int scope)
+        {
+            // 1. Validate input
+            if (string.IsNullOrWhiteSpace(findWhat))
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.FindWhat.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+
+            if (string.IsNullOrWhiteSpace(replaceWith))
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.Replacewith.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+
+            if (scope < 1 || scope > 3)
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+
+            // 2. Settings
+            int advancedSettings = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
+
+            bool advancedFind = (advancedSettings & 0x01) != 0;
+            bool matchCase = (advancedSettings & 0x02) != 0;
+            bool useWildcards = (advancedSettings & 0x04) != 0;
+            bool matchPrefix = (advancedSettings & 0x08) != 0;
+            bool matchSuffix = (advancedSettings & 0x10) != 0;
+            bool wholeWord = (advancedSettings & 0x20) != 0;
+            bool ignorePunctuation = (advancedSettings & 0x40) != 0;
+            bool ignoreWhitespace = (advancedSettings & 0x80) != 0;
+
+            // 3. Get target cards
+            var targetCards = scope switch
+            {
+                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList(),
+                2 => CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList(),
+                3 => Cards.ToList(),
+                _ => new List<CardEditor.Models.Card>()
+            };
+
+            int totalCount = targetCards.Count;
+
+            if (totalCount == 0)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = CMess.noCardReplace.ToText()
+                };
+            }
+
+            // 4. Normalize helper
+            string Normalize(string input)
+            {
+                if (string.IsNullOrEmpty(input))
+                    return string.Empty;
+
+                if (advancedFind)
+                {
+                    if (ignoreWhitespace)
+                        input = Regex.Replace(input, @"\s+", "");
+
+                    if (ignorePunctuation)
+                        input = Regex.Replace(input, @"[^\w\s]", "");
+                }
+
+                return input;
+            }
+
+            string normalizedFind = Normalize(findWhat);
+
+            // 5. Build regex pattern
+            string BuildPattern(string input)
+            {
+                string pattern = advancedFind
+                    ? Regex.Escape(input)
+                    : Regex.Escape(input);
+
+                if (advancedFind)
+                {
+                    if (useWildcards)
+                    {
+                        pattern = pattern
+                            .Replace(@"\*", ".*")
+                            .Replace(@"\?", ".");
+                    }
+
+                    if (wholeWord)
+                        pattern = $@"\b{pattern}\b";
+
+                    if (matchPrefix)
+                        pattern = "^" + pattern;
+
+                    if (matchSuffix)
+                        pattern += "$";
+                }
+
+                return pattern;
+            }
+
+            string pattern = BuildPattern(normalizedFind);
+
+            RegexOptions options = matchCase
+                ? RegexOptions.None
+                : RegexOptions.IgnoreCase;
+
+            var regex = new Regex(pattern, options);
+
+            // 6. Process
+            int modifiedCount = 0;
+
+            await Task.Run(() =>
+            {
+                foreach (var card in targetCards)
+                {
+                    if (string.IsNullOrEmpty(card.desc))
+                        continue;
+
+                    string original = card.desc;
+                    string result = regex.Replace(original, replaceWith);
+
+                    if (!string.Equals(original, result, StringComparison.Ordinal))
+                    {
+                        card.desc = result;
+                        modifiedCount++;
+                    }
+                }
+            });
+
+            // 7. UI refresh
+            if (modifiedCount > 0)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CollectionViewCollection.Refresh();
+                });
+            }
+
+            IsSaved = modifiedCount == 0;
+
+            // 8. Return structured result
+            return new ResultItem
+            {
+                Succeeded = true,
+                TotalCount = totalCount,
+                FilteredCount = modifiedCount,
+                Message = modifiedCount > 0
+                    ? string.Format(CMess.TwoPlaceholderSuccess.ToText(), modifiedCount, CMess.Card.ToText())
+                    : CMess.noCardReplace.ToText()
+            };
+        }
+        public async Task<ResultItem> ReplaceText(string findWhat, string replaceWith, int scope)
+        {
+            if (string.IsNullOrWhiteSpace(findWhat))
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.FindWhat.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+            if (string.IsNullOrWhiteSpace(replaceWith))
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"{CMess.Replacewith.ToText()} {CMess.cannotEmpty.ToText()}"
+                };
+            if (scope < 1 || scope > 3)
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+
+            var optRaw = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
+
+            var opt = new CardEditor.Models.SearchOptions
+            {
+                MatchCase = (optRaw & 0x02) != 0,
+                UseWildcards = (optRaw & 0x04) != 0,
+                MatchPrefix = (optRaw & 0x08) != 0,
+                MatchSuffix = (optRaw & 0x10) != 0,
+                WholeWord = (optRaw & 0x20) != 0,
+                IgnorePunctuation = (optRaw & 0x40) != 0,
+                IgnoreWhitespace = (optRaw & 0x80) != 0
+            };
+
+            var targetCards = scope switch
+            {
+                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList(),
+                2 => CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList(),
+                3 => Cards.ToList(),
+                _ => new List<CardEditor.Models.Card>()
+            };
+
+            if (!targetCards.Any())
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = string.Format(CMess.noCardFound.ToText())
+                };
+
+            RegexOptions regexOpt = opt.MatchCase
+                ? RegexOptions.None
+                : RegexOptions.IgnoreCase;
+
+            int modifiedCount = await Task.Run(() => SearchPattern.Replace(targetCards, findWhat, replaceWith, opt, regexOpt));
+
+            if (modifiedCount > 0)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CollectionViewCollection.Refresh();
+                });
+            }
+
+            IsSaved = modifiedCount == 0;
+
+            return new ResultItem
+            {
+                Succeeded = true,
+                TotalCount = targetCards.Count,
+                FilteredCount = modifiedCount,
+                Message = modifiedCount > 0
+                    ? string.Format(CMess.TwoPlaceholderSuccess.ToText(), modifiedCount, CMess.Card.ToText())
+                    : CMess.noCardReplace.ToText()
+            };
+        }
+        #endregion
+
+        #region Replace Field
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags, bool isAddNew)
+        {
+            if (cardList == null || flags == 0) return (false, 0, 0, CMess.noCardReplace.ToText());
+
+            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters =
+                Enumerable.Empty<Action<CardEditor.Models.Card, CardEditor.Models.Card>>();
+
+            if (flags != 0)
+            {
+                var selected = (CardField)flags;
+                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+            }
+
+            return ReplaceDataField(cardList, isAddNew, updaters);
+        }
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
+            params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
+        {
+            return ReplaceDataField(cardList, isAddNew, updaters.AsEnumerable());
+        }
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
+            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
+        {
+            if (cardList == null || Cards == null)
+                return (false, 0, 0, CMess.noCardReplace.ToText());
+
+            try
+            {
+                var existingMap = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
+                var updaterList = updaters?.ToList();
+                bool allowUpdate = updaterList?.Count > 0;
+                int replaced = 0;
+
+                Cards.BeginUpdate();
+                foreach (var newCard in cardList)
+                {
+                    if (existingMap.TryGetValue(newCard.id, out var existing))
+                    {
+                        if (allowUpdate) existing.UpdateFrom(newCard, updaterList);
+                        replaced++;
+                    }
+                    else if (isAddNew)
+                    {
+                        Cards.Add(newCard);
+                        replaced++;
+                    }
+                }
+                
+                IsSaved = false;
+
+                return (true, replaced, Cards.Count(), string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, 0, 0, ex.Message);
+            }
+            finally
+            {
+                Cards.EndUpdate();
+            }
+        }
+        #endregion
+
+        #region Import Data
+        public (bool, List<ulong>) CheckDuplicateIds()
+        {
+            if (Cards == null) return (false, null);
+            var duplicates = Cards.GroupBy(c => c.id).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+            return (duplicates.Count > 0, duplicates);
+        }
+        public (bool, string) ImportDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags)
+        {
+            if (cardList == null) return (false, CMess.noCardReplace.ToText());
+
+            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters =
+                Enumerable.Empty<Action<CardEditor.Models.Card, CardEditor.Models.Card>>();
+
+            if (flags != 0)
+            {
+                var selected = (CardField)flags;
+                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+            }
+
+            return ImportDataField(cardList, updaters);
+        }
+        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
+            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
+        {
+            if (cardList == null || Cards == null)
+                return (false, CMess.noCardReplace.ToText());
+
+            try
+            {
+                var existingMap = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
+                var updaterList = updaters?.ToList();
+                bool allowUpdate = updaterList?.Count > 0;
+                int count = 0;
+
+                Cards.BeginUpdate();
+                foreach (var newCard in cardList)
+                {
+                    if (existingMap.TryGetValue(newCard.id, out var existing))
+                    {
+                        if (allowUpdate) existing.UpdateFrom(newCard, updaterList);
+                    }
+                    else Cards.Add(newCard);
+                    count++;
+                }
+                Cards.EndUpdate();
+                IsSaved = false;
+
+                return (true, count.ToString());
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
+            params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
+        {
+            return ImportDataField(cardList, updaters.AsEnumerable());
+        }
+
+        public void ImportCreateNew(IEnumerable<CardEditor.Models.Card> importedCards)
+        {
+            if (importedCards == null) return;
+            Cards.ReplaceAll(importedCards);
+            Mouse.OverrideCursor = null;
+            RebuildWindowTitle();
+        }
+        public void ImportOverwrite(IEnumerable<CardEditor.Models.Card> importedCards)
+        {
+            if (importedCards == null || !importedCards.Any()) return;
+
+            List<CardEditor.Models.Card> CardList = new List<CardEditor.Models.Card>();
+            var CardsDict = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
+
+            foreach (var item in importedCards)
+            {
+                if (CardsDict.TryGetValue(item.id, out var existingCard))
+                {
+                    existingCard.desc = item.desc;
+                }
+                else
+                {
+                    CardList.Add(item);
+                }
+            }
+            Cards.AddRange(CardList);
+            Mouse.OverrideCursor = null;
+            RebuildWindowTitle();
+        }
+        public void ImportAppendwrite(IEnumerable<CardEditor.Models.Card> importedCards)
+        {
+            if (importedCards == null || !importedCards.Any()) return;
+            List<CardEditor.Models.Card> CardList = new List<CardEditor.Models.Card>();
+            var CardsDict = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
+
+            foreach (var item in importedCards)
+            {
+                if (!CardsDict.ContainsKey(item.id))
+                {
+                    CardList.Add(item);
+                }
+            }
+            Cards.AddRange(CardList);
+            Mouse.OverrideCursor = null;
+            RebuildWindowTitle();
+        }
+        #endregion
+
+        #region Pendulum Language
+        private CancellationTokenSource _applyPenLangCts;
+        private void LoadPendulumLanguage() // Selected Card Changed
+        {
+            if (CurrentCard == null || !IsPendulumIntf) return;
+
+            PenAnalysisResult result = PenLanguageViewModel.Instance.Analyze(CurrentCard.desc);
+            if (result == null)
+            {
+                SelectedPenLangRule = null;
+                return;
+            }
+            Debug.WriteLine($"Rule: {result.RuleResult.Locale.ToString()}");
+            SelectedPenLangRule = result.RuleResult;
+        }
+        private void OpenPreViewDescWindow()
+        {
+            if (CurrentCard == null || !IsPendulumIntf) return;
+            if (SelectedPenLangRule?.Locale is PendulumLocales.EDOProNonPen or PendulumLocales.Unknown) return;
+
+            if (MainWindowService != null)
+            {
+                MainWindowService.OpenPreViewDescWindow(CurrentCard, SelectedPenLangRule);
+            }
+        }
+        private void ApplyPendulumLanguageDesc()
+        {
+            if (CurrentCard == null || !IsPendulumIntf || SelectedPenLangRule == null) return;
+            if (SelectedPenLangRule?.Locale is PendulumLocales.EDOProNonPen or PendulumLocales.Unknown) return;
+
+            PenAnalysisResult result = PenLanguageViewModel.Instance.Analyze(CurrentCard.desc);
+            PenDescResult effect = result.DescResult;
+
+            PenScale scale = GetPenScaleHelp.GetPenScale(CurrentCard.level);
+            bool IsNormalCard = (CurrentCard.type & (ulong)CardType.Normal) != 0;
+
+            string desc = PenLanguageViewModel.Instance.BuildDesc(SelectedPenLangRule, effect, scale, IsNormalCard);
+            txtcarddesc.Text = desc;
+        }
+        public async Task<PenDescProcessSummary> PendulumLanguage(PendulumLanguageRule rule, int scope, bool overwrite)
+        {
+            _applyPenLangCts?.Dispose();
+            _applyPenLangCts = new CancellationTokenSource();
+
+            if (scope < 0 || scope > 2)
+            {
+                return new PenDescProcessSummary
+                {
+                    Result = false,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+
+            var cardList = scope switch
+            {
+                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
+                _ => new List<CardEditor.Models.Card>()
+            };
+
+            if (cardList == null || cardList.Count == 0)
+            {
+                return new PenDescProcessSummary
+                {
+                    Result = false,
+                    Message = CMess.noCardSelec.ToText()
+                };
+            }
+
+            try
+            {
+                PenDescProcessSummary result = await PenLanguageViewModel.Instance.ProcessPenDesc(cardList, rule, _applyPenLangCts.Token, overwrite);
+                // Total: Tổng số card có cờ CardType.Pendulum được đưa vào xử lý (đếm ngay từ đầu vòng lặp, trước khi biết kết quả thành hay bại)
+                // Success: Số card đã build lại desc thành công bằng newRule, toàn bộ pipeline Analyze → BuildDesc chạy trót lọt không throw exception, và card.desc đã được gán giá trị mới.
+                // Error: Số card mà Analyze hoặc BuildDesc throw exception trong lúc xử lý. Card này bị bỏ qua, card.desc giữ nguyên giá trị gốc (không được gán lại). ID của các card này nằm trong ErrorCardIds.
+                // EmptyDesc: Số card có desc rỗng hoặc chỉ toàn khoảng trắng → bị skip ngay, không gọi Analyze/BuildDesc, không tính là lỗi. Comment gốc "-> Unknown" ý là: không xác định được ngôn ngữ vì không có gì để phân tích.
+                // EdoProFallback: Số card Analyze chạy không lỗi, nhưng kết quả phân tích rơi vào rule mặc định EdoProNoPenRule — tức là desc gốc không khớp với bất kỳ rule ngôn ngữ chính thức nào, phải fallback về format chung của EDOPro
+                /// Card này vẫn được build lại bằng newRule bình thường (không bị loại khỏi Success), số này chỉ để theo dõi tỷ lệ desc "không rõ nguồn gốc ngôn ngữ".
+                /// 1 card có thể vừa nằm trong EdoProFallback vừa nằm trong Success (2 số này không loại trừ nhau, vì EdoProFallback đếm ở giữa quá trình, Success đếm ở cuối nếu không exception).
+                // Cancelled: true nếu quá trình xử lý bị dừng giữa chừng do CancellationToken được yêu cầu hủy (user bấm Stop). Khi đó tất cả thay đổi đã tự động rollback.
+                // RolledBack: true nếu đã tự động rollback toàn bộ card.desc về giá trị gốc bằng _lastSnapshot, do gặp Cancelled hoặc lỗi nghiêm trọng ngoài dự kiến (không phải lỗi per-card)
+                /// Không liên quan đến rollback thủ công qua processor.Rollback()
+                // ErrorCardIds: Danh sách id của các card rơi vào nhóm Error, để tầng gọi (UI) có thể hiển thị chi tiết "những card nào bị lỗi, cần xem lại thủ công".
+
+                IsSaved = false;
+                return result;
+            }
+            finally
+            {
+                _applyPenLangCts.Dispose();
+                _applyPenLangCts = null;
+            }
+        }
+        public (bool, string) RollBackPenlang()
+        {
+            var result = PenLanguageViewModel.Instance.PerformManualRollback();
+            IsSaved = false;
+            return result;
+        }
+        public void StopApplyPenLang()
+        {
+            _applyPenLangCts?.Cancel();
+        }
+
+        public void ApplyPendulumLanguage(string desc)
+        {
+            txtcarddesc.Text = desc;
+        }
+        #endregion
+
+        #region Credits
+        private CancellationTokenSource _applyCreditCts;
+        public async Task<ResultItem> CreditTeam(CreditItem credit, int scope, int writeMode)
+        {
+            _applyCreditCts?.Dispose();
+            _applyCreditCts = new CancellationTokenSource();
+
+            if (scope < 0 || scope > 2)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+
+            var cardList = scope switch
+            {
+                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
+                _ => new List<CardEditor.Models.Card>()
+            };
+
+            if (cardList == null || cardList.Count == 0)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = CMess.noCardSelec.ToText()
+                };
+            }
+
+            try
+            {
+                var result = await CreditsViewModel.Instance.CreditTeam(cardList, credit, writeMode, _applyCreditCts.Token);
+                IsSaved = false;
+                return result;
+            }
+            finally
+            {
+                _applyCreditCts.Dispose();
+                _applyCreditCts = null;
+            }
+        }
+        public async Task<ResultItem> RemoveCredit(int scope)
+        {
+            if (scope < 0 || scope > 2)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
+                };
+            }
+
+            var cardList = scope switch
+            {
+                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
+                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
+                _ => new List<CardEditor.Models.Card>()
+            };
+
+            if (cardList == null || cardList.Count == 0)
+            {
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = CMess.noCardSelec.ToText()
+                };
+            }
+
+            var result = await CreditsViewModel.Instance.RemoveAllCredits(cardList);
+            IsSaved = false;
+            return result;
+        }
+        public (bool, string) RollbackCredits()
+        {
+            var result = CreditsViewModel.Instance.PerformManualRollback();
+            IsSaved = false;
+            return result;
+        }
+        public void StopApplyCredits()
+        {
+            _applyCreditCts?.Cancel();
+        }
+        #endregion
+
         #endregion
 
         #region Filter
@@ -3986,6 +4528,48 @@ namespace CardEditor.UserControls
         }
         #endregion
 
+        #region Sort
+        private void SortCard()
+        {
+            ApplySorting();
+        }
+        private void ApplySorting()
+        {
+            var selectedSorts = SortsViewModel.Instance.SelectedSortItems;
+            if (selectedSorts == null || selectedSorts.Count <= 0) return;
+
+            try
+            {
+                using (CollectionViewCollection.DeferRefresh())
+                {
+                    CollectionViewCollection.SortDescriptions.Clear();
+
+                    foreach (var sort in selectedSorts)
+                    {
+                        if (sort?.SelectedItem == null) continue;
+
+                        string cardPropertyName = sort.SelectedItem.Name;
+                        if (cardPropertyName == null || string.IsNullOrEmpty(cardPropertyName)) continue;
+                        if (cardPropertyName == "Rare" || cardPropertyName == "GPoint") continue;
+
+                        var direction = sort.OrderByAsc ? ListSortDirection.Ascending : ListSortDirection.Descending;
+
+                        CollectionViewCollection.SortDescriptions.Add(new SortDescription(cardPropertyName, direction));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+        }
+        private void btnSort_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            CollectionViewCollection.SortDescriptions.Clear();
+            CollectionViewCollection.Refresh();
+        }
+        #endregion
+
         #region Image
         private async Task CreateImage()
         {
@@ -4026,7 +4610,10 @@ namespace CardEditor.UserControls
                 #region OutPutPath
                 string outPutPath = string.Empty;
                 if (!string.IsNullOrWhiteSpace(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                    outPutPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(cdbFilePath), "picsGene");
+                {
+                    string putput = ConfigViewModel.Instance.imageSetting.SelectedOutPut.ToString();
+                    outPutPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(cdbFilePath), putput);
+                }
                 else outPutPath = ConfigViewModel.Instance.imageSetting.OutPutFolder;
                 if(!Directory.Exists(outPutPath)) Directory.CreateDirectory(outPutPath);
                 #endregion
@@ -4112,7 +4699,7 @@ namespace CardEditor.UserControls
                 if (!string.IsNullOrEmpty(filePath))
                 {
                     string selectedFilePath = filePath;
-                    await CreatImage(selectedFilePath);
+                    await SelectImageCard(selectedFilePath);
                 }
             }
             else
@@ -4122,7 +4709,7 @@ namespace CardEditor.UserControls
                     new[] { CMess.ok.ToText() });
             }
         }
-        private async Task CreatImage(string imagePath)
+        private async Task SelectImageCard(string imagePath)
         {
             if (string.IsNullOrWhiteSpace(txtid.Text))
             {
@@ -4135,6 +4722,14 @@ namespace CardEditor.UserControls
             try
             {
                 SetImageCardToNull();
+                bool LoadConfig = GeneraImageViewModel.Instance.LoadImageConfig(ConfigViewModel.Instance.imageSetting.Series);
+                if (!LoadConfig)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        string.Format(CMess.ThreePlaceholderError.ToText(), CMess.load.ToText(), CMess.Image.ToText(), CMess.Config.ToText()),
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
 
                 string passWord = string.Empty, targetPath = string.Empty;
 
@@ -4176,29 +4771,42 @@ namespace CardEditor.UserControls
                     }
                 }
 
-                string imageSource = await ImageProcessor.CreateImageCard(passWord, imagePath, targetPath);
-
-                if (!string.IsNullOrWhiteSpace(imageSource) && System.IO.File.Exists(imageSource))
+                string selectedOutPut = ConfigViewModel.Instance.imageSetting.SelectedOutPut.ToString();
+                var (resultSelect, messageSelect) = await ImageProcessor.CreateImageCard(passWord, imagePath, System.IO.Path.Combine(targetPath, selectedOutPut));
+                if (resultSelect)
                 {
-                    byte[] imgBytes = await Task.Run(() => System.IO.File.ReadAllBytes(imageSource));
-                    var bitmap = new BitmapImage();
-                    using (var ms = new MemoryStream(imgBytes))
+                    if (!string.IsNullOrWhiteSpace(messageSelect) && System.IO.File.Exists(messageSelect))
                     {
-                        bitmap.BeginInit();
-                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmap.StreamSource = ms;
-                        bitmap.EndInit();
-                        bitmap.Freeze();
+                        byte[] imgBytes = await Task.Run(() => System.IO.File.ReadAllBytes(messageSelect));
+                        var bitmap = new BitmapImage();
+                        using (var ms = new MemoryStream(imgBytes))
+                        {
+                            bitmap.BeginInit();
+                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmap.StreamSource = ms;
+                            bitmap.EndInit();
+                            bitmap.Freeze();
+                        }
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            imagecard.Source = bitmap;
+                            ViewportImage.ToolTip = messageSelect;
+                        });
+                        ImageUrl = messageSelect;
                     }
-                    await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    else
                     {
-                        imagecard.Source = bitmap;
-                        ViewportImage.ToolTip = imageSource;
-                    });
-                    ImageUrl = imageSource;
+                        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            SetImageCardDefault();
+                        });
+                    }
                 }
                 else
                 {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText())} {messageSelect}",
+                        new[] { CMess.ok.ToText() });
                     await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                     {
                         SetImageCardDefault();
@@ -4234,7 +4842,7 @@ namespace CardEditor.UserControls
                 string filePath = files[0];
                 if (IsImageFile(filePath))
                 {
-                    await CreatImage(filePath);
+                    await SelectImageCard(filePath);
                 }
                 else
                 {
@@ -4476,7 +5084,10 @@ namespace CardEditor.UserControls
             #region OutPutPath
             string outPutPath = string.Empty;
             if (!string.IsNullOrWhiteSpace(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                outPutPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(cdbFilePath), "picsGene");
+            {
+                string outPut = ConfigViewModel.Instance.imageSetting.SelectedOutPut.ToString();
+                outPutPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(cdbFilePath), outPut);
+            }
             else outPutPath = ConfigViewModel.Instance.imageSetting.OutPutFolder;
             if (!Directory.Exists(outPutPath)) Directory.CreateDirectory(outPutPath);
             ImageGenerator.outputFolderPath = outPutPath;
@@ -4639,6 +5250,187 @@ namespace CardEditor.UserControls
         }
         #endregion
 
+        #region Scriot Card
+        private (ulong, ulong) GetCardPassword()
+        {
+            if (string.IsNullOrWhiteSpace(txtid.Text)) return (0, 0);
+            if (!ulong.TryParse(txtid.Text, out ulong passWord) || !ulong.TryParse(txtalias.Text, out ulong alias)) return (0, 0);
+            if (CurrentCard != null)
+            {
+                if (isChangedID)
+                {
+                    var chooseID = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                        $"{CMess.idChanged} {CMess.quesSelectCreaScript.ToText()}",
+                        new[] { CMess.SelectCards.ToText(), CMess.newIDCard.ToText(), CMess.cancel.ToText() });
+
+                    if (chooseID == 0) return (CurrentCard.id, CurrentCard.alias);
+                    else if (chooseID == 1) return (passWord, alias);
+                    else return (0, 0);
+                }
+                else return (CurrentCard.id, CurrentCard.alias);
+            }
+            else return (passWord, alias);
+        }
+        private (string, LanguageArea) GetCardScriptContent()
+        {
+            string luaContent = CurrentCard != null
+                ? CurrentCard.name
+                : (string.IsNullOrEmpty(txtcardname.Text) ? string.Empty : txtcardname.Text);
+
+            LanguageArea Area = LanguageDetectorHelper.CheckLanguageArea(luaContent);
+            return (luaContent, Area);
+        }
+        private string GetDirectoryPath()
+        {
+            var firstValidFile = new[] { cdbFilePath, cedsFilePath, xlsxFilePath }
+            .FirstOrDefault(path => !string.IsNullOrWhiteSpace(path) && System.IO.File.Exists(path));
+
+            if (!string.IsNullOrWhiteSpace(firstValidFile))
+                return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(firstValidFile), "script");
+
+            string folderPath = FileDiaLogHelper.OpenFolder();
+            return !string.IsNullOrWhiteSpace(folderPath)
+                ? System.IO.Path.Combine(folderPath, "script")
+                : string.Empty;
+        }
+
+        private (bool, string) CreateScriptFile(string DirectoryPath, ulong password, string luaContent, LanguageArea Area)
+        {
+            var (resultCreate, messageCreate) = CreateFileServices.CreateScript(DirectoryPath, $"c{password}.lua", newScript: true, luaContent, Area);
+            if (resultCreate)
+            {
+                CardEXDataViewModel.Instance.AddScriptPath(password, messageCreate);
+                return (true, messageCreate);
+            }
+            else return (false, messageCreate);
+        }
+        private async Task ScriptCardHandler(ulong password, string luaContent, LanguageArea Area, string DirectoryPath)
+        {
+            var candidates = new List<(string fullPath, string archiveFilePath, string archiveEntryName)>();
+
+            #region Archive
+            if (!string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath))
+            {
+                var resultFilterArchive = await LoadDataServices.FindEntriesByName(archiveFilePath, $"c{password}", "lua");
+                if (resultFilterArchive.success)
+                {
+                    if (resultFilterArchive.fileLists.Count() > 0)
+                    {
+                        var resultExtract = await LoadDataServices.ExtractTempEntry(archiveFilePath, resultFilterArchive.fileLists);
+                        if (resultExtract.result && resultExtract.extractedEntries.Count() > 0)
+                        {
+                            foreach (var entry in resultExtract.extractedEntries)
+                            {
+                                candidates.Add((entry.TempPath, archiveFilePath, entry.EntryFullName));
+                            }
+                        }
+                    }
+                    //else
+                    //{
+                    //    string tempDir = Path.Combine(Path.GetTempPath(), "CardEditorTemp", "script");
+                    //    var (resultCreate, messageCreate) = CreateScriptFile(tempDir, password, luaContent, Area);
+                    //    if (resultCreate) await MainWindowService.OpenCodeEditorTab(messageCreate, archiveFilePath, $"script/{System.IO.Path.GetFileName(messageCreate)}");
+                    //    else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    //        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {messageCreate}",
+                    //        new[] { CMess.ok.ToText() });
+                    //}
+                }
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.load.ToText(), CMess.CardScript.ToText())} {resultFilterArchive.message}",
+                    new[] { CMess.ok.ToText() });
+            }
+            #endregion
+
+            #region Physical files
+            var ScriptList = CardEXDataViewModel.Instance.TryGetScriptpath(password)?.ToList() ?? new List<string>();
+            string foundScriptPath = FindIInfoService.FindScriptFile(password.ToString(), Path.GetDirectoryName(DirectoryPath), false);
+            if (!string.IsNullOrWhiteSpace(foundScriptPath) && System.IO.File.Exists(foundScriptPath) && !ScriptList.Contains(foundScriptPath))
+                ScriptList.Add(foundScriptPath);
+
+            foreach (var path in ScriptList)
+                candidates.Add((path, null, null));
+            #endregion
+
+            if (candidates.Count == 0) // Không tìm thấy ở đâu cả -> tạo mới
+            {
+                // Nếu có archiveFilePath, script mới nên nằm trong temp (giữ hành vi cũ);
+                // ngược lại tạo trực tiếp trong DirectoryPath.
+                string createDir = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
+                    ? Path.Combine(Path.GetTempPath(), "CardEditorTemp", "script")
+                    : DirectoryPath;
+
+                var (resultCreate, messageCreate) = CreateScriptFile(createDir, password, luaContent, Area);
+                if (resultCreate)
+                {
+                    string entryName = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
+                        ? $"script/{System.IO.Path.GetFileName(messageCreate)}"
+                        : null;
+                    await MainWindowService.OpenCodeEditorTab(messageCreate,
+                        entryName != null ? archiveFilePath : null, entryName);
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {messageCreate}",
+                        new[] { CMess.ok.ToText() });
+                }
+            }
+            else if (candidates.Count == 1) // Chỉ có 1 -> mở thẳng
+            {
+                var c = candidates[0];
+                await MainWindowService.OpenCodeEditorTab(c.fullPath, c.archiveFilePath, c.archiveEntryName);
+            }
+            else // Nhiều -> cho user chọn
+            {
+                var (selectResult, selectedItems) = MainWindowService.SelectFileToOpen(candidates);
+                if (selectResult)
+                {
+                    foreach (var item in selectedItems)
+                    {
+                        if (!File.Exists(item.FullPath))
+                        {
+                            CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                                CMess.fileNotExit.ToText(), new[] { CMess.ok.ToText() });
+                            continue;
+                        }
+                        await MainWindowService.OpenCodeEditorTab(item.FullPath, item.ArchiveFilePath, item.ArchiveEntryName);
+                    }
+                }
+            }
+        }
+        private async Task ScriptCard()
+        {
+            if (MainWindowService == null) return;
+            var (password, aliasPassword) = GetCardPassword();
+            if (password == 0)
+            {
+                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
+                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()),
+                    new[] { CMess.ok.ToText() });
+                return;
+            }
+            var (luaContent, Area) = GetCardScriptContent();
+            string DirectoryPath = GetDirectoryPath();
+            if (string.IsNullOrWhiteSpace(DirectoryPath)) return;
+            if (!Directory.Exists(DirectoryPath)) Directory.CreateDirectory(DirectoryPath);
+
+            try
+            {
+                if (!CardEXDataViewModel.Instance.IsLoadedScript) await CardEXDataViewModel.Instance.LoadScriptAsync();
+                foreach (var id in new[] { aliasPassword, password }.Where(x => x > 0).Distinct())
+                {
+                    await ScriptCardHandler(id, luaContent, Area, DirectoryPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {ex.Message}",
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+        #endregion
+
         #region Web
         private async Task OpenKonamiDB()
         {
@@ -4666,1257 +5458,16 @@ namespace CardEditor.UserControls
         }
         #endregion
 
-        #region Change
-        private async void datagrMain_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (isDeleting) return;
-            isChangedGrid = true;
-            try
-            {
-                if (datagrMain.SelectedItem is CardEditor.Models.Card selectedCard)
-                {
-                    CurrentCard = selectedCard;
-                    LoadCardData();
-                    LoadCardRare();
-                    LoadGenesysPoint();
-                    await LoadCardImage();
-                }
-                else
-                {
-                    CurrentCard = null;
-                    ClearAll();
-                }
-                LoadPendulumLanguage();
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            HiddenArtWork();
-            isChangedID = false;
-            isChangedGrid = false;
-            ResetUndoRedoCommand();
-        }
-        private void DataGridCell_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
-        {
-            e.Handled = true;
-        }
-        private void txtid_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            isChangedID = true;
-        }
-        public void FocusCardById(ulong cardID)
-        {
-            var foundCard = Cards.FirstOrDefault(c => c.id == cardID);
-            if (foundCard == null) return;
-
-            CurrentCard = foundCard;
-            datagrMain.SelectedItem = foundCard;
-            datagrMain.ScrollIntoView(foundCard);
-
-            datagrMain.UpdateLayout();
-            datagrMain.Focus();
-        }
-        private void linkCenter_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            SetLinkArrow(false);
-        }
-
-        private void UpdateWindowSavedFlag()
-        {
-            if (MainWindowService != null)
-            {
-                MainWindowService.UpdateWindowSavedFlag(IsSaved);
-            }
-        }
-
-        #region Visibility
-        private void cmbrule_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if(cmbrule.SelectedItems != null && cmbrule.SelectedItems.Count > 0)
-                tbrule.Visibility = Visibility.Collapsed;
-            else tbrule.Visibility = Visibility.Visible;
-        }
-        private void cmbcardtype_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if (cmbcardtype.SelectedItems != null && cmbcardtype.SelectedItems.Count >0) tbtype.Visibility = Visibility.Collapsed;
-            else tbtype.Visibility = Visibility.Visible;
-
-            //if (!isChangedGrid)
-            {
-                bool isxyz = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.eXceed);
-                bool isnonxyz = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item =>
-                    item.TypeCode == (ulong)CardType.Fusion ||
-                    item.TypeCode == (ulong)CardType.Ritual ||
-                    item.TypeCode == (ulong)CardType.Synchro);
-
-                IsLinkIntf = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Link);
-
-                if (isxyz && !isnonxyz)
-                {
-                    imgLvRk.Source = ImageCacheService.Instance.Get(AppImage.RankStar);
-                    txtLvRk.ToolTip = CMess.Rank.ToText();
-                }
-                else if (isxyz && isnonxyz)
-                {
-                    imgLvRk.Source = ImageCacheService.Instance.Get(AppImage.LevelRankStar);
-                    txtLvRk.ToolTip = $"{CMess.Level.ToText()}/{CMess.Rank.ToText()}";
-                }
-                else
-                {
-                    imgLvRk.Source = ImageCacheService.Instance.Get(AppImage.LevelStar);
-                    txtLvRk.ToolTip = CMess.Level.ToText();
-                }
-
-                IsPendulumIntf = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Pendulum);
-                IsSkillIntf = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Skill);
-            }
-        }
-
-        private void cmbcardrace_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if (cmbcardrace.SelectedItems != null && cmbcardrace.SelectedItems.Count > 0)
-                tbrace.Visibility = Visibility.Collapsed;
-            else tbrace.Visibility = Visibility.Visible;
-        }
-        private void cmbcardchar_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if(cmbcardchar.SelectedItems != null && cmbcardchar.SelectedItems.Count > 0)
-                tbchar.Visibility = Visibility.Collapsed;
-            else tbchar.Visibility = Visibility.Visible;
-        }
-        private void cmbcardattribute_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if(cmbcardattribute.SelectedItems != null && cmbcardattribute.SelectedItems.Count > 0)
-                tbattribute.Visibility = Visibility.Collapsed;
-            else tbattribute.Visibility = Visibility.Visible;
-        }
-        private void cmbsetcode_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if(cmbsetcode.SelectedItems != null && cmbsetcode.SelectedItems.Count > 0)
-                tbsetcode.Visibility = Visibility.Collapsed;
-            else tbsetcode.Visibility = Visibility.Visible;
-        }
-        private void cmbcategory_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if (cmbcategory.SelectedItems != null && cmbcategory.SelectedItems.Count > 0)
-                tbcategory.Visibility = Visibility.Collapsed;
-            else tbcategory.Visibility = Visibility.Visible;
-        }
-        private void cmbflag_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if (cmbflag.SelectedItems != null && cmbflag.SelectedItems.Count > 0)
-                tbflag.Visibility = Visibility.Collapsed;
-            else tbflag.Visibility = Visibility.Visible;
-        }
-        private void cmbrarity_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if (cmbrarity.SelectedItems != null && cmbrarity.SelectedItems.Count > 0)
-                tbrarity.Visibility = Visibility.Collapsed;
-            else tbrarity.Visibility = Visibility.Visible;
-        }
-        #endregion
-
-        #region Can Execute
-        private bool CurrentCardExists()
-        {
-            return CurrentCard != null;
-        }
-        private bool ListCardExists()
-        {
-            return Cards != null && Cards.Count >= 1;
-        }
-        private bool ValidCardInfor()
-        {
-            if (CurrentCard.id <= 0) return false;
-            return true;
-        }
-        #endregion
-
-        #endregion
-
-        #region Export
-
-        #region Ceds
-        private static JsonSerializerOptions CreateSerializerOptions()
-        {
-            return new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
-        }
-        public async Task ExportCedsSelectedData()
-        {
-            if (datagrMain.SelectedItems == null) return;
-
-            try
-            {
-                string filePath = FileDiaLogHelper.SaveCeds();
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return;
-
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
-                var (resultExport, messExport) = await ExportCedsData(selectedItems, filePath);
-                if (resultExport) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
-                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {messExport}", new[] { CMess.ok.ToText() });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task ExportCedsFiltedData()
-        {
-            if (CollectionViewCollection == null) return;
-
-            try
-            {
-                string filePath = FileDiaLogHelper.SaveCeds();
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return;
-
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
-                var (resultExport, messExport) = await ExportCedsData(filteredItems, filePath);
-                if (resultExport) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
-                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {messExport}", new[] { CMess.ok.ToText() });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-
-        private string GetExportCedsFilePath(bool isSave)
-        {
-            if (isSave && !string.IsNullOrWhiteSpace(cedsFilePath) && System.IO.File.Exists(cedsFilePath)) return cedsFilePath;
-
-            string filePath = FileDiaLogHelper.SaveCeds();
-
-            if (string.IsNullOrEmpty(filePath)) return null;
-
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()), new[] { CMess.ok.ToText() });
-                return null;
-            }
-            return filePath;
-        }
-        public async Task ExportCedsAllData(bool isSave)
-        {
-            if (Cards == null || !Cards.Any())
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, CMess.noCardFound.ToText(), new[] { CMess.ok.ToText() });
-                return;
-            }
-
-            try
-            {
-                string filePath = GetExportCedsFilePath(isSave);
-                if (string.IsNullOrWhiteSpace(filePath)) return;
-                if (isSave) cedsFilePath = filePath;
-
-                var (resultExport, messExport) = await ExportCedsData(Cards.ToList(), filePath);
-                if (!resultExport)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Export.ToText(), CMess.Data.ToText())} {messExport}", new[] { CMess.ok.ToText() });
-                    return;
-                }
-
-                var (resultArchi, messArchi) = await SaveToArchive();
-                if (!resultArchi)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
-                    return;
-                }
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
-            }
-            catch (InvalidCastException ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        private async Task<(bool, string)> ExportCedsData(List<CardEditor.Models.Card> selectedItems, string targetedFilepath)
-        {
-            if (selectedItems == null || !selectedItems.Any())
-                return (false, CMess.noCardExport.ToText());
-
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-            });
-
-            try
-            {
-                string json = JsonSerializer.Serialize(selectedItems, SerializerOptions);
-
-                await Task.Run(() =>
-                {
-                    using (StreamWriter writer = new StreamWriter(targetedFilepath, false, Encoding.UTF8))
-                    {
-                        writer.Write(json);
-                        writer.Flush();
-                    }
-                });
-
-                return (true, string.Empty);
-            }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-        #endregion
-
-        #region Excel
-        public async Task ExportExcelSelectedData()
-        {
-            if (datagrMain.SelectedItems == null) return;
-
-            try
-            {
-                string filePath = FileDiaLogHelper.SaveExcel();
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return;
-
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
-                var (resultExport, messExport) = await ExportExcelData(selectedItems, filePath);
-                if (resultExport) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
-                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {messExport}", new[] { CMess.ok.ToText() });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task ExportExcelFiltedData()
-        {
-            if (CollectionViewCollection == null) return;
-
-            try
-            {
-                string filePath = FileDiaLogHelper.SaveExcel();
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return;
-
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
-                var (resultExport, messExport) = await ExportExcelData(filteredItems, filePath);
-                if (resultExport) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
-                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {messExport}", new[] { CMess.ok.ToText() });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-
-        private string GetExportExcelFilePath(bool isSave)
-        {
-            if(isSave && !string.IsNullOrWhiteSpace(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-            {
-                return xlsxFilePath;
-            }
-
-            string filePath = FileDiaLogHelper.SaveExcel();
-
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return null;
-            }
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()), new[] { CMess.ok.ToText() });
-                return null;
-            }
-            return filePath;
-        }
-        public async Task ExportExcelAllData(bool isSave)
-        {
-            if (Cards == null || !Cards.Any())
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, CMess.noCardFound.ToText(), new[] { CMess.ok.ToText() });
-                return;
-            }
-
-            try
-            {
-                string filePath = GetExportExcelFilePath(isSave);
-                if (string.IsNullOrWhiteSpace(filePath)) return;
-                if (isSave) xlsxFilePath = filePath;
-
-                var (resultExport, messExport) = await ExportExcelData(Cards.ToList(), filePath);
-                if (!resultExport)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Export.ToText(), CMess.Data.ToText())} {messExport}", new[] { CMess.ok.ToText() });
-                    return;
-                }
-
-                var (resultArchi, messArchi) = await SaveToArchive();
-                if (!resultArchi)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
-                    return;
-                }
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Export.ToText(), CMess.Data.ToText()), new[] { CMess.ok.ToText() });
-            }
-            catch (InvalidCastException ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        private async Task<(bool, string)> ExportExcelData(List<CardEditor.Models.Card> selectedItems, string targetedFilepath)
-        {
-            if (selectedItems == null || !selectedItems.Any())
-                return (false, CMess.noCardExport.ToText());
-
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-            });
-
-            try
-            {
-                // ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
-                ExcelPackage package;
-                ExcelWorksheet worksheet;
-                if (!System.IO.File.Exists(targetedFilepath))
-                {
-                    // File mới: Tạo file và ghi toàn bộ dữ liệu
-                    package = new ExcelPackage();
-                    worksheet = package.Workbook.Worksheets.Add("Cards");
-                    // Thiết lập tiêu đề cột
-                    worksheet.Cells[1, 1].Value = "CardEditorX";
-                    worksheet.Cells[1, 2].Value = "name";
-                    worksheet.Cells[1, 3].Value = "desc";
-
-                    worksheet.Cells[1, 4].Value = "ot";
-                    worksheet.Cells[1, 5].Value = "alias";
-                    worksheet.Cells[1, 6].Value = "setcode";
-                    worksheet.Cells[1, 7].Value = "type";
-                    worksheet.Cells[1, 8].Value = "atk";
-                    worksheet.Cells[1, 9].Value = "def";
-                    worksheet.Cells[1, 10].Value = "level";
-                    worksheet.Cells[1, 11].Value = "race";
-                    worksheet.Cells[1, 12].Value = "attribute";
-                    worksheet.Cells[1, 13].Value = "category";
-
-                    worksheet.Cells[1, 14].Value = "str1";
-                    worksheet.Cells[1, 15].Value = "str2";
-                    worksheet.Cells[1, 16].Value = "str3";
-                    worksheet.Cells[1, 17].Value = "str4";
-                    worksheet.Cells[1, 18].Value = "str5";
-                    worksheet.Cells[1, 19].Value = "str6";
-                    worksheet.Cells[1, 20].Value = "str7";
-                    worksheet.Cells[1, 21].Value = "str8";
-                    worksheet.Cells[1, 22].Value = "str9";
-                    worksheet.Cells[1, 23].Value = "str10";
-                    worksheet.Cells[1, 24].Value = "str11";
-                    worksheet.Cells[1, 25].Value = "str12";
-                    worksheet.Cells[1, 26].Value = "str13";
-                    worksheet.Cells[1, 27].Value = "str14";
-                    worksheet.Cells[1, 28].Value = "str15";
-                    worksheet.Cells[1, 29].Value = "str16";
-
-                    // Ghi toàn bộ dữ liệu
-                    for (int i = 0; i < selectedItems.Count; i++)
-                    {
-                        try
-                        {
-                            var card = selectedItems[i];
-                            int row = i + 2;
-                            worksheet.Cells[row, 1].Value = card.id;
-                            worksheet.Cells[row, 2].Value = card.name;
-                            worksheet.Cells[row, 3].Value = card.desc;
-
-                            worksheet.Cells[row, 4].Value = card.ot;
-                            worksheet.Cells[row, 5].Value = card.alias;
-                            worksheet.Cells[row, 6].Value = card.setcode;
-                            worksheet.Cells[row, 7].Value = card.type;
-                            worksheet.Cells[row, 8].Value = card.atk;
-                            worksheet.Cells[row, 9].Value = card.def;
-                            worksheet.Cells[row, 10].Value = card.level;
-                            worksheet.Cells[row, 11].Value = card.race;
-                            worksheet.Cells[row, 12].Value = card.attribute;
-                            worksheet.Cells[row, 13].Value = card.category;
-
-                            worksheet.Cells[row, 14].Value = card.str1;
-                            worksheet.Cells[row, 15].Value = card.str2;
-                            worksheet.Cells[row, 16].Value = card.str3;
-                            worksheet.Cells[row, 17].Value = card.str4;
-                            worksheet.Cells[row, 18].Value = card.str5;
-                            worksheet.Cells[row, 19].Value = card.str6;
-                            worksheet.Cells[row, 20].Value = card.str7;
-                            worksheet.Cells[row, 21].Value = card.str8;
-                            worksheet.Cells[row, 22].Value = card.str9;
-                            worksheet.Cells[row, 23].Value = card.str10;
-                            worksheet.Cells[row, 24].Value = card.str11;
-                            worksheet.Cells[row, 25].Value = card.str12;
-                            worksheet.Cells[row, 26].Value = card.str13;
-                            worksheet.Cells[row, 27].Value = card.str14;
-                            worksheet.Cells[row, 28].Value = card.str15;
-                            worksheet.Cells[row, 29].Value = card.str16;
-                        }
-                        catch
-                        {
-                            ///
-                        }
-                    }
-                }
-                else
-                {
-                    // File cũ: Kiểm tra file
-                    using (var fileStream = new FileStream(targetedFilepath, FileMode.Open, FileAccess.ReadWrite))
-                    {
-                        package = new ExcelPackage(fileStream);
-                    }
-                    worksheet = package.Workbook.Worksheets.FirstOrDefault();
-                    if (!CheckDatabase.CheckExcelValidity(worksheet))
-                        return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
-
-                    // Tạo Dictionary để lưu id và số dòng tương ứng
-                    var idToRowMap = new Dictionary<ulong, int>();
-                    int lastRow = worksheet.Dimension?.End.Row ?? 1;
-
-                    // Duyệt qua cột A để xây dựng map
-                    for (int row = 2; row <= lastRow; row++)
-                    {
-                        var cellValue = worksheet.Cells[row, 1].Value;
-                        if (cellValue != null)
-                        {
-                            try
-                            {
-                                ulong id = Convert.ToUInt64(cellValue);
-                                idToRowMap[id] = row;
-                            }
-                            catch
-                            {
-                                ///
-                            }
-                        }
-                    }
-
-                    // Xử lý dữ liệu với file cũ
-                    foreach (var card in selectedItems)
-                    {
-                        try
-                        {
-                            if (idToRowMap.TryGetValue(card.id, out int existingRow))
-                            {
-                                worksheet.Cells[existingRow, 3].Value = card.desc;
-                            }
-                            else
-                            {
-                                // Thêm mới vào dòng cuối
-                                lastRow++;
-                                worksheet.Cells[lastRow, 1].Value = card.id;
-                                worksheet.Cells[lastRow, 2].Value = card.name;
-                                worksheet.Cells[lastRow, 3].Value = card.desc;
-                                worksheet.Cells[lastRow, 4].Value = card.ot;
-                                worksheet.Cells[lastRow, 5].Value = card.alias;
-                                worksheet.Cells[lastRow, 6].Value = card.setcode;
-                                worksheet.Cells[lastRow, 7].Value = card.type;
-                                worksheet.Cells[lastRow, 8].Value = card.atk;
-                                worksheet.Cells[lastRow, 9].Value = card.def;
-                                worksheet.Cells[lastRow, 10].Value = card.level;
-                                worksheet.Cells[lastRow, 11].Value = card.race;
-                                worksheet.Cells[lastRow, 12].Value = card.attribute;
-                                worksheet.Cells[lastRow, 13].Value = card.category;
-                                worksheet.Cells[lastRow, 14].Value = card.str1;
-                                worksheet.Cells[lastRow, 15].Value = card.str2;
-                                worksheet.Cells[lastRow, 16].Value = card.str3;
-                                worksheet.Cells[lastRow, 17].Value = card.str4;
-                                worksheet.Cells[lastRow, 18].Value = card.str5;
-                                worksheet.Cells[lastRow, 19].Value = card.str6;
-                                worksheet.Cells[lastRow, 20].Value = card.str7;
-                                worksheet.Cells[lastRow, 21].Value = card.str8;
-                                worksheet.Cells[lastRow, 22].Value = card.str9;
-                                worksheet.Cells[lastRow, 23].Value = card.str10;
-                                worksheet.Cells[lastRow, 24].Value = card.str11;
-                                worksheet.Cells[lastRow, 25].Value = card.str12;
-                                worksheet.Cells[lastRow, 26].Value = card.str13;
-                                worksheet.Cells[lastRow, 27].Value = card.str14;
-                                worksheet.Cells[lastRow, 28].Value = card.str15;
-                                worksheet.Cells[lastRow, 29].Value = card.str16;
-
-                                // Cập nhật map với id mới
-                                idToRowMap[card.id] = lastRow;
-                            }
-                        }
-                        catch
-                        {
-                            lastRow++;
-                            idToRowMap[card.id] = lastRow;
-                        }
-                    }
-                }
-
-                // Tự động điều chỉnh kích thước cột
-                worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
-
-                await Task.Run(() =>
-                {
-                    System.IO.File.WriteAllBytes(targetedFilepath, package.GetAsByteArray());
-                });
-
-                return (true, string.Empty);
-            }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-        #endregion
-
-        #endregion
-
-        #region Items Editor
-
-        #region Replace Description
-        public async Task<ResultItem> ReplaceText1(string findWhat, string replaceWith, int scope)
-        {
-            // 1. Validate input
-            if (string.IsNullOrWhiteSpace(findWhat))
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    Message = $"{CMess.FindWhat.ToText()} {CMess.cannotEmpty.ToText()}"
-                };
-
-            if (string.IsNullOrWhiteSpace(replaceWith))
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    Message = $"{CMess.Replacewith.ToText()} {CMess.cannotEmpty.ToText()}"
-                };
-
-            if (scope < 1 || scope > 3)
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
-                };
-
-            // 2. Settings
-            int advancedSettings = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
-
-            bool advancedFind = (advancedSettings & 0x01) != 0;
-            bool matchCase = (advancedSettings & 0x02) != 0;
-            bool useWildcards = (advancedSettings & 0x04) != 0;
-            bool matchPrefix = (advancedSettings & 0x08) != 0;
-            bool matchSuffix = (advancedSettings & 0x10) != 0;
-            bool wholeWord = (advancedSettings & 0x20) != 0;
-            bool ignorePunctuation = (advancedSettings & 0x40) != 0;
-            bool ignoreWhitespace = (advancedSettings & 0x80) != 0;
-
-            // 3. Get target cards
-            var targetCards = scope switch
-            {
-                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList(),
-                2 => CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList(),
-                3 => Cards.ToList(),
-                _ => new List<CardEditor.Models.Card>()
-            };
-
-            int totalCount = targetCards.Count;
-
-            if (totalCount == 0)
-            {
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    TotalCount = 0,
-                    FilteredCount = 0,
-                    Message = CMess.noCardReplace.ToText()
-                };
-            }
-
-            // 4. Normalize helper
-            string Normalize(string input)
-            {
-                if (string.IsNullOrEmpty(input))
-                    return string.Empty;
-
-                if (advancedFind)
-                {
-                    if (ignoreWhitespace)
-                        input = Regex.Replace(input, @"\s+", "");
-
-                    if (ignorePunctuation)
-                        input = Regex.Replace(input, @"[^\w\s]", "");
-                }
-
-                return input;
-            }
-
-            string normalizedFind = Normalize(findWhat);
-
-            // 5. Build regex pattern
-            string BuildPattern(string input)
-            {
-                string pattern = advancedFind
-                    ? Regex.Escape(input)
-                    : Regex.Escape(input);
-
-                if (advancedFind)
-                {
-                    if (useWildcards)
-                    {
-                        pattern = pattern
-                            .Replace(@"\*", ".*")
-                            .Replace(@"\?", ".");
-                    }
-
-                    if (wholeWord)
-                        pattern = $@"\b{pattern}\b";
-
-                    if (matchPrefix)
-                        pattern = "^" + pattern;
-
-                    if (matchSuffix)
-                        pattern += "$";
-                }
-
-                return pattern;
-            }
-
-            string pattern = BuildPattern(normalizedFind);
-
-            RegexOptions options = matchCase
-                ? RegexOptions.None
-                : RegexOptions.IgnoreCase;
-
-            var regex = new Regex(pattern, options);
-
-            // 6. Process
-            int modifiedCount = 0;
-
-            await Task.Run(() =>
-            {
-                foreach (var card in targetCards)
-                {
-                    if (string.IsNullOrEmpty(card.desc))
-                        continue;
-
-                    string original = card.desc;
-                    string result = regex.Replace(original, replaceWith);
-
-                    if (!string.Equals(original, result, StringComparison.Ordinal))
-                    {
-                        card.desc = result;
-                        modifiedCount++;
-                    }
-                }
-            });
-
-            // 7. UI refresh
-            if (modifiedCount > 0)
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CollectionViewCollection.Refresh();
-                });
-            }
-
-            IsSaved = modifiedCount == 0;
-
-            // 8. Return structured result
-            return new ResultItem
-            {
-                Succeeded = true,
-                TotalCount = totalCount,
-                FilteredCount = modifiedCount,
-                Message = modifiedCount > 0
-                    ? string.Format(CMess.TwoPlaceholderSuccess.ToText(), modifiedCount, CMess.Card.ToText())
-                    : CMess.noCardReplace.ToText()
-            };
-        }
-        public async Task<ResultItem> ReplaceText(string findWhat, string replaceWith, int scope)
-        {
-            if (string.IsNullOrWhiteSpace(findWhat))
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    Message = $"{CMess.FindWhat.ToText()} {CMess.cannotEmpty.ToText()}"
-                };
-            if (string.IsNullOrWhiteSpace(replaceWith))
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    Message = $"{CMess.Replacewith.ToText()} {CMess.cannotEmpty.ToText()}"
-                };
-            if (scope < 1 || scope > 3)
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
-                };
-
-            var optRaw = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
-
-            var opt = new CardEditor.Models.SearchOptions
-            {
-                MatchCase = (optRaw & 0x02) != 0,
-                UseWildcards = (optRaw & 0x04) != 0,
-                MatchPrefix = (optRaw & 0x08) != 0,
-                MatchSuffix = (optRaw & 0x10) != 0,
-                WholeWord = (optRaw & 0x20) != 0,
-                IgnorePunctuation = (optRaw & 0x40) != 0,
-                IgnoreWhitespace = (optRaw & 0x80) != 0
-            };
-
-            var targetCards = scope switch
-            {
-                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList(),
-                2 => CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList(),
-                3 => Cards.ToList(),
-                _ => new List<CardEditor.Models.Card>()
-            };
-
-            if (!targetCards.Any())
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    Message = string.Format(CMess.noCardFound.ToText())
-                };
-
-            RegexOptions regexOpt = opt.MatchCase
-                ? RegexOptions.None
-                : RegexOptions.IgnoreCase;
-
-            int modifiedCount = await Task.Run(() => SearchPattern.Replace(targetCards, findWhat, replaceWith, opt, regexOpt));
-
-            if (modifiedCount > 0)
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    CollectionViewCollection.Refresh();
-                });
-            }
-
-            IsSaved = modifiedCount == 0;
-
-            return new ResultItem
-            {
-                Succeeded = true,
-                TotalCount = targetCards.Count,
-                FilteredCount = modifiedCount,
-                Message = modifiedCount > 0
-                    ? string.Format(CMess.TwoPlaceholderSuccess.ToText(), modifiedCount, CMess.Card.ToText())
-                    : CMess.noCardReplace.ToText()
-            };
-        }
-        #endregion
-
-        #region Replace Field
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags, bool isAddNew)
-        {
-            if (cardList == null || flags == 0) return (false, 0, 0, CMess.noCardReplace.ToText());
-
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters =
-                Enumerable.Empty<Action<CardEditor.Models.Card, CardEditor.Models.Card>>();
-
-            if (flags != 0)
-            {
-                var selected = (CardField)flags;
-                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
-            }
-
-            return ReplaceDataField(cardList, isAddNew, updaters);
-        }
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
-            params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
-        {
-            return ReplaceDataField(cardList, isAddNew, updaters.AsEnumerable());
-        }
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
-        {
-            if (cardList == null || Cards == null)
-                return (false, 0, 0, CMess.noCardReplace.ToText());
-
-            try
-            {
-                var existingMap = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
-                var updaterList = updaters?.ToList();
-                bool allowUpdate = updaterList?.Count > 0;
-                int replaced = 0;
-
-                Cards.BeginUpdate();
-                foreach (var newCard in cardList)
-                {
-                    if (existingMap.TryGetValue(newCard.id, out var existing))
-                    {
-                        if (allowUpdate) existing.UpdateFrom(newCard, updaterList);
-                        replaced++;
-                    }
-                    else if (isAddNew)
-                    {
-                        Cards.Add(newCard);
-                        replaced++;
-                    }
-                }
-                
-                IsSaved = false;
-
-                return (true, replaced, Cards.Count(), string.Empty);
-            }
-            catch (Exception ex)
-            {
-                return (false, 0, 0, ex.Message);
-            }
-            finally
-            {
-                Cards.EndUpdate();
-            }
-        }
-        #endregion
-
-        #region Import Data
-        public (bool, List<ulong>) CheckDuplicateIds()
-        {
-            if (Cards == null) return (false, null);
-            var duplicates = Cards.GroupBy(c => c.id).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
-            return (duplicates.Count > 0, duplicates);
-        }
-        public (bool, string) ImportDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags)
-        {
-            if (cardList == null) return (false, CMess.noCardReplace.ToText());
-
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters =
-                Enumerable.Empty<Action<CardEditor.Models.Card, CardEditor.Models.Card>>();
-
-            if (flags != 0)
-            {
-                var selected = (CardField)flags;
-                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
-            }
-
-            return ImportDataField(cardList, updaters);
-        }
-        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
-        {
-            if (cardList == null || Cards == null)
-                return (false, CMess.noCardReplace.ToText());
-
-            try
-            {
-                var existingMap = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
-                var updaterList = updaters?.ToList();
-                bool allowUpdate = updaterList?.Count > 0;
-                int count = 0;
-
-                Cards.BeginUpdate();
-                foreach (var newCard in cardList)
-                {
-                    if (existingMap.TryGetValue(newCard.id, out var existing))
-                    {
-                        if (allowUpdate) existing.UpdateFrom(newCard, updaterList);
-                    }
-                    else Cards.Add(newCard);
-                    count++;
-                }
-                Cards.EndUpdate();
-                IsSaved = false;
-
-                return (true, count.ToString());
-            }
-            catch (Exception ex)
-            {
-                return (false, ex.Message);
-            }
-        }
-        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
-            params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
-        {
-            return ImportDataField(cardList, updaters.AsEnumerable());
-        }
-
-        public void ImportCreateNew(IEnumerable<CardEditor.Models.Card> importedCards)
-        {
-            if (importedCards == null) return;
-            Cards.ReplaceAll(importedCards);
-            Mouse.OverrideCursor = null;
-            RebuildWindowTitle();
-        }
-        public void ImportOverwrite(IEnumerable<CardEditor.Models.Card> importedCards)
-        {
-            if (importedCards == null || !importedCards.Any()) return;
-
-            List<CardEditor.Models.Card> CardList = new List<CardEditor.Models.Card>();
-            var CardsDict = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
-
-            foreach (var item in importedCards)
-            {
-                if (CardsDict.TryGetValue(item.id, out var existingCard))
-                {
-                    existingCard.desc = item.desc;
-                }
-                else
-                {
-                    CardList.Add(item);
-                }
-            }
-            Cards.AddRange(CardList);
-            Mouse.OverrideCursor = null;
-        }
-        public void ImportAppendwrite(IEnumerable<CardEditor.Models.Card> importedCards)
-        {
-            if (importedCards == null || !importedCards.Any()) return;
-            List<CardEditor.Models.Card> CardList = new List<CardEditor.Models.Card>();
-            var CardsDict = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
-
-            foreach (var item in importedCards)
-            {
-                if (!CardsDict.ContainsKey(item.id))
-                {
-                    CardList.Add(item);
-                }
-            }
-            Cards.AddRange(CardList);
-            Mouse.OverrideCursor = null;
-        }
-        #endregion
-
-        #region Pendulum Language
-        private CancellationTokenSource _applyPenLangCts;
-        private void LoadPendulumLanguage() // Selected Card Changed
-        {
-            if (CurrentCard == null || !IsPendulumIntf) return;
-
-            PenAnalysisResult result = PenLanguageViewModel.Instance.Analyze(CurrentCard.desc);
-            if (result == null)
-            {
-                SelectedPenLangRule = null;
-                return;
-            }
-            Debug.WriteLine($"Rule: {result.RuleResult.Locale.ToString()}");
-            SelectedPenLangRule = result.RuleResult;
-        }
-        private void OpenPreViewDescWindow()
-        {
-            if (CurrentCard == null || !IsPendulumIntf) return;
-            if (SelectedPenLangRule?.Locale is PendulumLocales.EDOProNonPen or PendulumLocales.Unknown) return;
-
-            if (MainWindowService != null)
-            {
-                MainWindowService.OpenPreViewDescWindow(CurrentCard, SelectedPenLangRule);
-            }
-        }
-        private void ApplyPendulumLanguageDesc()
-        {
-            if (CurrentCard == null || !IsPendulumIntf || SelectedPenLangRule == null) return;
-            if (SelectedPenLangRule?.Locale is PendulumLocales.EDOProNonPen or PendulumLocales.Unknown) return;
-
-            PenAnalysisResult result = PenLanguageViewModel.Instance.Analyze(CurrentCard.desc);
-            PenDescResult effect = result.DescResult;
-
-            PenScale scale = GetPenScaleHelp.GetPenScale(CurrentCard.level);
-            bool IsNormalCard = (CurrentCard.type & (ulong)CardType.Normal) != 0;
-
-            string desc = PenLanguageViewModel.Instance.BuildDesc(SelectedPenLangRule, effect, scale, IsNormalCard);
-            txtcarddesc.Text = desc;
-        }
-        public async Task<PenDescProcessSummary> PendulumLanguage(PendulumLanguageRule rule, int scope, bool overwrite)
-        {
-            _applyPenLangCts?.Dispose();
-            _applyPenLangCts = new CancellationTokenSource();
-
-            if (scope < 0 || scope > 2)
-            {
-                return new PenDescProcessSummary
-                {
-                    Result = false,
-                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
-                };
-            }
-
-            var cardList = scope switch
-            {
-                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
-                _ => new List<CardEditor.Models.Card>()
-            };
-
-            if (cardList == null || cardList.Count == 0)
-            {
-                return new PenDescProcessSummary
-                {
-                    Result = false,
-                    Message = CMess.noCardSelec.ToText()
-                };
-            }
-
-            try
-            {
-                PenDescProcessSummary result = await PenLanguageViewModel.Instance.ProcessPenDesc(cardList, rule, _applyPenLangCts.Token, overwrite);
-                // Total: Tổng số card có cờ CardType.Pendulum được đưa vào xử lý (đếm ngay từ đầu vòng lặp, trước khi biết kết quả thành hay bại)
-                // Success: Số card đã build lại desc thành công bằng newRule, toàn bộ pipeline Analyze → BuildDesc chạy trót lọt không throw exception, và card.desc đã được gán giá trị mới.
-                // Error: Số card mà Analyze hoặc BuildDesc throw exception trong lúc xử lý. Card này bị bỏ qua, card.desc giữ nguyên giá trị gốc (không được gán lại). ID của các card này nằm trong ErrorCardIds.
-                // EmptyDesc: Số card có desc rỗng hoặc chỉ toàn khoảng trắng → bị skip ngay, không gọi Analyze/BuildDesc, không tính là lỗi. Comment gốc "-> Unknown" ý là: không xác định được ngôn ngữ vì không có gì để phân tích.
-                // EdoProFallback: Số card Analyze chạy không lỗi, nhưng kết quả phân tích rơi vào rule mặc định EdoProNoPenRule — tức là desc gốc không khớp với bất kỳ rule ngôn ngữ chính thức nào, phải fallback về format chung của EDOPro
-                /// Card này vẫn được build lại bằng newRule bình thường (không bị loại khỏi Success), số này chỉ để theo dõi tỷ lệ desc "không rõ nguồn gốc ngôn ngữ".
-                /// 1 card có thể vừa nằm trong EdoProFallback vừa nằm trong Success (2 số này không loại trừ nhau, vì EdoProFallback đếm ở giữa quá trình, Success đếm ở cuối nếu không exception).
-                // Cancelled: true nếu quá trình xử lý bị dừng giữa chừng do CancellationToken được yêu cầu hủy (user bấm Stop). Khi đó tất cả thay đổi đã tự động rollback.
-                // RolledBack: true nếu đã tự động rollback toàn bộ card.desc về giá trị gốc bằng _lastSnapshot, do gặp Cancelled hoặc lỗi nghiêm trọng ngoài dự kiến (không phải lỗi per-card)
-                /// Không liên quan đến rollback thủ công qua processor.Rollback()
-                // ErrorCardIds: Danh sách id của các card rơi vào nhóm Error, để tầng gọi (UI) có thể hiển thị chi tiết "những card nào bị lỗi, cần xem lại thủ công".
-
-                IsSaved = false;
-                return result;
-            }
-            finally
-            {
-                _applyPenLangCts.Dispose();
-                _applyPenLangCts = null;
-            }
-        }
-        public (bool, string) RollBackPenlang()
-        {
-            var result = PenLanguageViewModel.Instance.PerformManualRollback();
-            IsSaved = false;
-            return result;
-        }
-        public void StopApplyPenLang()
-        {
-            _applyPenLangCts?.Cancel();
-        }
-
-        public void ApplyPendulumLanguage(string desc)
-        {
-            txtcarddesc.Text = desc;
-        }
-        #endregion
-
-        #region Credits
-        private CancellationTokenSource _applyCreditCts;
-        public async Task<ResultItem> CreditTeam(CreditItem credit, int scope, int writeMode)
-        {
-            _applyCreditCts?.Dispose();
-            _applyCreditCts = new CancellationTokenSource();
-
-            if (scope < 0 || scope > 2)
-            {
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    TotalCount = 0,
-                    FilteredCount = 0,
-                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
-                };
-            }
-
-            var cardList = scope switch
-            {
-                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
-                _ => new List<CardEditor.Models.Card>()
-            };
-
-            if (cardList == null || cardList.Count == 0)
-            {
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    TotalCount = 0,
-                    FilteredCount = 0,
-                    Message = CMess.noCardSelec.ToText()
-                };
-            }
-
-            try
-            {
-                var result = await CreditsViewModel.Instance.CreditTeam(cardList, credit, writeMode, _applyCreditCts.Token);
-                IsSaved = false;
-                return result;
-            }
-            finally
-            {
-                _applyCreditCts.Dispose();
-                _applyCreditCts = null;
-            }
-        }
-        public async Task<ResultItem> RemoveCredit(int scope)
-        {
-            if (scope < 0 || scope > 2)
-            {
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    TotalCount = 0,
-                    FilteredCount = 0,
-                    Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText())
-                };
-            }
-
-            var cardList = scope switch
-            {
-                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
-                _ => new List<CardEditor.Models.Card>()
-            };
-
-            if (cardList == null || cardList.Count == 0)
-            {
-                return new ResultItem
-                {
-                    Succeeded = false,
-                    TotalCount = 0,
-                    FilteredCount = 0,
-                    Message = CMess.noCardSelec.ToText()
-                };
-            }
-
-            var result = await CreditsViewModel.Instance.RemoveAllCredits(cardList);
-            IsSaved = false;
-            return result;
-        }
-        public (bool, string) RollbackCredits()
-        {
-            var result = CreditsViewModel.Instance.PerformManualRollback();
-            IsSaved = false;
-            return result;
-        }
-        public void StopApplyCredits()
-        {
-            _applyCreditCts?.Cancel();
-        }
-        #endregion
-
-        #endregion
-
         #region Undo/Redo
+        private void UndoAction()
+        {
+            Undo();
+        }
+        private void btnundo_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            RedoCommand();
+        }
+
         private void InitializeControls()
         {
             //_undoStack = new Stack<ControlState>();
@@ -6049,284 +5600,6 @@ namespace CardEditor.UserControls
         private void ResetUndoRedoCommand()
         {
             ResetUndo();
-        }
-
-        #endregion
-
-        #region Copy
-        public async Task CopySelectedCard()
-        {
-            var selectedCards = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
-            if (selectedCards.Any())
-            {
-                try
-                {
-                    await CopyCards(selectedCards);
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification, CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task CopyAllFilterCard()
-        {
-            var filteredCards = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
-            if (filteredCards.Any())
-            {
-                try
-                {
-                    await CopyCards(filteredCards);
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification, CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task CopyAllCard()
-        {
-            if(Cards != null && Cards.Any())
-            {
-                try
-                {
-                    await CopyCards(Cards.ToList());
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification, CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-            }
-        }
-        private async Task CopyCards(List<CardEditor.Models.Card> SelectedItems)
-        {
-            Mouse.OverrideCursor = Cursors.Wait;
-            try
-            {
-                string json = await Task.Run(() =>
-                    JsonSerializer.Serialize(SelectedItems, SerializerOptions)
-                );
-
-                Clipboard.SetText(json);
-
-                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedItems.Count(), CMess.Card.ToText(), CMess.Copy.ToText()));
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-
-        private async Task CopyCardDescExecute()
-        {
-            bool success = CopyCardDesc();
-            if (!success) return;
-
-            CopyCardDescIcon = PackIconKind.Check;
-
-            await Task.Delay(3000);
-            CopyCardDescIcon = PackIconKind.ContentCopy;
-        }
-        private bool CopyCardDesc()
-        {
-            try
-            {
-                Clipboard.SetText(txtcarddesc.Text);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-        #endregion
-
-        #region Compressed
-        public async Task ExportCompressedSelectedData()
-        {
-            if (datagrMain.SelectedItems == null)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, CMess.noCardSelec.ToText(), new[] { CMess.ok.ToText() });
-                return;
-            }
-            try
-            {
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
-                if (selectedItems.Any())
-                {
-                    await CreateCompressedFile(selectedItems);
-                }
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task ExportCompressedFiltedData()
-        {
-            if (CollectionViewCollection != null && CollectionViewCollection.Cast<CardEditor.Models.Card>().Any())
-            {
-                try
-                {
-                    var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
-                    await CreateCompressedFile(filteredItems);
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-        }
-        public async Task ExportCompressedAllData()
-        {
-            if (Cards != null && Cards.Any())
-            {
-                try
-                {
-                    await CreateCompressedFile(Cards.ToList());
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Export.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-        }
-
-        private async Task CreateCompressedFile(List<CardEditor.Models.Card> selectedItems)
-        {
-            if (selectedItems == null || !selectedItems.Any())
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    CMess.noCardExport.ToText(), new[] { CMess.ok.ToText() });
-                return;
-            }
-
-            string filePath = FileDiaLogHelper.SaveZip();
-
-            if (string.IsNullOrEmpty(filePath))
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()),
-                    new[] { CMess.ok.ToText() });
-                return;
-            }
-            string outPutCdbPath = string.Empty;
-            try
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-                string directoryZIPPath = System.IO.Path.GetDirectoryName(filePath);
-                string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(filePath);
-                string fileWithCdbExtension = System.IO.Path.Combine(directoryZIPPath, fileNameWithoutExtension + ".cdb");
-
-                if (System.IO.File.Exists(fileWithCdbExtension))
-                {
-                    CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())}" +
-                        $"\n{CMess.File.ToText()} {fileWithCdbExtension} {CMess.filealreadyExit.ToText()}",
-                        new[] { CMess.ok.ToText() });
-                    return;
-                }
-
-                var (resultCreate, messageCreate) = CreateFileServices.CreateDatabase(directoryZIPPath, $"{fileNameWithoutExtension}.cdb");
-                if (resultCreate) outPutCdbPath = messageCreate;
-                else
-                {
-                    throw new InvalidOperationException(messageCreate);
-                }
-
-                if (string.IsNullOrEmpty(outPutCdbPath))
-                {
-                    throw new InvalidOperationException(string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()));
-                }
-                await SaveAllCards(selectedItems, outPutCdbPath).ConfigureAwait(false);
-
-                var fileGroups = selectedItems.AsParallel().WithDegreeOfParallelism(Environment.ProcessorCount / 2) // Giới hạn mức song song
-                    .Select(card => new
-                    {
-                        ImagePath = FindIInfoService.FindImagePath(card.id.ToString(), System.IO.Path.GetDirectoryName(cdbFilePath)),
-                        ScriptPath = FindIInfoService.FindScriptPath(System.IO.Path.GetDirectoryName(cdbFilePath), card.id.ToString())
-                    })
-                    .Where(paths => !string.IsNullOrEmpty(paths.ImagePath) || !string.IsNullOrEmpty(paths.ScriptPath))
-                    .ToList();
-                // Tạo ZIP trong một task riêng biệt
-                await Task.Run(() =>
-                {
-                    using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate))
-                    using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Update))
-                    {
-                        // Thêm file cdb
-                        zip.CreateEntryFromFile(outPutCdbPath, System.IO.Path.GetFileName(outPutCdbPath), System.IO.Compression.CompressionLevel.Fastest);
-
-                        // Nén ảnh & script theo batch
-                        const int batchSize = 100;
-                        for (int i = 0; i < fileGroups.Count; i += batchSize)
-                        {
-                            foreach (var files in fileGroups.Skip(i).Take(batchSize))
-                            {
-                                if (!string.IsNullOrEmpty(files.ImagePath))
-                                {
-                                    zip.CreateEntryFromFile(files.ImagePath,
-                                        $"pics/{System.IO.Path.GetFileName(files.ImagePath)}",
-                                        System.IO.Compression.CompressionLevel.Fastest);
-                                }
-                                if (!string.IsNullOrEmpty(files.ScriptPath))
-                                {
-                                    zip.CreateEntryFromFile(files.ScriptPath,
-                                        $"script/{System.IO.Path.GetFileName(files.ScriptPath)}",
-                                        System.IO.Compression.CompressionLevel.Fastest);
-                                }
-                            }
-                        }
-                    }
-                });
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification, CMess.expoZIPSuc.ToText(), new[] { CMess.ok.ToText() });
-                return;
-            }
-            catch (InvalidOperationException ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                return;
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                return;
-            }
-            finally
-            {
-                if (!string.IsNullOrEmpty(outPutCdbPath) && System.IO.File.Exists(outPutCdbPath))
-                {
-                    try
-                    {
-                        System.IO.File.Delete(outPutCdbPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlDelete.ToText(), CMess.File.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                    }
-                }
-                Mouse.OverrideCursor = null;
-            }
         }
         #endregion
 

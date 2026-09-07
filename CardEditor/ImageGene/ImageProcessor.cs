@@ -183,15 +183,21 @@ namespace CardEditor.ImageGene
             }
             return string.Empty;
         }
-        public static async Task<string> CreateImageCard(string password, string imagePath, string targetPath)
+        public static async Task<(bool, string)> CreateImageCard(string password, string imagePath, string targetPath)
         {
-            if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(targetPath) ||
-                string.IsNullOrWhiteSpace(imagePath) || !System.IO.File.Exists(imagePath) || !ImageValidate.IsImageFile(imagePath))
-                return string.Empty;
+            if (string.IsNullOrWhiteSpace(imagePath) || !System.IO.File.Exists(imagePath) || !ImageValidate.IsImageFile(imagePath))
+                return (false, CMess.notImage.ToText());
+            if (string.IsNullOrWhiteSpace(password))
+                return (false, $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.cardID.ToText())} {password}");
+            if (string.IsNullOrWhiteSpace(targetPath))
+                return (false, $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText())}");
 
-            return await Task.Run(async () =>
+            try
             {
-                try
+                if (!System.IO.Directory.Exists(targetPath))
+                    System.IO.Directory.CreateDirectory(targetPath);
+
+                return await Task.Run(async () =>
                 {
                     var info = new SKImageInfo(ConfigViewModel.Instance.imageSetting.ImageSize.Width, ConfigViewModel.Instance.imageSetting.ImageSize.Height, SKColorType.Rgba8888, SKAlphaType.Premul);
                     using (var surface = SKSurface.Create(info))
@@ -203,7 +209,7 @@ namespace CardEditor.ImageGene
 
                         using var stream = File.OpenRead(imagePath);
                         using var originalBitmap = SKBitmap.Decode(stream);
-                        if (originalBitmap == null) return string.Empty;
+                        if (originalBitmap == null) return (false, CMess.notImage.ToText());
 
                         var destRect = new SKRect(0, 0, ConfigViewModel.Instance.imageSetting.ImageSize.Width, ConfigViewModel.Instance.imageSetting.ImageSize.Height);
                         canvas.DrawBitmap(originalBitmap, destRect, paint);
@@ -232,21 +238,22 @@ namespace CardEditor.ImageGene
                         #endregion
 
                         #region Save
+
                         var outputFilePath = System.IO.Path.Combine(targetPath, $"{password}.png");
-                        if (!ImageValidate.TryDeleteFile(outputFilePath)) return string.Empty;
+                        if (!ImageValidate.TryDeleteFile(outputFilePath)) return (false, CMess.unableDelete.ToText());
 
                         using (var image = surface.Snapshot())
                             await ImageValidate.SaveImage(image, outputFilePath);
                         #endregion
 
-                        return outputFilePath;
+                        return (true, outputFilePath);
                     }
-                }
-                catch (Exception)
-                {
-                    return string.Empty;
-                }
-            });
+                });
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
         }
 
         // Tính toán vị trí đặt stamp

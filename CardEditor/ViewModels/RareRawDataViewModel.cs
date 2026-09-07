@@ -1,19 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.Encodings.Web;
 using System.Data.SQLite;
+using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Collections.Generic;
 using SkiaSharp;
-using OfficeOpenXml;
-using System.Runtime.CompilerServices;
 using CardEditor.Models;
+using CardEditor.Constants;
 using CardEditor.Services;
 using CardEditor.Collections;
 using CardEditor.Localization;
@@ -28,7 +25,6 @@ namespace CardEditor.ViewModels
         public static RareRawDataViewModel Instance => _instance.Value;
 
         #region Raw Data Storage
-        private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
         public bool IsLoadRareCardListFromDB = false;
         public bool IsSaveRareCardListToDB = true;
         public bool IsLoadedImageRareCache = false;
@@ -56,8 +52,6 @@ namespace CardEditor.ViewModels
 
         private Dictionary<ulong, RareCard> _rareCardsData = new Dictionary<ulong, RareCard>();
         public IReadOnlyDictionary<ulong, RareCard> RareCardsData => _rareCardsData;
-
-
         #endregion
 
         private RareRawDataViewModel()
@@ -769,77 +763,25 @@ namespace CardEditor.ViewModels
                 return (false, ex.Message);
             }
         }
-        public async Task<(bool,string)> BrowseDataCardDataBase(string filePath, bool Overwrite)
+
+        public async Task<(bool, string)> BrowseDataRarity(string filePath, bool Overwrite)
         {
-            var tempList = new List<RareCard>();
+            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return (false, CMess.fileNotExit.ToText());
 
             try
             {
-                using (var connection = new SQLiteConnection($"Data Source={filePath};Version=3;"))
+                LoadCardRareDataResult resultBrowse = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
-                    await connection.OpenAsync();
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCardRare(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCardRare(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCardRare(filePath),
+                    var ext when ConstantExtension.DeckExtensions.Contains(ext) => await LoadDataServices.LoadYdkCardRare(filePath),
+                    _ => new LoadCardRareDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                };
 
-                    var tableNames = new HashSet<string>();
-                    using (var command = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table';", connection))
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            tableNames.Add(reader.GetString(0).ToLower());
-                        }
-                    }
-                    
-                    if (tableNames.Contains("rarecard"))
-                    {
-                        using (var command = new SQLiteCommand("SELECT id, name, rare FROM RareCard", connection))
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                ulong id = reader.IsDBNull(0) ? 0UL : unchecked((ulong)Convert.ToUInt64(reader.GetValue(0)));
-                                string name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
-                                long rare = reader.IsDBNull(2) ? 0L : (long)reader.GetInt64(2);
-
-                                var card = new RareCard
-                                {
-                                    id = id,
-                                    name = name,
-                                    rare = rare
-                                };
-                                tempList.Add(card);
-                            }
-                        }
-                    }
-                    else if (tableNames.Contains("texts"))
-                    {
-                        using (var command = new SQLiteCommand("SELECT id, name FROM texts", connection))
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                ulong id = reader.IsDBNull(0) ? 0UL : unchecked((ulong)Convert.ToUInt64(reader.GetValue(0)));
-                                string name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
-
-                                var card = new RareCard
-                                {
-                                    id = id,
-                                    name = name,
-                                    rare = 0
-                                };
-                                tempList.Add(card);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        OnErrorOccurred?.Invoke($"{CMess.CardDB.ToText()} {string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())}");
-                        return (false, $"{CMess.CardDB.ToText()} {string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())}");
-                    }
-                }
-
-                try
+                if (resultBrowse.Result && resultBrowse.CardList != null)
                 {
-                    if (MergeRareCards(tempList, Overwrite))
+                    if (MergeRareCards(resultBrowse.CardList, Overwrite))
                     {
                         IsSaveRareCardListToDB = false;
                         OnDataChanged?.Invoke();
@@ -851,243 +793,16 @@ namespace CardEditor.ViewModels
                         return (false, CMess.noValiCardFound.ToText());
                     }
                 }
-                catch (Exception ex)
-                {
-                    OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                    return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                }
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Read.ToText())} {CMess.CardDB.ToText()} {ex.Message}");
-                return (false, $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Read.ToText())} {CMess.CardDB.ToText()} {ex.Message}");
-            }
-        }
-        private static JsonSerializerOptions CreateSerializerOptions()
-        {
-            return new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
-        }
-        public async Task<(bool,string)> BrowseDataCeds(string filePath, bool Overwrite)
-        {
-            try
-            {
-                string json = string.Empty;
-
-                using (StreamReader reader = new StreamReader(filePath, Encoding.UTF8))
-                {
-                    json = await reader.ReadToEndAsync();
-                }
-
-                var importedCards = JsonSerializer.Deserialize<List<CardEditor.Models.Card>>(json, SerializerOptions);
-
-                if (importedCards != null && importedCards.Any())
-                {
-                    var newCards = importedCards.Select(card => new RareCard
-                    {
-                        id = (ulong)card.id,
-                        name = card.name,
-                        rare = 0
-                    }).ToList();
-
-                    try
-                    {
-                        if (MergeRareCards(newCards, Overwrite))
-                        {
-                            IsSaveRareCardListToDB = false;
-                            OnDataChanged?.Invoke();
-                            return (true, string.Empty);
-                        }
-                        else
-                        {
-                            OnErrorOccurred?.Invoke(CMess.noValiCardFound.ToText());
-                            return (false, CMess.noValiCardFound.ToText());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                        return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                    }
-
-                }
                 else
                 {
-                    OnErrorOccurred?.Invoke(CMess.noValiCardFound.ToText());
-                    return (false, CMess.noValiCardFound.ToText());
+                    OnErrorOccurred?.Invoke($"{CMess.CardDB.ToText()} {string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())}");
+                    return (false, $"{CMess.CardDB.ToText()} {string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText())}");
                 }
             }
             catch (Exception ex)
             {
                 OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
                 return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-            }
-        }
-        public async Task<(bool,string)> BrowseDataExcel(string filePath, bool Overwrite)
-        {
-            var tempList = new List<RareCard>();
-
-            try
-            {
-                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                byte[] fileBytes = new byte[fileStream.Length];
-                await fileStream.ReadAsync(fileBytes, 0, fileBytes.Length);
-
-                using var package = new ExcelPackage(new MemoryStream(fileBytes));
-                var worksheet = package.Workbook.Worksheets.FirstOrDefault();
-
-                if (!CheckDatabase.CheckExcelValidity(worksheet))
-                {
-                    OnErrorOccurred?.Invoke(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
-                    return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
-                }
-
-                int lastRow = worksheet.Dimension?.End.Row ?? 1;
-                if (lastRow < 2)
-                {
-                    OnErrorOccurred?.Invoke($"{CMess.CardDB.ToText()} {CMess.noValiCardFound.ToText()}");
-                    return (false, CMess.noValiCardFound.ToText());
-                }
-
-                for (int row = 2; row <= lastRow; row++)
-                {
-                    var idCell = worksheet.Cells[row, 1].Value;
-                    if (idCell == null) continue;
-                    if (!ulong.TryParse(idCell.ToString(), out ulong id)) continue;
-
-                    string name = worksheet.Cells[row, 2].Text ?? "";
-
-                    var card = new RareCard
-                    {
-                        id = id,
-                        name = name,
-                        rare = 0
-                    };
-                    tempList.Add(card);
-                }
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred?.Invoke($"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Read.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {ex.Message}");
-                return (false, $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Read.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {ex.Message}");
-            }
-
-            try
-            {
-                if (MergeRareCards(tempList, Overwrite))
-                {
-                    IsSaveRareCardListToDB = false;
-                    OnDataChanged?.Invoke();
-                    return (true, string.Empty);
-                }
-                else
-                {
-                    OnErrorOccurred?.Invoke(CMess.noValiCardFound.ToText());
-                    return (false, CMess.noValiCardFound.ToText());
-                }
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-            }
-        }
-        public async Task<(bool,string)> BrowseDataDeck(string filePath, bool Overwrite)
-        {
-            string[] lines;
-            var newCards = new List<RareCard>();
-
-            try
-            {
-                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
-                using (var reader = new StreamReader(stream))
-                {
-                    var list = new List<string>();
-                    string line;
-                    while ((line = await reader.ReadLineAsync()) != null)
-                    {
-                        list.Add(line);
-                    }
-                    lines = list.ToArray();
-                }
-
-                var filteredLines = lines
-                    .Where(line => !string.IsNullOrWhiteSpace(line))
-                    .Select(line => line.Trim())
-                    .Where(line =>
-                    !(line.StartsWith("#main", StringComparison.OrdinalIgnoreCase) ||
-                    line.StartsWith("#extra", StringComparison.OrdinalIgnoreCase) ||
-                    line.StartsWith("!side", StringComparison.OrdinalIgnoreCase) ||
-                    line.StartsWith("#created", StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-
-                int hashLineCount = filteredLines.Count(line => line.StartsWith("#"));
-                bool includesCardName = hashLineCount >= 2;
-
-                if (includesCardName)
-                {
-                    string currentCardName = null;
-                    foreach (var line in filteredLines)
-                    {
-                        if (line.StartsWith("#"))
-                        {
-                            currentCardName = line.Substring(1).Trim();
-                        }
-                        else if (ulong.TryParse(line, out ulong cardId))
-                        {
-                            newCards.Add(new RareCard
-                            {
-                                id = cardId,
-                                name = currentCardName ?? string.Empty,
-                                rare = 0
-                            });
-                            currentCardName = null;
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var line in filteredLines)
-                    {
-                        if (ulong.TryParse(line, out ulong cardId))
-                        {
-                            newCards.Add(new RareCard
-                            {
-                                id = cardId,
-                                name = string.Empty,
-                                rare = 0
-                            });
-                        }
-                    }
-                }
-
-                try
-                {
-                    if (MergeRareCards(newCards, Overwrite))
-                    {
-                        IsSaveRareCardListToDB = false;
-                        OnDataChanged?.Invoke();
-                        return (true, string.Empty);
-                    }
-                    else
-                    {
-                        OnErrorOccurred?.Invoke(CMess.noValiCardFound.ToText());
-                        return (false, CMess.noValiCardFound.ToText());
-                    }
-                }
-                catch (Exception ex)
-                {
-                    OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                    return (false, $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                }
-            }
-            catch (Exception ex)
-            {
-                OnErrorOccurred?.Invoke($"{string.Format(CMess.PlaceholderError.ToText(), CMess.Import.ToText())} {ex.Message}");
-                return (false,ex.Message);
             }
         }
 

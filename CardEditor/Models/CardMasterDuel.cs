@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using CardEditor.Enums.MasterDuel;
 using CardEditor.Converter;
 
 namespace CardEditor.Models.MasterDuel
@@ -33,7 +34,7 @@ namespace CardEditor.Models.MasterDuel
         // Dùng chung cho Monster/Spell/Trap subtype
         public Race? Race { get; set; }
 
-        public Attribute? Attribute { get; set; }
+        public CardEditor.Enums.MasterDuel.Attribute? Attribute { get; set; }
 
         public int? Level { get; set; }
         public int? Scale { get; set; }

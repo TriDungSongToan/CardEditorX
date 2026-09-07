@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using CardEditor.Enums;
 
 namespace CardEditor.Models
 {

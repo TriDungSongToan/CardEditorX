@@ -1,10 +1,15 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Data.SQLite;
 using System.Text;
 using System.Text.Json;
-using System.Data.SQLite;
 using System.Text.RegularExpressions;
-using CardEditor.Models;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using ClosedXML.Excel;
+using CardEditor.Enums;
+using CardEditor.Constants;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 
@@ -81,7 +86,32 @@ namespace CardEditor.Services
             command.Parameters.AddWithValue("@modified", DateTime.Now);
             command.ExecuteNonQuery();
         }
-        public static (bool, string) CreateDatabase(string folderPath, string cdbFileName)
+        public static async Task<(bool, string)> CreateDatabaseCommand(string filePath, bool hasFlag = false)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath)) return (false, CMess.fileNotExit.ToText());
+
+                string dbExtension = ConstantExtension.CardDBExtensions.First();
+                string extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+                string dbFilePath;
+                if (ConstantExtension.CardDBExtensions.Contains(extension)) dbFilePath = filePath;
+                else dbFilePath = Path.ChangeExtension(filePath, dbExtension);
+
+                string folderPath = System.IO.Path.GetDirectoryName(dbFilePath);
+                string cdbFileName = System.IO.Path.GetFileName(dbFilePath);
+
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateDatabase(folderPath, cdbFileName, hasFlag));
+                if (resultCreate) return (true, messageCreate);
+                else return (false, messageCreate);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        public static (bool, string) CreateDatabase(string folderPath, string cdbFileName, bool hasFlag = false)
         {
             if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(cdbFileName))
                 return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
@@ -98,7 +128,7 @@ namespace CardEditor.Services
                     connection.Open();
                     using (var command = connection.CreateCommand())
                     {
-                        command.CommandText = @"CREATE TABLE datas (
+                        command.CommandText = $@"CREATE TABLE datas (
                             id INTEGER PRIMARY KEY,
                             ot INTEGER,
                             alias INTEGER,
@@ -109,7 +139,7 @@ namespace CardEditor.Services
                             level INTEGER,
                             race INTEGER,
                             attribute INTEGER,
-                            category INTEGER
+                            category INTEGER{(hasFlag ? ",\n                    flag INTEGER" : "")}
                         );";
                         command.ExecuteNonQuery();
 
@@ -145,6 +175,134 @@ namespace CardEditor.Services
             catch (Exception ex)
             {
                 if (File.Exists(tempDbFilePath)) File.Delete(tempDbFilePath);
+                return (false, ex.Message);
+            }
+        }
+        public static async Task<(bool, string)> CreateExcelCommand(string filePath, bool hasFlag = false)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath)) return (false, CMess.fileNotExit.ToText());
+
+                string excelExtension = ConstantExtension.ExcelExtensions.First();
+                string extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+                string excelFilePath;
+                if (ConstantExtension.ExcelExtensions.Contains(extension)) excelFilePath = filePath;
+                else excelFilePath = Path.ChangeExtension(filePath, excelExtension);
+
+                string folderPath = System.IO.Path.GetDirectoryName(excelFilePath);
+                string xlsxFileName = System.IO.Path.GetFileName(excelFilePath);
+
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateExcelTemplate(folderPath, xlsxFileName, hasFlag));
+                if (resultCreate) return (true, messageCreate);
+                else return (false, messageCreate);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        public static (bool, string) CreateExcelTemplate(string folderPath, string xlsxFilename, bool hasFlag = false)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(xlsxFilename))
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
+            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+
+            string xlsxFilePath = Path.Combine(folderPath, xlsxFilename);
+            string tempXlsxFilePath = xlsxFilePath + ".tmp.xlsx";
+
+            try
+            {
+                // (header, isIntegerColumn) theo đúng thứ tự cột, bắt đầu từ cột B
+                var headers = new List<(string Name, bool IsInteger)>
+                {
+                    ("name", false), ("desc", false),
+                    ("ot", false), ("alias", true), ("setcode", false), ("type", false),
+                    ("atk", true), ("def", true),
+                    ("level", false), ("race", false), ("attribute", false), ("category", false)
+                };
+
+                if (hasFlag) headers.Add(("flag", false));
+
+                for (int i = 1; i <= 16; i++)
+                    headers.Add(($"str{i}", false));
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("Sheet1");
+
+                    // Cột A (id): Integer format
+                    worksheet.Column(1).Style.NumberFormat.Format = "0";
+
+                    // A1 cố định
+                    worksheet.Cell(1, 1).Value = "CardEditorX";
+
+                    for (int i = 0; i < headers.Count; i++)
+                    {
+                        int colIndex = i + 2; // cột B trở đi
+                        worksheet.Cell(1, colIndex).Value = headers[i].Name;
+                        worksheet.Column(colIndex).Style.NumberFormat.Format = headers[i].IsInteger ? "0" : "@";
+                    }
+
+                    workbook.SaveAs(tempXlsxFilePath);
+                }
+
+                if (File.Exists(xlsxFilePath)) File.Delete(xlsxFilePath);
+                File.Move(tempXlsxFilePath, xlsxFilePath);
+                return (true, xlsxFilePath);
+            }
+            catch (Exception ex)
+            {
+                if (File.Exists(tempXlsxFilePath)) File.Delete(tempXlsxFilePath);
+                return (false, ex.Message);
+            }
+        }
+        public static async Task<(bool, string)> CreateCedsCommand(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath)) return (false, CMess.fileNotExit.ToText());
+
+                string cedsExtension = ConstantExtension.CedsExtensions.First();
+                string extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+                string cedsFilePath;
+                if (ConstantExtension.CedsExtensions.Contains(extension)) cedsFilePath = filePath;
+                else cedsFilePath = Path.ChangeExtension(filePath, cedsExtension);
+
+                string folderPath = System.IO.Path.GetDirectoryName(cedsFilePath);
+                string cdbFileName = System.IO.Path.GetFileName(cedsFilePath);
+
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateCeds(folderPath, cdbFileName));
+                if (resultCreate) return (true, messageCreate);
+                else return (false, messageCreate);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+        public static (bool, string) CreateCeds(string folderPath, string cedsFileName)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath) || string.IsNullOrWhiteSpace(cedsFileName))
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Folder.ToText(), CMess.Path.ToText()));
+            if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+
+            string cedsFilePath = Path.Combine(folderPath, cedsFileName);
+            string tempCedsFilePath = cedsFilePath + ".tmp";
+
+            try
+            {
+                File.WriteAllText(tempCedsFilePath, "[]", Encoding.UTF8);
+
+                if (File.Exists(cedsFilePath)) File.Delete(cedsFilePath);
+                File.Move(tempCedsFilePath, cedsFilePath);
+                return (true, cedsFilePath);
+            }
+            catch (Exception ex)
+            {
+                if (File.Exists(tempCedsFilePath)) File.Delete(tempCedsFilePath);
                 return (false, ex.Message);
             }
         }
@@ -337,6 +495,30 @@ namespace CardEditor.Services
             catch (Exception ex)
             {
                 if (File.Exists(tempDbFilePath)) File.Delete(tempDbFilePath);
+                return (false, ex.Message);
+            }
+        }
+        public static (bool, string) CreateScriptCommand(string filePath, bool newScript)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath)) return (false, CMess.fileNotExit.ToText());
+
+                string scriptExtension = ConstantExtension.ScriptExtensions.First();
+                string extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+                string scriptFilePath = ConstantExtension.ScriptExtensions.Contains(extension)
+                    ? filePath : Path.ChangeExtension(filePath, scriptExtension);
+
+                string folderPath = System.IO.Path.GetDirectoryName(scriptFilePath);
+                string scriptFileName = System.IO.Path.GetFileName(scriptFilePath);
+
+                var (resultCreate, messageCreate) = CreateScript(folderPath, scriptFileName, newScript);
+                if (resultCreate) return (true, messageCreate);
+                else return (false, messageCreate);
+            }
+            catch (Exception ex)
+            {
                 return (false, ex.Message);
             }
         }

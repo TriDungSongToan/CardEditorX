@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Commands;
@@ -394,6 +395,7 @@ namespace CardEditor.UserControls
             SideDeck = new CardDeck(DeckType.Side);
 
             imageCard.Source = CardImageCacheViewModel.Instance.BlankImage;
+            ViewportImage.ToolTip = CMess.toolCardImg.ToText();
 
             ResizeTimer = new DispatcherTimer();
             ResizeTimer.Interval = TimeSpan.FromMilliseconds(500);
@@ -462,10 +464,25 @@ namespace CardEditor.UserControls
                 Interval = TimeSpan.FromMilliseconds(30)
             };
             scrollTimer.Tick += ScrollTimer_Tick;
-            await LoadBanList();
-            await LoadCardList();
-            await LoadDeck();
             IconCopy.Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentCopy;
+
+            var (resultPreLoadImage, messagePreLoadImage) = await CardImageCacheViewModel.Instance.PreloadImagesAsync();
+            var (resultLoadBanList, messageLoadBanList) = await LoadBanList();
+            var (resultLoadCardList, messageLoadCardList) = await LoadCardList();
+            var (reslutLoadDeck, messageLoadDeck) = await LoadDeck();
+
+            if (!resultPreLoadImage) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.Card.ToText(), CMess.Image.ToText())} {messagePreLoadImage}",
+                new[] { CMess.ok.ToText() });
+            if (!resultLoadBanList) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.BanList.ToText())} {messageLoadBanList}",
+                new[] { CMess.ok.ToText() });
+            if (!resultLoadCardList) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.Card.ToText())} {messageLoadCardList}",
+                new[] { CMess.ok.ToText() });
+            if (!reslutLoadDeck) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.Card.ToText(), CMess.Image.ToText())} {messageLoadDeck}",
+                new[] { CMess.ok.ToText() });
         }
         private void InitializeContentMenu()
         {
@@ -484,57 +501,62 @@ namespace CardEditor.UserControls
             ControlContextMenuService.Attach(txtNewPath);
             ControlContextMenuService.Attach(txtYDKEString);
         }
-        private async Task LoadBanList()
+        private async Task<(bool, string)> LoadBanList()
         {
-            if (!BanListRawDataViewModel.Instance.IsLoaded)
-            {
-                BanListRawDataViewModel.Instance.LoadLimitImages();
-                var (result, message) = await BanListRawDataViewModel.Instance.LoadBanLists();
-                if (!result)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                }
-            }
-        }
-        private async Task LoadCardList()
-        {
-            if (_isInitialized) return;
-
+            if (BanListRawDataViewModel.Instance.IsLoaded) return (true, string.Empty);
             try
             {
-                await CardEXDataViewModel.Instance.LoadCardsEXAsync();
-                
-                _isInitialized = true;
-                _isRegexDirty = true;
-                await ApplyFilterAsync();
+                BanListRawDataViewModel.Instance.LoadLimitImages();
+                return await BanListRawDataViewModel.Instance.LoadBanLists();
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+                return (false, ex.Message);
             }
         }
-        private async Task LoadDeck()
+        private async Task<(bool, string)> LoadCardList()
         {
-            cmbDeck.ItemsSource = DeckViewModel.Instance.Decks;
-            if (!DeckViewModel.Instance.IsLoadedDecksList)
+            if (_isInitialized) return (true, string.Empty);
+
+            try
             {
-                bool resultLoadDeck = await DeckViewModel.Instance.LoadDeckAsync();
-                if (resultLoadDeck)
+                var (resultLoad, messageLoad) = await CardEXDataViewModel.Instance.LoadCardsEXAsync();
+                if (resultLoad)
                 {
-                    // cmbDeck.SelectedIndex = 0;
+                    _isInitialized = true;
+                    _isRegexDirty = true;
+                    await ApplyFilterAsync();
+
+                    return (true, string.Empty);
                 }
-                else
-                {
-                    cmbDeck.SelectedIndex = -1;
-                    CMSG.Show(CMess.infoma.ToText(), CMSG.MessageBoxIconType.Information,
-                        CMess.noDeckFound.ToText(), new[] { CMess.ok.ToText() });
-                }
+                else return (false, messageLoad);
             }
-            if (!string.IsNullOrEmpty(DeckViewModel.Instance.DeckFolderPath) && Directory.Exists(DeckViewModel.Instance.DeckFolderPath))
+            catch (Exception ex)
             {
-                NewFolderPath = DeckViewModel.Instance.DeckFolderPath;
+                return (false, ex.Message);
+            }
+        }
+        private async Task<(bool, string)> LoadDeck()
+        {
+            if (DeckViewModel.Instance.IsLoadedDecksList) return (true, string.Empty);
+
+            var (resultLoadDeck, messageLoadDeck) = await DeckViewModel.Instance.LoadDeckAsync();
+            if (resultLoadDeck)
+            {
+                if (!string.IsNullOrEmpty(DeckViewModel.Instance.DeckFolderPath) &&
+                    Directory.Exists(DeckViewModel.Instance.DeckFolderPath))
+                {
+                    NewFolderPath = DeckViewModel.Instance.DeckFolderPath;
+                }
+                else NewFolderPath = string.Empty;
+
+                cmbDeck.ItemsSource = DeckViewModel.Instance.Decks;
+                return (true, string.Empty);
+            }
+            else
+            {
+                cmbDeck.SelectedIndex = -1;
+                return (false, messageLoadDeck);
             }
         }
         public void LoadConfig()
@@ -2372,6 +2394,10 @@ namespace CardEditor.UserControls
             OpenFileLocalCommand.RaiseCanExecuteChanged();
             OpenDatabaseCommand.RaiseCanExecuteChanged();
             OpenScriptCommand.RaiseCanExecuteChanged();
+            OpenKonamiDBCommand?.RaiseCanExecuteChanged();
+            OpenYugipediaCommand?.RaiseCanExecuteChanged();
+            OpenYGOResourcesCommand?.RaiseCanExecuteChanged();
+
             if (CurrentCard != null) UpdateUICardProperties();
             else ClearUICardProperties();
 
@@ -2382,7 +2408,11 @@ namespace CardEditor.UserControls
             //string path = CardEXDataViewModel.Instance.TryGetPath(CurrentCard.ID);
             var CardInfo = new CardItemInfo(CurrentCard.BaseCard.type);
 
-            imageCard.Source = CardImageCacheViewModel.Instance.GetFullCardImage(CurrentCard.ID) ?? CardImageCacheViewModel.Instance.BlankImage;
+            var resultImage = CardImageCacheViewModel.Instance.GetFullCardImage(CurrentCard.ID);
+            imageCard.Source = resultImage.image ?? CardImageCacheViewModel.Instance.BlankImage;
+            ViewportImage.ToolTip = (!string.IsNullOrEmpty(resultImage.path) && System.IO.File.Exists(resultImage.path))
+                ? resultImage.path : CMess.toolCardImg.ToText();
+
             txtCardName.Text = CurrentCard.BaseCard.name;
 
             string typeFind = string.Empty, raceFind = string.Empty, charFind = string.Empty, attriFind = string.Empty;
@@ -2476,6 +2506,8 @@ namespace CardEditor.UserControls
         private void ClearUICardProperties()
         {
             imageCard.Source = CardImageCacheViewModel.Instance.BlankImage;
+            ViewportImage.ToolTip = CMess.toolCardImg.ToText();
+
             txtCardName.Text = "";
 
             tblCardType.Text = string.Empty;
@@ -3897,7 +3929,7 @@ namespace CardEditor.UserControls
             {
                 var originalInstance = e.Data.GetData(typeof(CardInstance)) as CardInstance;
                 if (originalInstance == null) return;
-                if (!CheckValidCard(originalInstance.Card.BaseCard, targetDeck)) return;
+                if (!CheckValidCard(originalInstance.Card.BaseCard, targetDeck, reOrder: true)) return;
 
                 // Xác định ListView nguồn
                 if (MainDeck.Contains(originalInstance))
@@ -3923,8 +3955,7 @@ namespace CardEditor.UserControls
             {
                 var card = e.Data.GetData(typeof(CardEX)) as CardEX;
                 if (card == null) return;
-                // if (!CheckValidCard(card.BaseCard, targetDeck)) return;
-                if (!CheckValidCard(card.BaseCard, targetDeck)) return;
+                if (!CheckValidCard(card.BaseCard, targetDeck, reOrder: false)) return;
 
                 instance = new CardInstance
                 {
@@ -4015,27 +4046,54 @@ namespace CardEditor.UserControls
                 return cRealId == realId;
             });
         }
-        private bool CheckValidDeckSize(CardEditor.Models.Card card, CardDeck targetDeck) // Deck Limits + Each Card Limits
+        private bool CheckValidDeckSize(CardEditor.Models.Card card, CardDeck targetDeck, bool reOrder) // Deck Limits + Each Card Limits
         {
             if (IgnoreSize) return true;
 
             if (targetDeck.Type == DeckType.Main)
             {
-                if (ConfigViewModel.Instance.deckEditSetting.MainDeckLimit.HasValue &&
-                    targetDeck.Count >= ConfigViewModel.Instance.deckEditSetting.MainDeckLimit.Value)
-                    return false;
+                if (reOrder)
+                {
+                    if (ConfigViewModel.Instance.deckEditSetting.MainDeckLimit.HasValue &&
+                        targetDeck.Count > ConfigViewModel.Instance.deckEditSetting.MainDeckLimit.Value)
+                        return false;
+                }
+                else
+                {
+                    if (ConfigViewModel.Instance.deckEditSetting.MainDeckLimit.HasValue &&
+                        targetDeck.Count >= ConfigViewModel.Instance.deckEditSetting.MainDeckLimit.Value)
+                        return false;
+                }
             }
             else if (targetDeck.Type == DeckType.Extra)
             {
-                if (ConfigViewModel.Instance.deckEditSetting.ExtraDeckLimit.HasValue &&
-                    targetDeck.Count >= ConfigViewModel.Instance.deckEditSetting.ExtraDeckLimit.Value)
-                    return false;
+                if (reOrder)
+                {
+                    if (ConfigViewModel.Instance.deckEditSetting.ExtraDeckLimit.HasValue &&
+                        targetDeck.Count > ConfigViewModel.Instance.deckEditSetting.ExtraDeckLimit.Value)
+                        return false;
+                }
+                else
+                {
+                    if (ConfigViewModel.Instance.deckEditSetting.ExtraDeckLimit.HasValue &&
+                        targetDeck.Count >= ConfigViewModel.Instance.deckEditSetting.ExtraDeckLimit.Value)
+                        return false;
+                }
             }
             else if (targetDeck.Type == DeckType.Side)
             {
-                if (ConfigViewModel.Instance.deckEditSetting.SideDeckLimit.HasValue &&
-                    targetDeck.Count >= ConfigViewModel.Instance.deckEditSetting.SideDeckLimit.Value)
-                    return false;
+                if (reOrder)
+                {
+                    if (ConfigViewModel.Instance.deckEditSetting.SideDeckLimit.HasValue &&
+                        targetDeck.Count > ConfigViewModel.Instance.deckEditSetting.SideDeckLimit.Value)
+                        return false;
+                }
+                else
+                {
+                    if (ConfigViewModel.Instance.deckEditSetting.SideDeckLimit.HasValue &&
+                        targetDeck.Count >= ConfigViewModel.Instance.deckEditSetting.SideDeckLimit.Value)
+                        return false;
+                }
             }
             else return false;
 
@@ -4066,9 +4124,9 @@ namespace CardEditor.UserControls
             }
             else return isMain || isSide;
         }
-        private bool CheckValidCard(CardEditor.Models.Card card, CardDeck targetDeck)
+        private bool CheckValidCard(CardEditor.Models.Card card, CardDeck targetDeck, bool reOrder)
         {
-            return CheckValidDeckSize(card, targetDeck) && CheckValidDeckContent(card, targetDeck);
+            return CheckValidDeckSize(card, targetDeck, reOrder) && CheckValidDeckContent(card, targetDeck);
         }
 
         private int GetItemIndexAtPosition(System.Windows.Controls.ListView listView, Point position)
@@ -4365,6 +4423,20 @@ namespace CardEditor.UserControls
             }
             OpenReNameDeck();
         }
+        private async void btnReloadDeck_Click(object sender, RoutedEventArgs e)
+        {
+            int chooseReLoad = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                string.Format(CMess.TwoPlaceholderConfirm.ToText(), CMess.tlReload.ToText(), CMess.Deck.ToText()),
+                new[] { CMess.yes.ToText(), CMess.no.ToText() });
+            if (chooseReLoad != 0) return;
+
+            DeckViewModel.Instance.IsLoadedDecksList = false;
+            var (resultReloadDeck, messageReloadDeck) = await LoadDeck();
+
+            if (!resultReloadDeck) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.Deck.ToText(), CMess.Image.ToText())} {messageReloadDeck}",
+                new[] { CMess.ok.ToText() });
+        }
         private void btnOpenLinkArrows_Click(object sender, RoutedEventArgs e)
         {
             popLinkArrows.IsOpen = true;
@@ -4420,16 +4492,27 @@ namespace CardEditor.UserControls
         }
         private async void btnReload_Click(object sender, RoutedEventArgs e)
         {
-            var (result, message) = await BanListRawDataViewModel.Instance.LoadBanLists();
-            await CardEXDataViewModel.Instance.ReloadCardsAsync();
+            var (resultPreLoadImage, messagePreLoadImage) = await CardImageCacheViewModel.Instance.PreloadImagesAsync();
+            var (resultLoadBanList, messageLoadBanList) = await BanListRawDataViewModel.Instance.LoadBanLists();
+            var (resultLoadCardAsync, messageLoadCardAsync) = await CardEXDataViewModel.Instance.ReloadCardsAsync();
+
             MarkFilterDirty();
             _isInitialized = true;
             await RefreshFilter();
-            if (!result)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-            }
+
+            if (!resultPreLoadImage) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.Card.ToText(), CMess.Image.ToText())} {messagePreLoadImage}",
+                new[] { CMess.ok.ToText() });
+            if (!resultLoadBanList) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.BanList.ToText())} {messageLoadBanList}",
+                new[] { CMess.ok.ToText() });
+            if (!resultLoadCardAsync) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.Card.ToText())} {messageLoadCardAsync}",
+                new[] { CMess.ok.ToText() });
+
+            CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.tlReload.ToText(), CMess.Data.ToText()),
+                new[] { CMess.ok.ToText() });
         }
 
         private void btnCloseYDKEURL_Click(object sender, RoutedEventArgs e)
@@ -4485,5 +4568,6 @@ namespace CardEditor.UserControls
             _selectedCardInstance = null;
         }
         #endregion
+
     }
 }
