@@ -25,13 +25,13 @@
              HorizontalContentAlignment="Stretch"
              VerticalContentAlignment="Stretch"
              FontFamily="{DynamicResource MaterialDesignFont}"
-             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+             Background="{Binding BackgroundUserControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
              UseLayoutRounding="False"
              SnapsToDevicePixels="False"
              Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded"
-             d:DesignHeight="800" d:DesignWidth="1200">
+             d:DesignHeight="800" d:DesignWidth="1220">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -199,7 +199,7 @@
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                              FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              d:FlowDirection="LeftToRight" >
-            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,0,0,0" >
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="295" />
                     <ColumnDefinition Width="3" />
@@ -230,7 +230,7 @@
                             <Grid Grid.Row="0" >
                                 <ComboBox x:Name="cmbBanList" Height="39" BorderThickness="0.8" Padding="8,15,8,2" IsEditable="False"
                                           BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -256,7 +256,7 @@
                                          VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
                                          TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -270,14 +270,15 @@
                                          materialDesign:ThemeAssist.Theme="Dark" />
                             </Grid>
 
-                            <Grid Grid.Row="2" Margin="10,3,10,3" >
+                            <Grid Grid.Row="2"
+                                  Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
 
                                 <Viewbox Grid.Column="0" HorizontalAlignment="Left"
-                                         Margin="0" Stretch="None" StretchDirection="Both" >
+                                         Margin="10,3,0,3" Stretch="None" StretchDirection="Both" >
                                     <TextBlock Text="{Lag:Localize WhiteList}"
                                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -289,7 +290,7 @@
                                               IsChecked="{Binding WhiteList}"
                                               VerticalAlignment="Center" HorizontalAlignment="Center" 
                                               VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                                              Width="auto" Height="26" Margin="0" >
+                                              Width="auto" Height="26" Margin="0,3,10,3" >
                                     <ToggleButton.Content>
                                         <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
                                     </ToggleButton.Content>
@@ -585,7 +586,7 @@
                                          VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
                                          TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -601,7 +602,7 @@
 
                                 <ComboBox Grid.Column="2" IsEditable="False" Height="39" BorderThickness="0.7" Padding="8,15,8,2" Margin="0"
                                           BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                          Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -629,7 +630,7 @@
                                          VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
                                          TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -786,6 +787,7 @@
                     </Border>
 
                     <Border Grid.Row="4" CornerRadius="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                             BorderThickness="1" Margin="0" Padding="1" BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -1010,7 +1012,7 @@
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0" Padding="0" BorderThickness="1" CornerRadius="3"
-                            Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                             BorderBrush="#ff0000"
                             Panel.ZIndex="0" >
                         <Grid>
@@ -1019,7 +1021,8 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                 <TextBlock Text="{Lag:Localize BannedCard}" Margin="10,3,0,3"
                                            Foreground="#ff0000"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1028,7 +1031,7 @@
 
                             <DataGrid x:Name="datagrBanned" Grid.Row="1"
                                       BorderThickness="0" Margin="0" Padding="0" ColumnHeaderHeight="0"
-                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="Transparent"
                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1137,7 +1140,7 @@
                     </Border>
 
                     <Border Grid.Row="2" Padding="0" BorderThickness="1" CornerRadius="3"
-                            Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                             BorderBrush="Yellow"
                             Panel.ZIndex="0" >
                         <Grid>
@@ -1146,7 +1149,8 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                 <TextBlock Text="{Lag:Localize SemiLimitedCard}" Margin="10,3,0,3"
                                            Foreground="Yellow"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1155,7 +1159,7 @@
 
                             <DataGrid x:Name="datagrSemiLimited" Grid.Row="1"
                                       BorderThickness="0" Margin="0" Padding="0" ColumnHeaderHeight="0"
-                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="Transparent"
                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1272,7 +1276,7 @@
                     </Grid.RowDefinitions>
 
                     <Border Grid.Row="0" Padding="0" BorderThickness="1" CornerRadius="3"
-                            Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                             BorderBrush="#ff8a00"
                             Panel.ZIndex="0" >
                         <Grid>
@@ -1281,7 +1285,8 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                 <TextBlock Text="{Lag:Localize LimitedCard}" Margin="10,3,0,3"
                                            Foreground="#ff8a00"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1290,7 +1295,7 @@
 
                             <DataGrid x:Name="datagrLimited" Grid.Row="1"
                                       BorderThickness="0" Margin="0" Padding="0" ColumnHeaderHeight="0"
-                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="Transparent"
                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1399,7 +1404,7 @@
                     </Border>
 
                     <Border Grid.Row="2" Padding="0" BorderThickness="1" CornerRadius="3"
-                            Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                             BorderBrush="#00ff0b"
                             Panel.ZIndex="0" >
                         <Grid>
@@ -1408,7 +1413,8 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                 <TextBlock Text="{Lag:Localize UnLimitedCard}" Margin="10,3,0,3"
                                            Foreground="#00ff0b"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1417,7 +1423,7 @@
 
                             <DataGrid x:Name="datagrUnLimited" Grid.Row="1"
                                       BorderThickness="0" Margin="0" Padding="0" ColumnHeaderHeight="0"
-                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="Transparent"
                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

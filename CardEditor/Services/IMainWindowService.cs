@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using CardEditor.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CardEditor.Services
 {
@@ -17,6 +18,7 @@ namespace CardEditor.Services
 
         Task OpenCodeEditorTab(IEnumerable<string> filePaths);
         Task OpenCodeEditorTab(string filePath, string archiveFilePath = null, string archiveEntryName = null);
+        Task OpenCodeEditorTab(CardOmegaScript omegaScript);
         Task OpenCodeEditorTab(ulong id);
 
         void OpenFinterSetting();
@@ -24,12 +26,13 @@ namespace CardEditor.Services
         void OpenViewImage(string ImageUrl);
         void OpenFileLocation(string ImageUrl);
 
-        void UpdateWindowTitle(string title);
+        void UpdateWindowTitle(AppTitle title);
         void UpdateWindowSavedFlag(bool isSaved);
 
         void UpdateTabItemHeader(string title);
 
         void ImportDataCreateNewDataEdit(IEnumerable<CardEditor.Models.Card> importedCards);
+        void ImportDataCreateNewDataEdit(IEnumerable<CardEditor.Models.CardOmega> importedCards);
         void ImportDataCreateNewBanListEdit(IEnumerable<CardEditor.Models.CardBanList> importedCards);
 
         void SettingCommand();
@@ -39,6 +42,7 @@ namespace CardEditor.Services
         Task OpenYGOResources(ulong id, string name);
 
 
-        void OpenPreViewDescWindow(CardEditor.Models.Card card, CardEditor.Models.PendulumLanguageRule rule);
+        void OpenPreViewDescWindowCard(CardEditor.Models.Card card, CardEditor.Models.PendulumLanguageRule rule);
+        void OpenPreViewDescWindowCardOmega(CardEditor.Models.CardOmega card, CardEditor.Models.PendulumLanguageRule rule);
     }
 }

@@ -12,6 +12,7 @@ using MaterialDesignThemes.Wpf;
 using CardEditor.Helpers;
 using CardEditor.Commands;
 using CardEditor.Services;
+using CardEditor.Services.LoadData;
 using CardEditor.ViewModels;
 using CardEditor.Collections;
 using CardEditor.Localization;
@@ -289,7 +290,7 @@ namespace CardEditor.Views
         {
             if (string.IsNullOrWhiteSpace(ArchiveFilePath) || !System.IO.File.Exists(ArchiveFilePath)) return;
 
-            var resultLoad = await LoadDataServices.ListsEntries(ArchiveFilePath);
+            var resultLoad = await LoadArchiveService.ListsEntries(ArchiveFilePath);
             if (resultLoad.success)
             {
                 ArchiveDatabaseEntrys.ReplaceAll(resultLoad.fileLists.DatabaseEntries);

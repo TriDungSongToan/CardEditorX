@@ -10,15 +10,17 @@
              xmlns:UserControls="clr-namespace:CardEditor.UserControls"
              mc:Ignorable="d"
              x:Name="rootEditor"
+             Margin="0"
              Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded"
              PreviewKeyDown="rootEditor_PreviewKeyDown"
-             d:DesignHeight="800" d:DesignWidth="1200">
+             d:DesignHeight="800" d:DesignWidth="1220">
 
     <materialDesign:Card Margin="0,1,0,0" Background="Transparent"
                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" d:FlowDirection="LeftToRight"
                          FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+              Background="{Binding BackgroundControlCode, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
 
             <Grid x:Name="grRoot" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                 <Grid.RowDefinitions>

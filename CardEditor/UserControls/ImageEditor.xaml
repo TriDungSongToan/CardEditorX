@@ -9,7 +9,7 @@
              xmlns:Lag="clr-namespace:CardEditor.Localization"
              mc:Ignorable="d" 
              Loaded="UserControl_Loaded"
-             d:DesignHeight="800" d:DesignWidth="1200">
+             d:DesignHeight="800" d:DesignWidth="1220">
     <Grid x:Name="RootGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
           DragOver="RootGrid_DragOver" AllowDrop="True" >
 

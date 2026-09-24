@@ -31,7 +31,7 @@ namespace CardEditor.Models
         // Bảng datas
         public ulong ot { get; set; } = 0;
         public ulong alias { get; set; } = 0;
-        public byte[]? setcode { get; set; }
+        public ulong setcode { get; set; } = 0;
         public ulong type { get; set; } = 0;
         public long atk { get; set; } = 0;
         public long def { get; set; } = 0;
@@ -40,8 +40,8 @@ namespace CardEditor.Models
         public ulong attribute { get; set; } = 0;
         public ulong category { get; set; } = 0;    // Omega Flag
         public ulong genre { get; set; } = 0;       // Omega Category
-        public byte[]? script { get; set; }
-        public byte[]? support { get; set; }
+        public string script { get; set; }
+        public ulong support { get; set; }
 
         public void UpdateFrom(CardOmega src, params Action<CardOmega, CardOmega>[] updaters)
         {
@@ -56,5 +56,17 @@ namespace CardEditor.Models
             foreach (var u in updaters)
                 u(this, src);
         }
+    }
+    public class CardOmegaScript
+    {
+        public ulong id { get; set; } = 0;
+        public CardOmega? BaseCard { get; set; } = null;
+
+        public string cdbFilePath = string.Empty;
+        public string cedsFilePath = string.Empty;
+        public string xlsxFilePath = string.Empty;
+
+        public string? archiveFilePath = null;
+        public string? archiveEntryName = null;
     }
 }

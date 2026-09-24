@@ -4,7 +4,7 @@
 
     <SolidColorBrush x:Key="MultiSelectComboBox.DropDown.Button.Background" Color="Transparent"/>
     <SolidColorBrush x:Key="MultiSelectComboBox.DropDown.Button.Border" Color="#FF707070"/>
-    <SolidColorBrush x:Key="MultiSelectComboBox.DropDown.Button.Disabled.Background" Color="#FFF4F4F4"/>
+    <SolidColorBrush x:Key="MultiSelectComboBox.DropDown.Button.Disabled.Background" Color="Transparent"/>
     <SolidColorBrush x:Key="MultiSelectComboBox.DropDown.Button.Disabled.Border" Color="#FFADB2B5"/>
     <SolidColorBrush x:Key="MultiSelectComboBox.DropDown.Button.Disabled.Foreground" Color="#FF838383"/>
     <SolidColorBrush x:Key="MultiSelectComboBox.DropDown.Button.MouseOver.Background" Color="#FFF4F4F4"/>

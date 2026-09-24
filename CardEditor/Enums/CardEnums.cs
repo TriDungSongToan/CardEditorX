@@ -5,6 +5,7 @@ using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Enums
 {
+    #region Card Constant
     [Flags]
     public enum CardType : ulong
     {
@@ -60,10 +61,52 @@ namespace CardEditor.Enums
         NA2 = 0x800,
         Hidden = 0x1000
     }
+    public enum CardPaste
+    {
+        CardYGO = 1,
+        CardOMEGA = 2,
+        CardBAN = 3,
+    }
+    #endregion
 
     #region Card Field
     [Flags]
-    public enum CardField : ulong
+    public enum CardFieldNoFlag : ulong
+    {
+        None = 0,
+
+        Name = 1UL << 0,
+        Desc = 1UL << 1,
+        Str1 = 1UL << 2,
+        Str2 = 1UL << 3,
+        Str3 = 1UL << 4,
+        Str4 = 1UL << 5,
+        Str5 = 1UL << 6,
+        Str6 = 1UL << 7,
+        Str7 = 1UL << 8,
+        Str8 = 1UL << 9,
+        Str9 = 1UL << 10,
+        Str10 = 1UL << 11,
+        Str11 = 1UL << 12,
+        Str12 = 1UL << 13,
+        Str13 = 1UL << 14,
+        Str14 = 1UL << 15,
+        Str15 = 1UL << 16,
+        Str16 = 1UL << 17,
+
+        Ot = 1UL << 18,
+        Alias = 1UL << 19,
+        Setcode = 1UL << 20,
+        Type = 1UL << 21,
+        Atk = 1UL << 22,
+        Def = 1UL << 23,
+        Level = 1UL << 24,
+        Race = 1UL << 25,
+        Attribute = 1UL << 26,
+        Category = 1UL << 27,
+    }
+    [Flags]
+    public enum CardFieldHasFlag : ulong
     {
         None = 0,
 
@@ -98,58 +141,165 @@ namespace CardEditor.Enums
         Category = 1UL << 27,
         Flag = 1UL << 28,
     }
+    [Flags]
+    public enum CardOmegaField : ulong
+    {
+        None = 0,
+
+        Name = 1UL << 0,
+        Desc = 1UL << 1,
+        Str1 = 1UL << 2,
+        Str2 = 1UL << 3,
+        Str3 = 1UL << 4,
+        Str4 = 1UL << 5,
+        Str5 = 1UL << 6,
+        Str6 = 1UL << 7,
+        Str7 = 1UL << 8,
+        Str8 = 1UL << 9,
+        Str9 = 1UL << 10,
+        Str10 = 1UL << 11,
+        Str11 = 1UL << 12,
+        Str12 = 1UL << 13,
+        Str13 = 1UL << 14,
+        Str14 = 1UL << 15,
+        Str15 = 1UL << 16,
+        Str16 = 1UL << 17,
+
+        Ot = 1UL << 18,
+        Alias = 1UL << 19,
+        Setcode = 1UL << 20,
+        Type = 1UL << 21,
+        Atk = 1UL << 22,
+        Def = 1UL << 23,
+        Level = 1UL << 24,
+        Race = 1UL << 25,
+        Attribute = 1UL << 26,
+        Category = 1UL << 27,
+        Genre = 1UL << 28,
+        Script = 1UL << 29,
+        Support = 1UL << 30
+    }
+    [Flags]
     public enum CardFieldBanList : ulong
     {
         None = 0,
         Name = 1UL << 0,
     }
-    public enum DatabaseType
+    
+    public static class CardFieldNoFlagUpdate
     {
-        YGO = 0,
-        OMEGA = 1
-    }
-
-    public static class CardFieldUpdate
-    {
-        public static readonly Dictionary<CardField, Action<CardEditor.Models.Card, CardEditor.Models.Card>> FieldUpdaters = new()
+        public static readonly Dictionary<CardFieldNoFlag, Action<CardEditor.Models.Card, CardEditor.Models.Card>> FieldUpdaters = new()
         {
-            {CardField.Name, (t, s) => t.name = s.name },
-            {CardField.Desc, (t, s) => t.desc = s.desc },
-            {CardField.Str1, (t, s) => t.str1 = s.str1 },
-            {CardField.Str2, (t, s) => t.str2 = s.str2 },
-            {CardField.Str3, (t, s) => t.str3 = s.str3 },
-            {CardField.Str4, (t, s) => t.str4 = s.str4 },
-            {CardField.Str5, (t, s) => t.str5 = s.str5 },
-            {CardField.Str6, (t, s) => t.str6 = s.str6 },
-            {CardField.Str7, (t, s) => t.str7 = s.str7 },
-            {CardField.Str8, (t, s) => t.str8 = s.str8 },
-            {CardField.Str9, (t, s) => t.str9 = s.str9 },
-            {CardField.Str10, (t, s) => t.str10 = s.str10 },
-            {CardField.Str11, (t, s) => t.str11 = s.str11 },
-            {CardField.Str12, (t, s) => t.str12 = s.str12 },
-            {CardField.Str13, (t, s) => t.str13 = s.str13 },
-            {CardField.Str14, (t, s) => t.str14 = s.str14 },
-            {CardField.Str15, (t, s) => t.str15 = s.str15 },
-            {CardField.Str16, (t, s) => t.str16 = s.str16 },
+            {CardFieldNoFlag.Name, (t, s) => t.name = s.name },
+            {CardFieldNoFlag.Desc, (t, s) => t.desc = s.desc },
+            {CardFieldNoFlag.Str1, (t, s) => t.str1 = s.str1 },
+            {CardFieldNoFlag.Str2, (t, s) => t.str2 = s.str2 },
+            {CardFieldNoFlag.Str3, (t, s) => t.str3 = s.str3 },
+            {CardFieldNoFlag.Str4, (t, s) => t.str4 = s.str4 },
+            {CardFieldNoFlag.Str5, (t, s) => t.str5 = s.str5 },
+            {CardFieldNoFlag.Str6, (t, s) => t.str6 = s.str6 },
+            {CardFieldNoFlag.Str7, (t, s) => t.str7 = s.str7 },
+            {CardFieldNoFlag.Str8, (t, s) => t.str8 = s.str8 },
+            {CardFieldNoFlag.Str9, (t, s) => t.str9 = s.str9 },
+            {CardFieldNoFlag.Str10, (t, s) => t.str10 = s.str10 },
+            {CardFieldNoFlag.Str11, (t, s) => t.str11 = s.str11 },
+            {CardFieldNoFlag.Str12, (t, s) => t.str12 = s.str12 },
+            {CardFieldNoFlag.Str13, (t, s) => t.str13 = s.str13 },
+            {CardFieldNoFlag.Str14, (t, s) => t.str14 = s.str14 },
+            {CardFieldNoFlag.Str15, (t, s) => t.str15 = s.str15 },
+            {CardFieldNoFlag.Str16, (t, s) => t.str16 = s.str16 },
 
-            {CardField.Ot, (t, s) => t.ot = s.ot },
-            {CardField.Alias, (t, s) => t.alias = s.alias },
-            {CardField.Setcode, (t, s) => t.setcode = s.setcode },
-            {CardField.Type, (t, s) => t.type = s.type },
-            {CardField.Atk, (t, s) => t.atk = s.atk },
-            {CardField.Def, (t, s) => t.def = s.def },
-            {CardField.Level, (t, s) => t.level = s.level },
-            {CardField.Race, (t, s) => t.race = s.race },
-            {CardField.Attribute, (t, s) => t.attribute = s.attribute },
-            {CardField.Category, (t, s) => t.category = s.category },
-            {CardField.Flag, (t, s) => t.flag = s.flag },
+            {CardFieldNoFlag.Ot, (t, s) => t.ot = s.ot },
+            {CardFieldNoFlag.Alias, (t, s) => t.alias = s.alias },
+            {CardFieldNoFlag.Setcode, (t, s) => t.setcode = s.setcode },
+            {CardFieldNoFlag.Type, (t, s) => t.type = s.type },
+            {CardFieldNoFlag.Atk, (t, s) => t.atk = s.atk },
+            {CardFieldNoFlag.Def, (t, s) => t.def = s.def },
+            {CardFieldNoFlag.Level, (t, s) => t.level = s.level },
+            {CardFieldNoFlag.Race, (t, s) => t.race = s.race },
+            {CardFieldNoFlag.Attribute, (t, s) => t.attribute = s.attribute },
+            {CardFieldNoFlag.Category, (t, s) => t.category = s.category }
+        };
+    }
+    public static class CardFieldHasFlagUpdate
+    {
+        public static readonly Dictionary<CardFieldHasFlag, Action<CardEditor.Models.Card, CardEditor.Models.Card>> FieldUpdaters = new()
+        {
+            {CardFieldHasFlag.Name, (t, s) => t.name = s.name },
+            {CardFieldHasFlag.Desc, (t, s) => t.desc = s.desc },
+            {CardFieldHasFlag.Str1, (t, s) => t.str1 = s.str1 },
+            {CardFieldHasFlag.Str2, (t, s) => t.str2 = s.str2 },
+            {CardFieldHasFlag.Str3, (t, s) => t.str3 = s.str3 },
+            {CardFieldHasFlag.Str4, (t, s) => t.str4 = s.str4 },
+            {CardFieldHasFlag.Str5, (t, s) => t.str5 = s.str5 },
+            {CardFieldHasFlag.Str6, (t, s) => t.str6 = s.str6 },
+            {CardFieldHasFlag.Str7, (t, s) => t.str7 = s.str7 },
+            {CardFieldHasFlag.Str8, (t, s) => t.str8 = s.str8 },
+            {CardFieldHasFlag.Str9, (t, s) => t.str9 = s.str9 },
+            {CardFieldHasFlag.Str10, (t, s) => t.str10 = s.str10 },
+            {CardFieldHasFlag.Str11, (t, s) => t.str11 = s.str11 },
+            {CardFieldHasFlag.Str12, (t, s) => t.str12 = s.str12 },
+            {CardFieldHasFlag.Str13, (t, s) => t.str13 = s.str13 },
+            {CardFieldHasFlag.Str14, (t, s) => t.str14 = s.str14 },
+            {CardFieldHasFlag.Str15, (t, s) => t.str15 = s.str15 },
+            {CardFieldHasFlag.Str16, (t, s) => t.str16 = s.str16 },
+
+            {CardFieldHasFlag.Ot, (t, s) => t.ot = s.ot },
+            {CardFieldHasFlag.Alias, (t, s) => t.alias = s.alias },
+            {CardFieldHasFlag.Setcode, (t, s) => t.setcode = s.setcode },
+            {CardFieldHasFlag.Type, (t, s) => t.type = s.type },
+            {CardFieldHasFlag.Atk, (t, s) => t.atk = s.atk },
+            {CardFieldHasFlag.Def, (t, s) => t.def = s.def },
+            {CardFieldHasFlag.Level, (t, s) => t.level = s.level },
+            {CardFieldHasFlag.Race, (t, s) => t.race = s.race },
+            {CardFieldHasFlag.Attribute, (t, s) => t.attribute = s.attribute },
+            {CardFieldHasFlag.Category, (t, s) => t.category = s.category },
+            {CardFieldHasFlag.Flag, (t, s) => t.flag = s.flag },
+        };
+    }
+    public static class CardOmegaFieldUpdate
+    {
+        public static readonly Dictionary<CardOmegaField, Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>> FieldUpdaters = new()
+        {
+            {CardOmegaField.Name, (t, s) => t.name = s.name },
+            {CardOmegaField.Desc, (t, s) => t.desc = s.desc },
+            {CardOmegaField.Str1, (t, s) => t.str1 = s.str1 },
+            {CardOmegaField.Str2, (t, s) => t.str2 = s.str2 },
+            {CardOmegaField.Str3, (t, s) => t.str3 = s.str3 },
+            {CardOmegaField.Str4, (t, s) => t.str4 = s.str4 },
+            {CardOmegaField.Str5, (t, s) => t.str5 = s.str5 },
+            {CardOmegaField.Str6, (t, s) => t.str6 = s.str6 },
+            {CardOmegaField.Str7, (t, s) => t.str7 = s.str7 },
+            {CardOmegaField.Str8, (t, s) => t.str8 = s.str8 },
+            {CardOmegaField.Str9, (t, s) => t.str9 = s.str9 },
+            {CardOmegaField.Str10, (t, s) => t.str10 = s.str10 },
+            {CardOmegaField.Str11, (t, s) => t.str11 = s.str11 },
+            {CardOmegaField.Str12, (t, s) => t.str12 = s.str12 },
+            {CardOmegaField.Str13, (t, s) => t.str13 = s.str13 },
+            {CardOmegaField.Str14, (t, s) => t.str14 = s.str14 },
+            {CardOmegaField.Str15, (t, s) => t.str15 = s.str15 },
+            {CardOmegaField.Str16, (t, s) => t.str16 = s.str16 },
+
+            {CardOmegaField.Ot, (t, s) => t.ot = s.ot },
+            {CardOmegaField.Alias, (t, s) => t.alias = s.alias },
+            {CardOmegaField.Setcode, (t, s) => t.setcode = s.setcode },
+            {CardOmegaField.Type, (t, s) => t.type = s.type },
+            {CardOmegaField.Atk, (t, s) => t.atk = s.atk },
+            {CardOmegaField.Def, (t, s) => t.def = s.def },
+            {CardOmegaField.Level, (t, s) => t.level = s.level },
+            {CardOmegaField.Race, (t, s) => t.race = s.race },
+            {CardOmegaField.Attribute, (t, s) => t.attribute = s.attribute },
+            {CardOmegaField.Category, (t, s) => t.category = s.category },
+            {CardOmegaField.Genre, (t, s) => t.genre = s.genre },
+            {CardOmegaField.Script, (t, s) => t.script = s.script },
+            {CardOmegaField.Support, (t, s) => t.support = s.support }
         };
     }
     public static class CardFieldBanListUpdate
     {
-        public static readonly Dictionary<CardField, Action<CardEditor.Models.CardBanList, CardEditor.Models.CardBanList>> FieldUpdaters = new()
+        public static readonly Dictionary<CardFieldBanList, Action<CardEditor.Models.CardBanList, CardEditor.Models.CardBanList>> FieldUpdaters = new()
         {
-            {CardField.Name, (t, s) => t.Name = s.Name },
+            {CardFieldBanList.Name, (t, s) => t.Name = s.Name },
         };
     }
     #endregion
@@ -169,8 +319,11 @@ namespace CardEditor.Enums
         RACE = 9,
         ATTRIBUTE = 10,
         CATEGORY = 11,
-        RARE = 12,
-        GPOINT = 13
+        FLAG = 12,
+        GENRE = 13,
+        SUPPORT = 14,
+        RARE = 15,
+        GPOINT = 16
     }
     public static class SortExtensions
     {
@@ -190,6 +343,10 @@ namespace CardEditor.Enums
                 SortType.RACE => CMess.cardLabelRace.ToText(),
                 SortType.ATTRIBUTE => CMess.cardLabelAttri.ToText(),
                 SortType.CATEGORY => CMess.cardLabelCategory.ToText(),
+                SortType.FLAG => CMess.cardLabelFlag.ToText(),
+                SortType.GENRE => CMess.cardLabelGenre.ToText(),
+                SortType.SUPPORT => CMess.Support.ToText(),
+
                 SortType.RARE => CMess.cardrare.ToText(),
                 SortType.GPOINT => CMess.genesysPoint.ToText(),
                 _ => CMess.unknown.ToText(),

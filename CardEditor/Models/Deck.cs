@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
-using CardEditor.Services;
+using CardEditor.Services.LoadData;
 using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -73,7 +73,7 @@ namespace CardEditor.Models
             if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
                 return (false, CMess.fileNotExit.ToText());
 
-            return await LoadDataServices.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
+            return await LoadArchiveService.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

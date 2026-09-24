@@ -8,6 +8,8 @@
              xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
              xmlns:Lag="clr-namespace:CardEditor.Localization"
              mc:Ignorable="d"
+             Background="Transparent"
+             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
              Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded"
              d:DesignHeight="800" d:DesignWidth="1220">
@@ -21,10 +23,6 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        
-        <Image x:Name="imgmainbg" Stretch="Uniform" Panel.ZIndex="0" 
-               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-
         <StackPanel Panel.ZIndex="1" HorizontalAlignment="Center" VerticalAlignment="Center"  >
             <Controls:TriStateToggle x:Name="tbtnTest" Width="180" Height="40" Visibility="Collapsed"
                                      LeftBackgroundBrush="Cyan"

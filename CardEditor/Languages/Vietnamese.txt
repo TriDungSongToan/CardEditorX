@@ -1,5 +1,5 @@
 ﻿#=======Menu Item=======#
-0x01	Têp
+0x01	Tệp
 0x02	Mới
 0x03	Mở
 0x04	Lưu
@@ -29,8 +29,6 @@
 0x45	Dữ Liệu
 0x46	Xuất dữ liệu
 0x47	Xuất dạng zip
-0x48	Xuất dạng CEDS
-0x49	Xuất dạng Excel
 
 0x55	Quản lý
 
@@ -92,6 +90,9 @@
 0x12f	Không hỏi lại
 0x130	Sao chép thông tin
 
+0x135	Chuyển Định dạng
+0x136	Mở Tab Tương thích
+
 #=======Config=======#
 0x201	Cài đặt người dùng
 0x202	Tên người dùng
@@ -101,22 +102,25 @@
 0x206	Trình Duyệt
 
 0x211	Cài đặt Hiển thị
-0x212	Màu Nền
-0x213	Màu Chữ
-0x214	Chủ Đề
-0x215	Font Chữ
-0x216	Cỡ Chữ
-0x217	Tô Sáng
-0x218	Hướng hiển thị
-0x219	Trái sang Phải
-0x21a	Phải sang Trái
-0x21b	Căn chỉnh văn bản
-0x21c	Căn trái
-0x21d	Căn phải
-0x21e	Căn đều hai bên
-0x21f	Căn giữa
-0x220	Ngắt dòng
-0x221	Gấp mã
+0x212	Ảnh Nền
+0x213	Dùng Ảnh làm nền App
+0c214	Dùng Ảnh làm nền CodeEditor
+0x215	Màu Nền
+0x216	Màu Chữ
+0x217	Chủ Đề
+0x218	Font Chữ
+0x219	Cỡ Chữ
+0x21a	Tô Sáng
+0x21b	Hướng hiển thị
+0x21c	Trái sang Phải
+0x21d	Phải sang Trái
+0x21e	Căn chỉnh văn bản
+0x21f	Căn trái
+0x220	Căn phải
+0x221	Căn đều hai bên
+0x222	Căn giữa
+0x223	Ngắt dòng
+0x224	Gấp mã
 
 0x22a	Sắp xếp
 0x22b	Cài đặt Sắp xếp
@@ -185,7 +189,7 @@
 0x279	Cho phép tạo
 
 #=======Filter=======#
-0x301	Lọc Thẻ
+0x301	Lọc
 
 0x302	Các Thẻ đã chọn
 0x303	Các Thẻ hiển thị
@@ -309,16 +313,17 @@
 0x3a4	Thẻ thường
 
 #=======Tooltip=======#
-0x501	Tạo một tệp ZIP mới.
-0x502	Lưu tất cả các Thẻ trong danh sách vào tệp Cơ Sở Dữ Liệu Thẻ gốc.
-0x503	Lưu tất cả các Thẻ trong danh sách vào tệp CardEditorSet gốc.
-0x504	Lưu tất cả các Thẻ trong danh sách vào tệp Excel gốc.
-0x505	Lưu tất cả các thẻ vào tệp Cơ Sở Dữ Liệu Thẻ mới.
+0x502	Lưu tất cả các Thẻ trong danh sách hiện tại vào tệp Cơ Sở Dữ Liệu Thẻ gốc.
+0x503	Lưu tất cả các Thẻ trong danh sách hiện tại vào tệp CardEditorSet gốc.
+0x504	Lưu tất cả các Thẻ trong danh sách hiện tại vào tệp Excel gốc.
+0x505	Lưu tất cả các Thẻ trong danh sách hiện tại vào tệp Cơ Sở Dữ Liệu Thẻ mới.
+0x506	Lưu tất cả các Thẻ trong danh sách hiện tại vào tệp CardEditorSet mới.
+0x507	Lưu tất cả các Thẻ trong danh sách hiện tại vào tệp Excel mới.
 
 0x50a	Mở Cửa Sổ Hỗ Trợ Tập Lệnh.
 
-0x511	Sao chép các Thẻ vào Bảng nhớ tạm.
-0x512	Dán Các Thẻ từ Bảng nhớ tạm vào danh sách.
+0x511	Sao chép các Thẻ từ danh sách hiện tại vào Bảng nhớ tạm.
+0x512	Dán các Thẻ từ Bảng nhớ tạm vào danh sách hiện tại.
 
 0x51a	Lọc và hiển thị các Thẻ trong danh sách sử dụng tệp Cơ Sở Dữ Liệu Thẻ.
 0x51b	Lọc và hiển thị trong danh sách các Thẻ CÓ XUẤT HIỆN trong Cơ Sở Dữ Liệu Thẻ được chọn.
@@ -334,12 +339,6 @@
 
 0x525	Trích xuất Cơ Sở Dữ Liệu (và tất cả Hình Ảnh, Tập Lệnh của mỗi Thẻ trong Cơ Sở Dữ Liệu) dưới dạng tệp ZIP.
 
-0x52a	Trích xuất các Thẻ dưới dạng tệp CardEditorSet.
-0x52b	Nhập các Thẻ từ tệp CardEditorSet vào danh sách.
-
-0x52c	Trích xuất các Thẻ dưới dạng tệp Excel.
-0x52d	Nhập các Thẻ từ tệp Excel vào danh sách.
-
 0x531	Phân tích mã để tìm ra các vấn đề về định dạng và sửa bất kỳ lỗi không nhất quán nào được phát hiện.
 0x532	Xuất tệp khóa Registry của Windows.
 0x533	Mã nguồn trên Github.
@@ -354,6 +353,7 @@
 0x541	Mở thẻ trên trang web YGO Resources
 
 0x545	Chọn Tệp để mở:
+0x546	Chọn Định dạng tệp {0}
 
 0x54a	Thẻ phải đáp ứng tất cả các điều kiện lọc.
 0x54b	Thẻ chỉ cần đáp ứng một trong các điều kiện lọc.
@@ -365,11 +365,15 @@
 0x553	Nhập thẻ từ tệp cơ sở dữ liệu đã nhập. Các thẻ hiện có sẽ chỉ thay thế các trường đã chọn, bỏ qua chúng nếu không có trường nào được chọn.
 
 #=======Object=======#
-0x5a1	{0} Tệp
-0x5a2	Lưu {0}
-0x5a3	Chọn {0}
+0x591	Tệp {0}
+0x592	Lưu {0}
+0x593	Lưu {1} {0}
+0x594	Mở {0}
+0x595	Mở {1} {0}
+0x596	Chọn {0}
 
-0x5a4	Kho Lưu Trữ Thẻ
+0x5a3	Kho Lưu Trữ Thẻ
+0x5a4	Danh Sách Thẻ
 0x5a5	Cơ Sở Dữ Liệu Thẻ
 0x5a6	Cơ Sở Dữ Liệu Thẻ Hiếm
 0x5a7	Cơ Sở Dữ Liệu Độ Hiếm
@@ -415,6 +419,7 @@
 0x5dc	Nguyên mẫu
 0x5dd	Danh mục
 0x5de	Cờ
+0x5df	Thể loại
 
 0x5e1	Cấp độ
 0x5e2	Cấp độ âm
@@ -438,8 +443,9 @@
 --0x2af	Right click to sort by default.
 
 #=======Script Support=======#
-0x5f8	Văn bản Thẻ
-0x5f9	Dữ liệu Thẻ
+0x5f7	Văn bản Thẻ
+0x5f8	Dữ liệu Thẻ
+0x5f9	Hình ảnh Thẻ
 0x5fa	Thông tin Thẻ
 
 0x5fb	Tìm kiếm Thẻ
@@ -562,10 +568,14 @@
 0x6e6	Dữ liệu gốc
 0x6e7	Dữ liệu chưa lưu
 
-0x701	Bạn đang đóng {0} thẻ.
-0x702	Có dữ liệu chưa được lưu.
-0x703	Có một bản sao lưu chưa được khôi phục từ lần chạy trước.
-0x704	Có {0} thẻ có ID trùng lặp trong danh sách thẻ
+0x6ea	Tự động chuyển đổi định dạng (một số dữ liệu có thể bị mất)
+0x6eb	Mở một tab mới tương thích với định dạng này
+
+0x700	Bạn đang đóng {0} thẻ.
+0x701	Có dữ liệu chưa được lưu.
+0x702	Có một bản sao lưu chưa được khôi phục từ lần chạy trước.
+0x703	Có {0} thẻ có ID trùng lặp trong danh sách thẻ
+0x704	Bạn có muốn thêm cột "flag" không?
 0x705	Bạn có muốn tiếp tục?
 0x706	Bạn có muốn mở nó?
 0x707	Bạn có muốn ghi đè nó?
@@ -578,11 +588,12 @@
 0x70d	Bạn có chắc chắn muốn xóa lịch sử {0} đã mở gần đây không?
 0x70e	Bạn có chắc chắn muốn lưu tệp trống?
 0x70f	Bạn có chắc chắn muốn hủy đăng ký các loại tệp CardEditorX khỏi Registry của Windows không?
-0x710	Đã có bản cập nhật, tải xuống ngay?
-0x711	Tải xuống Gói tài nguyên thẻ ngay?
-0x712	Bạn muốn xử lý dữ liệu đã chọn như thế nào?
-0x713	Không tìm thấy bản cập nhật nào.
-0x714	Cập nhật hoàn tất!
+0x710	Dữ liệu bạn sắp {0} có định dạng {1}, không tương thích với Tab hiện tại. Bạn muốn tiếp tục như thế nào?
+0x711	Đã có bản cập nhật, tải xuống ngay?
+0x712	Tải xuống Gói tài nguyên thẻ ngay?
+0x713	Bạn muốn xử lý dữ liệu đã chọn như thế nào?
+0x714	Không tìm thấy bản cập nhật nào.
+0x715	Cập nhật hoàn tất!
 
 0x725	Không thể xóa tệp hiện có sau nhiều lần thử.
 0x726	Không tìm thấy đường dẫn git.exe, hãy đảm bảo Git được cài đặt và sử dụng đường dẫn chính xác trong cấu hình ứng dụng.

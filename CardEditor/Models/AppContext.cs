@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Reflection;
+using System.ComponentModel;
 
 namespace CardEditor.Models
 {
@@ -46,6 +48,56 @@ namespace CardEditor.Models
             CreditDBPath = System.IO.Path.Combine(CreditFolderPath, "CreditDB.cdb");
             StampFolderPath = System.IO.Path.Combine(DataFolderPath, "RareStamp");
             KonamiIDFilePath = System.IO.Path.Combine(ConfigFolderPath, $@"CardData\KonamiID\KonamiID.cdb");
+        }
+    }
+
+    public class AppTitle : INotifyPropertyChanged
+    {
+        private string _displayTitle = string.Empty;
+        public string DisplayTitle
+        {
+            get => _displayTitle;
+            set
+            {
+                if (_displayTitle != value)
+                {
+                    _displayTitle = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private string _displayTabItemHeader = string.Empty;
+        public string DisplayTabItemHeader
+        {
+            get => _displayTabItemHeader;
+            set
+            {
+                if (_displayTabItemHeader != value)
+                {
+                    _displayTabItemHeader = value;
+                    OnPropertyChanged(nameof(DisplayTabItemHeader));
+                }
+            }
+        }
+
+        private string _physicalFullPath = string.Empty;
+        public string PhysicalFullPath
+        {
+            get => _physicalFullPath;
+            set
+            {
+                if (_physicalFullPath != value)
+                {
+                    _physicalFullPath = value;
+                    OnPropertyChanged(nameof(PhysicalFullPath));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
     }
 }

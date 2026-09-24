@@ -51,6 +51,7 @@ namespace CardEditor
             LoadDevModeState();
             settingViewModel.CallConfigChanged += SettingViewModel_CallConfigChanged;
             settingViewModel.RequestOpenBrowseDialog += SettingViewModel_RequestOpenBrowseDialog;
+            settingViewModel.RequestOpenImageFileDialog += SettingViewModel_RequestOpenImageFileDialog;
             settingViewModel.MessageBoxRequested += SettingViewModel_MessageBoxRequested;
         }
 
@@ -126,6 +127,23 @@ namespace CardEditor
                 return (false, ex.Message);
             }
         }
+        private (bool, string) SettingViewModel_RequestOpenImageFileDialog(string arg)
+        {
+            try
+            {
+                string folderPath = FileDiaLogHelper.OpenImage();
+
+                if (!string.IsNullOrEmpty(folderPath))
+                {
+                    return (true, folderPath);
+                }
+                else throw new Exception();
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
         private void blsetting_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -188,6 +206,7 @@ namespace CardEditor
             {
                 settingViewModel.CallConfigChanged -= SettingViewModel_CallConfigChanged;
                 settingViewModel.RequestOpenBrowseDialog -= SettingViewModel_RequestOpenBrowseDialog;
+                settingViewModel.RequestOpenImageFileDialog -= SettingViewModel_RequestOpenImageFileDialog;
                 settingViewModel.MessageBoxRequested -= SettingViewModel_MessageBoxRequested;
                 settingViewModel?.Dispose();
                 settingViewModel = null;

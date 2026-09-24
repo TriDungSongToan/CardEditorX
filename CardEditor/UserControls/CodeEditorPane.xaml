@@ -9,9 +9,10 @@
              xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
              xmlns:Behaviors="clr-namespace:CardEditor.Behaviors"
              mc:Ignorable="d"
+             Margin="0"
              Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded"
-             d:DesignHeight="800" d:DesignWidth="1200" >
+             d:DesignHeight="800" d:DesignWidth="1220" >
 
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
@@ -28,7 +29,7 @@
             <avalonEdit:TextEditor x:Name="textEditorPane"
                                    xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
                                    Document="{Binding SharedDocument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                   Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                   Background="Transparent"
                                    Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                    FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                    FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"

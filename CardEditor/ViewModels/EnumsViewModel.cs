@@ -61,6 +61,10 @@ namespace CardEditor.ViewModels
                 new SortItem {Sort = SortType.RACE, Name = "race", DisplayName = SortType.RACE.ToFriendlyString() },
                 new SortItem {Sort = SortType.ATTRIBUTE, Name = "attribute", DisplayName = SortType.ATTRIBUTE.ToFriendlyString() },
                 new SortItem {Sort = SortType.CATEGORY, Name = "category", DisplayName = SortType.CATEGORY.ToFriendlyString() },
+                new SortItem {Sort = SortType.FLAG, Name = "flag", DisplayName = SortType.FLAG.ToFriendlyString() },
+                new SortItem {Sort = SortType.GENRE, Name = "genre", DisplayName = SortType.GENRE.ToFriendlyString() },
+                new SortItem {Sort = SortType.SUPPORT, Name = "support", DisplayName = SortType.SUPPORT.ToFriendlyString() },
+
                 new SortItem {Sort = SortType.RARE, Name = "Rare", DisplayName = SortType.RARE.ToFriendlyString() },
                 new SortItem {Sort = SortType.GPOINT, Name = "GPoint", DisplayName = SortType.GPOINT.ToFriendlyString() },
             };

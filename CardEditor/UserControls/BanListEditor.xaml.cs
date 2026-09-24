@@ -36,7 +36,33 @@ namespace CardEditor.UserControls
     {
         #region Variable
         private IMainWindowService MainWindowService;
-        public string MainWindowTitle { get; set; }
+        private AppTitle _mainWindowTitle = new();
+        public AppTitle MainWindowTitle
+        {
+            get => _mainWindowTitle;
+            set
+            {
+                if (_mainWindowTitle != value)
+                {
+                    _mainWindowTitle = value;
+                    OnPropertyChanged(nameof(MainWindowTitle));
+
+                    if (MainWindowService == null) return;
+                    MainWindowService.UpdateWindowTitle(MainWindowTitle);
+                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
+                }
+            }
+        }
+        private void RebuildWindowTitle()
+        {
+            if (SelectedBanList == null) return;
+            if (string.IsNullOrWhiteSpace(SelectedBanList.archiveFilePath))
+            {
+                if (!string.IsNullOrEmpty(CurrentBanListPath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(CurrentBanListPath);
+                else MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(string.Empty);
+            }
+            else MainWindowTitle = FileLocationService.BuildTitleZipEntry(SelectedBanList.archiveFilePath, SelectedBanList.archiveEntryName);
+        }
         private bool _isSaved = true;
         public bool IsSaved
         {
@@ -94,7 +120,7 @@ namespace CardEditor.UserControls
                     NewFileName = CurrentBanListName;
                     NewFolderPath = (string.IsNullOrEmpty(CurrentBanListPath) || !System.IO.File.Exists(CurrentBanListPath))
                         ? string.Empty : System.IO.Path.GetDirectoryName(CurrentBanListPath);
-                    UpdateWindowTitle();
+                    RebuildWindowTitle();
                 }
             }
         }
@@ -2412,15 +2438,6 @@ namespace CardEditor.UserControls
             }
         }
 
-        private void UpdateWindowTitle()
-        {
-            if (MainWindowService != null)
-            {
-                MainWindowService.UpdateWindowTitle(CurrentBanListPath);
-                MainWindowService.UpdateTabItemHeader(CurrentBanListName);
-                MainWindowTitle = CurrentBanListPath;
-            }
-        }
         private void UpdateWindowSavedFlag()
         {
             if (MainWindowService != null)

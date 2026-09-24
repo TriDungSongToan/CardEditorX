@@ -64,7 +64,7 @@
                     MouseLeftButtonDown="BorderLeftWindowCommands_MouseLeftButtonDown" >
                 <StackPanel Orientation="Horizontal" >
                     <TextBlock x:Name="txtTitle" IsHitTestVisible="False" Margin="3,0,0,0"
-                               Background="Transparent" Text="{Binding MainWindowTitle}"
+                               Background="Transparent" Text="{Binding MainWindowTitle.DisplayTitle}"
                                Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -81,7 +81,7 @@
                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
                             Visibility="{Binding CanBrowseWindowTitle, Converter={StaticResource NegativeBoolToVis}}"
                             Style="{StaticResource ButtonSuccess}"
-                            Command="{Binding BrowseFileCommand}">
+                            Command="{Binding BrowseFileCommand}" >
                         <materialDesign:PackIcon Kind="OpenInNew" Width="20" Height="20"
                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
@@ -720,13 +720,14 @@
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" Panel.ZIndex="0" >
-                    <Image x:Name="imgmainbg" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    <Image x:Name="imgmainbg" Stretch="Fill"
+                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 </Grid>
 
                 <!--SelectedItem="{Binding Source={x:Static local:DataViewModel.Instance}, Path=SelectedTab, Mode=TwoWay}"-->
-                <Grid Grid.Row="0" Panel.ZIndex="1" >
-                    <dockablz:Layout Background="Transparent" Partition="{StaticResource Partition}" >
-                        <dragablz:TabablzControl x:Name="TabControlMain"
+                <Grid Grid.Row="0" Panel.ZIndex="1" Margin="0" >
+                    <dockablz:Layout Background="Transparent" Partition="{StaticResource Partition}" Margin="0" >
+                        <dragablz:TabablzControl x:Name="TabControlMain" Margin="0"
                                                  
                                                  Background="Transparent"
                                                  HorizontalAlignment="Stretch"

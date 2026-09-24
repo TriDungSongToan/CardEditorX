@@ -269,6 +269,132 @@
                                     <Grid Width="500" Margin="0,0,0,2" >
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBox Grid.Column="0" Height="43"
+                                                 Padding="10,13,3,0" BorderThickness="0.7"
+                                                 Text="{Binding displaySetting.BackgroundImagePath, UpdateSourceTrigger=PropertyChanged}"
+                                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                 VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                 materialDesign:HintAssist.Hint="{Lag:Localize BackgroundImage}"
+                                                 Style="{StaticResource CustomMaterialDesignFilledTextBox}"
+                                                 Behaviors:FileDropBehavior.Enable="True"
+                                                 Behaviors:PasteSanitizerBehavior.Enable="True"
+                                                 TextOptions.TextFormattingMode="Display"
+                                                 TextOptions.TextRenderingMode="ClearType"
+                                                 materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                                 materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
+                                                 materialDesign:ThemeAssist.Theme="Dark" />
+
+                                        <Button Grid.Column="0" Margin="0,0,5,0" Padding="0" Width="25" Height="25"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                                                ToolTip="{Lag:Localize Browse}" Command="{Binding BrowseBGImage}" >
+                                            <Button.Content>
+                                                <materialDesign:PackIcon Kind="FolderSearchOutline" Width="25" Height="25"
+                                                                         Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                            </Button.Content>
+                                        </Button>
+
+                                    </Grid>
+
+                                    <Grid Width="500" Height="30" Margin="0,0,0,5" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid Grid.Column="0" >
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Viewbox Grid.Column="0" HorizontalAlignment="Center"
+                                                     Margin="0,0,0,0" Stretch="Uniform" StretchDirection="Both" >
+                                                <TextBlock Text="{Lag:Localize UseBgImage}"
+                                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
+                                            </Viewbox>
+                                            <ToggleButton Grid.Column="1" Panel.ZIndex="2"
+                                                          IsChecked="{Binding displaySetting.UseBackgroundImage}"
+                                                          VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                                          Width="55" Height="28" Margin="0,0,10,0" >
+                                                <ToggleButton.Content>
+                                                    <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
+                                                </ToggleButton.Content>
+                                                <materialDesign:ToggleButtonAssist.OnContent>
+                                                    <materialDesign:PackIcon Kind="CheckOutline" Width="20" Height="20" />
+                                                </materialDesign:ToggleButtonAssist.OnContent>
+                                                <ToggleButton.Style>
+                                                    <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignSwitchSecondaryToggleButton}" >
+                                                        <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOffBackground" Value="Red" />
+                                                        <Setter Property="Background" Value="Red" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOnBackground" Value="Blue" />
+                                                                <Setter Property="Background" Value="Green" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ToggleButton.Style>
+                                            </ToggleButton>
+                                        </Grid>
+
+                                        <Grid Grid.Column="1" >
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Viewbox Grid.Column="0" HorizontalAlignment="Center"
+                                                     Margin="0,0,0,0" Stretch="Uniform" StretchDirection="Both" >
+                                                <TextBlock Text="{Lag:Localize UseBGImageCode}"
+                                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBlock}" />
+                                            </Viewbox>
+                                            <ToggleButton Grid.Column="1" Panel.ZIndex="2"
+                                                          IsChecked="{Binding displaySetting.UseBackgroundImageCode}"
+                                                          VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                                          Width="55" Height="28" Margin="0,0,10,0" >
+                                                <ToggleButton.Content>
+                                                    <materialDesign:PackIcon Kind="CloseThick" Foreground="Red" Width="auto" Height="24" Padding="0" Margin="0" />
+                                                </ToggleButton.Content>
+                                                <materialDesign:ToggleButtonAssist.OnContent>
+                                                    <materialDesign:PackIcon Kind="CheckOutline" Width="20" Height="20" />
+                                                </materialDesign:ToggleButtonAssist.OnContent>
+                                                <ToggleButton.Style>
+                                                    <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignSwitchSecondaryToggleButton}" >
+                                                        <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOffBackground" Value="Red" />
+                                                        <Setter Property="Background" Value="Red" />
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsChecked" Value="True">
+                                                                <Setter Property="materialDesign:ToggleButtonAssist.SwitchTrackOnBackground" Value="Blue" />
+                                                                <Setter Property="Background" Value="Green" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ToggleButton.Style>
+                                            </ToggleButton>
+                                        </Grid>
+
+                                    </Grid>
+
+                                    <Grid Width="500" Margin="0,0,0,2" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="3" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="3" />

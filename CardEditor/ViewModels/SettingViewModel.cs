@@ -65,6 +65,7 @@ namespace CardEditor.ViewModels
         #endregion
 
         public RelayCommand BrowseDataSource { get; private set; }
+        public RelayCommand BrowseBGImage { get; private set; }
         public RelayCommand BrowseArtWork {  get; private set; }
         public RelayCommand BrowsePutPut {  get; private set; }
         public RelayCommand BrowseOriginal { get; private set; }
@@ -109,6 +110,7 @@ namespace CardEditor.ViewModels
             RemoveSortItemCommand = new RelayCommand(RemoveSortItem);
 
             BrowseDataSource = new CardEditor.Commands.RelayCommand(_ => BrowseDataSourcePath());
+            BrowseBGImage = new CardEditor.Commands.RelayCommand(_ => BrowseBGImagePath());
             BrowseArtWork = new CardEditor.Commands.RelayCommand(_ => BrowseArtWorkPath());
             BrowsePutPut = new CardEditor.Commands.RelayCommand(_ => BrowsePutPutPath());
             BrowseOriginal = new CardEditor.Commands.RelayCommand(_ => BrowseOriginalPath());
@@ -312,13 +314,14 @@ namespace CardEditor.ViewModels
 
                 if (ok)
                 {
-                    if (!HasReadPermission(message))
+                    var (resultPremi, messagePremi) = HasReadFolderPermission(message);
+                    if (!resultPremi)
                     {
                         var request = new MessageBoxRequest
                         {
                             Title = CMess.error.ToText(),
                             IconType = CMSG.MessageBoxIconType.Error,
-                            Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()),
+                            Message = $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText())} {messagePremi}",
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -326,6 +329,36 @@ namespace CardEditor.ViewModels
                         return;
                     }
                     userSetting.DataSource = message;
+                }
+            }
+        }
+        private void BrowseBGImagePath()
+        {
+            var handler = RequestOpenImageFileDialog;
+
+            if (handler != null)
+            {
+                var result = handler.Invoke(CMess.Image.ToText());
+                bool ok = result.Item1;
+                string message = result.Item2;
+
+                if (ok)
+                {
+                    var (resultPremi, messagePremi) = HasReadFilePermission(message);
+                    if (!resultPremi)
+                    {
+                        var request = new MessageBoxRequest
+                        {
+                            Title = CMess.error.ToText(),
+                            IconType = CMSG.MessageBoxIconType.Error,
+                            Message = $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText())} {messagePremi}",
+                            Buttons = new[] { CMess.ok.ToText() },
+                            ResponseSource = null
+                        };
+                        OnMessageBoxRequested(request);
+                        return;
+                    }
+                    displaySetting.BackgroundImagePath = message;
                 }
             }
         }
@@ -341,13 +374,15 @@ namespace CardEditor.ViewModels
 
                 if (ok)
                 {
-                    if (!HasWritePermission(message))
+                    var (resultPremiRead, messagePremiRead) = HasReadFolderPermission(message);
+                    var (resultPremiWrite, messagePremiWrite) = HasWriteFolderPermission(message);
+                    if (!resultPremiRead || !resultPremiWrite)
                     {
                         var request = new MessageBoxRequest
                         {
                             Title = CMess.error.ToText(),
                             IconType = CMSG.MessageBoxIconType.Error,
-                            Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()),
+                            Message = $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText())} {messagePremiRead} {messagePremiWrite}",
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -370,13 +405,14 @@ namespace CardEditor.ViewModels
 
                 if (ok)
                 {
-                    if (!HasWritePermission(message))
+                    var (resultPremiWrite, messagePremiWrite) = HasWriteFolderPermission(message);
+                    if (!resultPremiWrite)
                     {
                         var request = new MessageBoxRequest
                         {
                             Title = CMess.error.ToText(),
                             IconType = CMSG.MessageBoxIconType.Error,
-                            Message = string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText()),
+                            Message = $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText())} {messagePremiWrite}",
                             Buttons = new[] { CMess.ok.ToText() },
                             ResponseSource = null
                         };
@@ -397,7 +433,24 @@ namespace CardEditor.ViewModels
                 bool ok = result.Item1;
                 string message = result.Item2;
 
-                if (ok) imageSetting.OriginalCardFolder = message;
+                if (ok)
+                {
+                    var (resultPremi, messagePremi) = HasReadFolderPermission(message);
+                    if (!resultPremi)
+                    {
+                        var request = new MessageBoxRequest
+                        {
+                            Title = CMess.error.ToText(),
+                            IconType = CMSG.MessageBoxIconType.Error,
+                            Message = $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText())} {messagePremi}",
+                            Buttons = new[] { CMess.ok.ToText() },
+                            ResponseSource = null
+                        };
+                        OnMessageBoxRequested(request);
+                        return;
+                    }
+                    imageSetting.OriginalCardFolder = message;
+                }
             }
         }
         private void BrowseDownloadPath()
@@ -410,7 +463,24 @@ namespace CardEditor.ViewModels
                 bool ok = result.Item1;
                 string message = result.Item2;
 
-                if (ok) imageSetting.DownloadedCardFolder = message;
+                if (ok)
+                {
+                    var (resultPremi, messagePremi) = HasWriteFolderPermission(message);
+                    if (!resultPremi)
+                    {
+                        var request = new MessageBoxRequest
+                        {
+                            Title = CMess.error.ToText(),
+                            IconType = CMSG.MessageBoxIconType.Error,
+                            Message = $"{string.Format(CMess.PlaceholderInva.ToText(), CMess.Permission.ToText())} {messagePremi}",
+                            Buttons = new[] { CMess.ok.ToText() },
+                            ResponseSource = null
+                        };
+                        OnMessageBoxRequested(request);
+                        return;
+                    }
+                    imageSetting.DownloadedCardFolder = message;
+                }
             }
         }
 
@@ -616,28 +686,30 @@ namespace CardEditor.ViewModels
                 return false;
             }
         }
-        public static bool HasReadPermission(string folderPath)
+        public static (bool, string) HasReadFolderPermission(string folderPath)
         {
             try
             {
-                if (!Directory.Exists(folderPath)) return false;
-                Directory.EnumerateFileSystemEntries(folderPath).FirstOrDefault();
-                return true;
+                if (!Directory.Exists(folderPath)) return (false, CMess.folderNotExit.ToText());
+
+                using var enumerator = Directory.EnumerateFiles(folderPath).GetEnumerator();
+                enumerator.MoveNext();
+                return (true, string.Empty);
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
-                return false;
+                return (false, ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                return (false, ex.Message);
             }
         }
-        public static bool HasWritePermission(string folderPath)
+        public static (bool, string) HasWriteFolderPermission(string folderPath)
         {
             try
             {
-                if (!Directory.Exists(folderPath)) return false;
+                if (!Directory.Exists(folderPath)) return (false, CMess.folderNotExit.ToText());
 
                 string testFile = Path.Combine(folderPath, Path.GetRandomFileName());
 
@@ -645,11 +717,33 @@ namespace CardEditor.ViewModels
                 {
                     fs.WriteByte(0);
                 }
-                return true;
+                return (true, string.Empty);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return (false, ex.Message);
+            }
+        }
+        public static (bool, string) HasReadFilePermission(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath)) return (false, CMess.fileNotExit.ToText());
+
+                using var stream = new FileStream(filePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete);
+
+                return (true, string.Empty);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return (false, ex.Message);
+            }
+            catch (IOException ex)
+            {
+                return (false, ex.Message);
             }
         }
 
@@ -681,6 +775,7 @@ namespace CardEditor.ViewModels
 
         public event Action CallConfigChanged;
         public event Func<string, (bool, string)> RequestOpenBrowseDialog;
+        public event Func<string, (bool, string)> RequestOpenImageFileDialog;
         public event EventHandler<MessageBoxRequest> MessageBoxRequested;
         //public event EventHandler<OpenFolderDialogEventArgs> OpenFolderDialogRequested;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -728,6 +823,7 @@ namespace CardEditor.ViewModels
 
             CallConfigChanged = null;
             RequestOpenBrowseDialog = null;
+            RequestOpenImageFileDialog = null;
             MessageBoxRequested = null;
             PropertyChanged = null;
         }

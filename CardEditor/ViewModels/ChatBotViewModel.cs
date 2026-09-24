@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CardEditor.Models;
-using CardEditor.Services;
+using CardEditor.Services.CreateFile;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 
@@ -135,7 +135,7 @@ namespace CardEditor.ViewModels
                         $"{CMess.filealreadyExit.ToText()} {CMess.QuestOverwrite.ToText()}", new[] { CMess.yes.ToText(), CMess.no.ToText() });
                     if (result != 0) return;
                 }
-                var (resultCreate, createdDbPath) = CreateFileServices.CreateChatDatabase(chatsFolder, "Chat.db");
+                var (resultCreate, createdDbPath) = CreateChatService.CreateChatDatabase(chatsFolder, "Chat.db");
                 if (resultCreate)
                 {
                     if (!string.IsNullOrEmpty(createdDbPath))

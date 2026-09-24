@@ -1,9 +1,37 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CardEditor.Helpers
 {
+    public static class JsonStringHelper
+    {
+        public static readonly JsonSerializerOptions SerializerCEDSOptions = CreateSerializerCedsOptions();
+        private static JsonSerializerOptions CreateSerializerCedsOptions()
+        {
+            return new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Converters = { new JsonStringEnumConverter() }
+            };
+        }
+
+        public static readonly JsonSerializerOptions SerializerBanListOptions = CreateSerializerBanlistOptions();
+        private static JsonSerializerOptions CreateSerializerBanlistOptions()
+        {
+            return new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Converters = { new JsonStringEnumConverter() }
+            };
+        }
+    }
+
     public class JoinStringHelper
     {
         public static string JoinWithSeparator(string separator, params string[] parts)

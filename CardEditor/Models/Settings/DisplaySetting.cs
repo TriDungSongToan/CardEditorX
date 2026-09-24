@@ -73,6 +73,46 @@ namespace CardEditor.Models.Settings
     }
     public class DisplaySetting : INotifyPropertyChanged
     {
+        private string _backgroundImagePath = string.Empty;
+        public string BackgroundImagePath
+        {
+            get => _backgroundImagePath;
+            set
+            {
+                if (_backgroundImagePath != value)
+                {
+                    _backgroundImagePath = value;
+                    OnPropertyChanged(nameof(BackgroundImagePath));
+                }
+            }
+        }
+        private bool _useBackgroundImage = false;
+        public bool UseBackgroundImage
+        {
+            get => _useBackgroundImage;
+            set
+            {
+                if (_useBackgroundImage != value)
+                {
+                    _useBackgroundImage = value;
+                    OnPropertyChanged(nameof(UseBackgroundImage));
+                }
+            }
+        }
+        private bool _useBackgroundImageCode = false;
+        public bool UseBackgroundImageCode
+        {
+            get => _useBackgroundImageCode;
+            set
+            {
+                if (_useBackgroundImageCode != value)
+                {
+                    _useBackgroundImageCode = value;
+                    OnPropertyChanged(nameof(UseBackgroundImageCode));
+                }
+            }
+        }
+
         private string _background = "#FF000000";
         public string Background
         {

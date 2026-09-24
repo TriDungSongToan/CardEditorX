@@ -2,18 +2,25 @@
 using System.Linq;
 using System.Data.SQLite;
 using System.Collections.Generic;
-using ClosedXML.Excel;
 using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Constants;
 
-namespace CardEditor.Services
+namespace CardEditor.Services.CheckData
 {
     public static class CheckDatabase
     {
-        public static CheckDatabaseResult CheckDatabaseValidity(SQLiteConnection connection)
+        /// <summary>
+        /// Check whether the database file structure meets the requirements.
+        /// Database will first be checked against OMEGA structure to ensure safety.
+        /// Afterwards, database will be checked using "YGO has flag" structure. (`flag` column (INTEGER) is placed in the `datas` table, after `category`.)
+        /// Finally, the database is checked against the "YGO no flag" structure.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        public static CheckCardListResult CheckDatabaseCardListValidity(SQLiteConnection connection)
         {
-            var result = new CheckDatabaseResult();
+            var result = new CheckCardListResult();
 
             // 1. Required tables
             foreach (var table in ConstantColumnDatabase.DatabaseTable)
@@ -31,7 +38,7 @@ namespace CardEditor.Services
             if (CheckTableStructure(connection, "datas", ConstantColumnDatabase.DataTableOMegaColumn))
             {
                 result.Result = true;
-                result.DBType = DatabaseType.OMEGA;
+                result.Format = CardListFormat.OMEGA;
                 result.HasFlag = true;
 
                 return result;
@@ -44,8 +51,8 @@ namespace CardEditor.Services
             }
 
             result.Result = true;
-            result.DBType = DatabaseType.YGO;
             result.HasFlag = CheckTableStructure(connection, "datas", ConstantColumnDatabase.DataTableFlagColumn);
+            result.Format = result.HasFlag ? CardListFormat.YGOHasFlag : CardListFormat.YGONoFlag;
 
             return result;
         }
@@ -56,6 +63,7 @@ namespace CardEditor.Services
             if (!TableExists(connection, tableName)) return false;
             return CheckTableStructure(connection, tableName, ConstantColumnDatabase.ListNameColumn);
         }
+
 
         // Hàm kiểm tra sự tồn tại của bảng (bỏ qua Indices, Views, Triggers)
         private static bool TableExists(SQLiteConnection connection, string tableName)
@@ -82,24 +90,5 @@ namespace CardEditor.Services
                 return expectedColumns.IsSubsetOf(actualColumns);
             }
         }
-
-        public static (bool Success, bool HasFlag) CheckExcelValidity(IXLWorksheet worksheet)
-        {
-            if (worksheet == null) return (false, false);
-            if (IsHeaderMatch(worksheet, ConstantColumnExcel.HeaderWithFlag)) return (true, true);
-            if (IsHeaderMatch(worksheet, ConstantColumnExcel.HeaderNoFlag)) return (true, false);
-            return (false, false);
-        }
-        private static bool IsHeaderMatch(IXLWorksheet worksheet, IReadOnlyList<string> expectedHeaders)
-        {
-            for (int col = 1; col <= expectedHeaders.Count; col++)
-            {
-                var header = worksheet.Cell(1, col).GetString();
-                if (!string.Equals(header, expectedHeaders[col - 1], StringComparison.OrdinalIgnoreCase))
-                    return false;
-            }
-            return true;
-        }
-
     }
 }

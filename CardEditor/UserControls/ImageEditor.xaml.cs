@@ -3,8 +3,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Runtime.CompilerServices;
-using System.Diagnostics;
 using System.ComponentModel;
+using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Services;
 using CardEditor.ViewModels;
@@ -19,8 +19,8 @@ namespace CardEditor.UserControls
     public partial class ImageEditor : UserControl, INotifyPropertyChanged
     {
         private IMainWindowService MainWindowService;
-        private string _mainWindowTitle = string.Empty;
-        public string MainWindowTitle
+        private AppTitle _mainWindowTitle = new();
+        public AppTitle MainWindowTitle
         {
             get => _mainWindowTitle;
             set
@@ -29,7 +29,10 @@ namespace CardEditor.UserControls
                 {
                     _mainWindowTitle = value;
                     OnPropertyChanged(nameof(MainWindowTitle));
-                    UpdateWindowTitle();
+
+                    if (MainWindowService == null) return;
+                    MainWindowService.UpdateWindowTitle(MainWindowTitle);
+                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
                 }
             }
         }
@@ -85,10 +88,7 @@ namespace CardEditor.UserControls
         }
         private void CoreWebView2_DocumentTitleChanged(object sender, object e)
         {
-            MainWindowTitle = string.IsNullOrWhiteSpace(WebViewControl.CoreWebView2.DocumentTitle)
-                ? CMess.ImageEdit.ToText()
-                : WebViewControl.CoreWebView2.DocumentTitle;
-            Debug.WriteLine($"Document Title Changed: {WebViewControl.CoreWebView2.DocumentTitle}");
+            RebuildWindowTitle();
         }
 
         public void LoadConfig()
@@ -108,18 +108,20 @@ namespace CardEditor.UserControls
             }
         }
 
-        private void UpdateWindowTitle()
+        private void RebuildWindowTitle()
         {
-            Debug.WriteLine($"ImageEditor.MainWindowTitle Changed: {MainWindowTitle}");
-            if (MainWindowService == null) Debug.WriteLine($"MainWindowService Null");
-            else Debug.WriteLine($"MainWindowService Not Null");
+            string displayTitle = string.IsNullOrWhiteSpace(WebViewControl.CoreWebView2.DocumentTitle)
+                ? CMess.ImageEdit.ToText()
+                : WebViewControl.CoreWebView2.DocumentTitle;
 
-            if (MainWindowService != null)
+            AppTitle WindowTitle = new AppTitle
             {
-                string TabHeader = TrimStringHelper.ShortenTitle(MainWindowTitle, maxLength: 30);
-                MainWindowService.UpdateWindowTitle(MainWindowTitle);
-                MainWindowService.UpdateTabItemHeader(TabHeader);
-            }
+                DisplayTitle = displayTitle,
+                DisplayTabItemHeader = TrimStringHelper.ShortenTitle(displayTitle, maxLength: 30),
+                PhysicalFullPath = string.Empty,
+            };
+
+            MainWindowTitle = WindowTitle;
         }
         private void UpdateWindowSavedFlag()
         {

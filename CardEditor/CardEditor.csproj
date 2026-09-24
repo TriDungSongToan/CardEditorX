@@ -464,6 +464,7 @@
     <Compile Include="Editor\Hover\SymbolResolver.cs" />
     <Compile Include="Enums\CardEnums.cs" />
     <Compile Include="Enums\DisplayEnums.cs" />
+    <Compile Include="Enums\FileEnums.cs" />
     <Compile Include="Enums\ImageEnums.cs" />
     <Compile Include="Enums\MDEnums.cs" />
     <Compile Include="Enums\WindowEnums.cs" />
@@ -484,6 +485,7 @@
     <Compile Include="Helpers\SearchPattern.cs" />
     <Compile Include="Helpers\SystemInfo.cs" />
     <Compile Include="Helpers\WindowHelper.cs" />
+    <Compile Include="Helpers\WriteDatabaseHelper.cs" />
     <Compile Include="ImageGene\TextLayoutEngine.cs" />
     <Compile Include="Interfaces\IFileInterface.cs" />
     <Compile Include="Interfaces\IMasterDuelAPIInterface.cs" />
@@ -502,13 +504,26 @@
     <Compile Include="Models\ScanAPI.cs" />
     <Compile Include="Models\SearchOptions.cs" />
     <Compile Include="Models\Settings\FilterSetting.cs" />
+    <Compile Include="Services\CheckData\CheckCeds.cs" />
+    <Compile Include="Services\CheckData\CheckDatabase.cs" />
+    <Compile Include="Services\CheckData\CheckExcel.cs" />
+    <Compile Include="Services\ClipboardData\CopyCardService.cs" />
+    <Compile Include="Services\ClipboardData\CopyTextService.cs" />
+    <Compile Include="Services\ClipboardData\PasteCardService.cs" />
     <Compile Include="Services\ContentMenuService.cs" />
-    <Compile Include="Services\ClipboardService.cs" />
+    <Compile Include="Services\CreateFile\CreateCedsService.cs" />
+    <Compile Include="Services\CreateFile\CreateChatService.cs" />
+    <Compile Include="Services\CreateFile\CreateCreditService.cs" />
+    <Compile Include="Services\CreateFile\CreateDatabaseService.cs" />
+    <Compile Include="Services\CreateFile\CreateExcelService.cs" />
+    <Compile Include="Services\CreateFile\CreateGenesysService.cs" />
+    <Compile Include="Services\CreateFile\CreateRareService.cs" />
+    <Compile Include="Services\CreateFile\CreateScriptService.cs" />
+    <Compile Include="Services\CreateFile\CreateSettingService.cs" />
     <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\GitHubRelease.cs" />
     <Compile Include="Services\ImageCacheService.cs" />
     <Compile Include="Services\IMainWindowService.cs" />
-    <Compile Include="Services\LoadDataServices.cs" />
     <Compile Include="Helpers\LanguageDetectorHelper.cs" />
     <Compile Include="Helpers\MatchesCardDataHelper.cs" />
     <Compile Include="Helpers\NameReplaceHelper.cs" />
@@ -529,9 +544,20 @@
     <Compile Include="Models\StampPositions.cs" />
     <Compile Include="Models\TextAlignments.cs" />
     <Compile Include="Services\BrowserURL.cs" />
+    <Compile Include="Services\LoadData\LoadArchiveService.cs" />
+    <Compile Include="Services\LoadData\LoadBanListService.cs" />
+    <Compile Include="Services\LoadData\LoadClipboardService.cs" />
+    <Compile Include="Services\LoadData\LoadDatabaseService.cs" />
+    <Compile Include="Services\LoadData\LoadExcelService.cs" />
+    <Compile Include="Services\LoadData\LoadCedsService.cs" />
+    <Compile Include="Services\LoadData\LoadRarityService.cs" />
+    <Compile Include="Services\LoadData\LoadScriptService.cs" />
     <Compile Include="Services\MasterDuelAPIService.cs" />
     <Compile Include="Services\RegulationService.cs" />
-    <Compile Include="Services\SaveDataServices.cs" />
+    <Compile Include="Services\SaveData\SaveArchiveService.cs" />
+    <Compile Include="Services\SaveData\SaveCedsService.cs" />
+    <Compile Include="Services\SaveData\SaveDatabaseService.cs" />
+    <Compile Include="Services\SaveData\SaveExcelService.cs" />
     <Compile Include="Services\ScriptData.cs" />
     <Compile Include="Services\ScriptSymbolProcessor.cs" />
     <Compile Include="UserControls\BanListEditor.xaml.cs">
@@ -639,7 +665,6 @@
     <Compile Include="Manager\BracketHighlightRenderer.cs" />
     <Compile Include="Theming\ColorDictionary.cs" />
     <Compile Include="Manager\ConvertString.cs" />
-    <Compile Include="Services\CreateFileServices.cs" />
     <Compile Include="ImageGene\ImageGenerator.cs" />
     <Compile Include="Converter\DirectionConverter.cs" />
     <Compile Include="Services\FontService.cs" />
@@ -822,7 +847,6 @@
     <Compile Include="Helpers\LuaCompletionData.cs" />
     <Compile Include="Helpers\LuaFoldingStrategy.cs" />
     <Compile Include="Helpers\SimpleFoldingStrategy.cs" />
-    <Compile Include="Services\CheckDatabase.cs" />
     <Compile Include="Models\TabContent.cs" />
     <Compile Include="UserControls\DataEditor.xaml.cs">
       <DependentUpon>DataEditor.xaml</DependentUpon>
@@ -980,6 +1004,8 @@
     <None Include="Docs\Structure\Images\SQLiteStructure.png" />
     <Resource Include="Docs\Images\Windows\CodeEditor\CodeEditor.png" />
     <Resource Include="Docs\Images\Windows\BanListEditor\BanListEditor.png" />
+    <Resource Include="Images\DataEditor\OMEGA.png" />
+    <Resource Include="Images\DataEditor\YGO.png" />
     <Content Include="Images\Message\Error.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1055,6 +1081,7 @@
     <None Include="Languages\Vietnamese.txt" />
     <EmbeddedResource Include="Localization\AppLanguage.txt" />
     <Resource Include="Logo.ico" />
+    <Resource Include="Languages\Japanese.txt" />
     <Content Include="Tools\lua-format.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1098,9 +1125,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\MainLogo.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Blank.png" />

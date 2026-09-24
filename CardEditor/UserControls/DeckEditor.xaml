@@ -18,7 +18,7 @@
              xmlns:main="clr-namespace:CardEditor"
              xmlns:Commands="clr-namespace:CardEditor.Commands"
              mc:Ignorable="d"
-             Margin="3,0,3,0"
+             Margin="0,0,0,0"
              TextElement.Foreground="{DynamicResource MaterialDesignBody}"
              TextElement.FontWeight="Medium"
              TextOptions.TextFormattingMode="Ideal"
@@ -28,11 +28,11 @@
              HorizontalContentAlignment="Stretch"
              VerticalContentAlignment="Stretch"
              FontFamily="{DynamicResource MaterialDesignFont}"
-             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+             Background="{Binding BackgroundUserControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
              Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded"
-             d:DesignHeight="800" d:DesignWidth="1200">
+             d:DesignHeight="800" d:DesignWidth="1220">
 
     <UserControl.Resources>
         <ResourceDictionary>
@@ -168,7 +168,8 @@
                         <RowDefinition Height="1.1*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" >
+                    <Grid Grid.Row="0"
+                          Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="3" />
@@ -176,7 +177,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Border x:Name="blimage" Grid.Column="0" BorderThickness="0.6"
-                                Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                Background="Transparent" 
                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                             <viewport:Viewport x:Name="ViewportImage" Grid.Row="0"
                                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -197,7 +198,7 @@
                             </viewport:Viewport>
                         </Border>
 
-                        <Grid Grid.Column="2" Margin="5,0,5,0" >
+                        <Grid Grid.Column="2" Margin="5,0,5,1" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="2*" />
                                 <RowDefinition Height="2" />
@@ -345,6 +346,7 @@
 
                             <Border Grid.Row="12" CornerRadius="4" BorderThickness="0.5" Padding="5,1,5,1" Margin="0"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                 <Grid>
                                     <Grid.RowDefinitions>
@@ -370,7 +372,8 @@
                             </Border>
 
                             <Border Grid.Row="14" HorizontalAlignment="Stretch" Height="auto"
-                                    Margin="2,0,2,0" Padding="0" CornerRadius="0" BorderThickness="0" Background="Transparent"
+                                    Margin="2,0,2,0" Padding="0" CornerRadius="0" BorderThickness="0"
+                                    Background="Transparent"
                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                 <Grid Margin="0" >
                                     <Grid.RowDefinitions>
@@ -565,6 +568,7 @@
                     </Grid>
 
                     <Border Grid.Row="2" Margin="0" Padding="0" BorderThickness="1" UseLayoutRounding="False"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                         <Grid Grid.Row="2" Margin="0" >
                             <Grid.RowDefinitions>
@@ -586,11 +590,13 @@
 
                             <Border x:Name="grCardName" Grid.Row="0" Margin="3" Padding="0,2,0,2"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="24"
-                                    BorderThickness="0.3" BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    BorderThickness="0.3"
+                                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                    Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     MouseEnter="grCardName_MouseEnter" MouseLeave="grCardName_MouseLeave" >
                                 <TextBox x:Name="txtCardName" Padding="0" Margin="0" BorderThickness="0" IsReadOnly="True"
                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         Background="Transparent"
                                          Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -613,7 +619,7 @@
                             <Grid Grid.Row="1" Margin="2,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                                 <TextBlock x:Name="tblCardType" Padding="0" Margin="0"
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -625,7 +631,7 @@
                             <StackPanel Grid.Row="2" Margin="2,0,0,0" x:Name="grCardLvRK" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Orientation="Horizontal" >
                                 <TextBlock x:Name="tblCardLvRk" Padding="0" Margin="0"
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  
@@ -634,7 +640,7 @@
                                 </TextBlock>
                                 <TextBlock x:Name="tblCardCardPenScale" Padding="0" Margin="10,0,0,0"
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  
@@ -648,7 +654,7 @@
                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Orientation="Horizontal" >
                                     <TextBlock Padding="0" Margin="0" 
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  
@@ -657,7 +663,7 @@
                                     </TextBlock>
                                     <TextBlock x:Name="tblCardSetCode" Padding="0" Margin="10,0,0,0"
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  
@@ -670,7 +676,7 @@
                             <Grid Grid.Row="4" x:Name="grCardRare" Margin="2,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                                 <TextBlock x:Name="tblCardRare" Padding="0" Margin="0"
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  
@@ -693,7 +699,7 @@
                                        Orientation="Horizontal" >
                                 <TextBlock x:Name="tblCardID" Padding="0" Margin="0,0,10,0" Visibility="{Binding DisplayID}"
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -701,7 +707,7 @@
                                            TextTrimming="None" ClipToBounds="False" />
                                 <TextBlock x:Name="tblCardGPoint" Visibility="{Binding DisplayGPoint}" Padding="0" Margin="0,0,0,0"
                                            TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                           Background="Transparent"
                                            Foreground="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                            FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"  
@@ -709,12 +715,16 @@
                                            TextTrimming="None" ClipToBounds="False" />
                             </WrapPanel>
 
-                            <Grid Grid.Row="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Border Grid.Row="6" Margin="0,2,0,0"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Background="Transparent" BorderThickness="0,0.5,0,0"
+                                    BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
+                                
                                 <TextBox x:Name="txtcarddesc" Grid.Row="0" Margin="0" Padding="3" BorderThickness="0"
                                          Panel.ZIndex="2" IsReadOnly="True"
                                          TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                         Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                         Background="Transparent"
                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -735,7 +745,7 @@
                                         </Style>
                                     </TextBox.Resources>
                                 </TextBox>
-                            </Grid>
+                            </Border>
                         </Grid>
                     </Border>
                 </Grid>
@@ -772,7 +782,7 @@
                                     <ComboBox IsEditable="False"
                                               BorderThickness="0.6" Padding="5,0,10,0"
                                               BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -796,21 +806,21 @@
                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                     <Grid>
                                         <sdl:MultiSelectComboBox x:Name="cmbcardtype" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding TypeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             LostFocus="cmbcardtype_LostFocus"
-                                                             SelectedItemsChanged="cmbcardtype_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding TypeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 LostFocus="cmbcardtype_LostFocus"
+                                                                 SelectedItemsChanged="cmbcardtype_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
@@ -825,7 +835,7 @@
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding TypeName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
@@ -856,7 +866,7 @@
                                         <ComboBox x:Name="cmbDeck" Grid.Column="0" IsEditable="False"
                                                   BorderThickness="0.6" Padding="5,0,10,0"
                                                   BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                  Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                  Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -877,8 +887,8 @@
 
                                         <Button x:Name="btnOpenPopUpReName" Grid.Column="1" Margin="1,0,0,0" Padding="1"
                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                                Background="Transparent" BorderThickness="0.7"
+                                                HorizontalContentAlignment="Center" VerticalContentAlignment="Center" BorderThickness="0.7"
+                                                Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                 BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                 Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}" Height="auto"
                                                 Click="btnOpenPopUpReName_Click" >
@@ -1038,7 +1048,7 @@
                                             <sdl:MultiSelectComboBox x:Name="cmbcardattribute" Margin="0" Padding="0"
                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                                  HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1085,7 +1095,7 @@
                                             <sdl:MultiSelectComboBox x:Name="cmbcardrace" Margin="0" Padding="0"
                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                                  HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
                                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
                                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
                                                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
@@ -1133,7 +1143,7 @@
                                             <sdl:MultiSelectComboBox x:Name="cmbcardchar" Margin="0" Padding="0"
                                                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                                                  HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                                 Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                  Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                                  FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1186,7 +1196,7 @@
                                     <ComboBox x:Name="cmbLimit" Grid.Column="0" IsEditable="False"
                                               BorderThickness="0.6" Margin="0" Padding="5,0,10,0"
                                               BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                              Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                              Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1215,36 +1225,36 @@
                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                     <Grid>
                                         <sdl:MultiSelectComboBox x:Name="cmbrule" Grid.Column="0" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding RuleItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             LostFocus="cmbrule_LostFocus"
-                                                             SelectedItemsChanged="cmbrule_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding RuleItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 LostFocus="cmbrule_LostFocus"
+                                                                 SelectedItemsChanged="cmbrule_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding RuleName}" Margin="5"
-                                                               Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                                   Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding RuleName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
@@ -1262,21 +1272,21 @@
                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                     <Grid>
                                         <sdl:MultiSelectComboBox x:Name="cmbsetcode" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding SetCodeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             LostFocus="cmbsetcode_LostFocus"
-                                                             SelectedItemsChanged="cmbsetcode_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding SetCodeItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 LostFocus="cmbsetcode_LostFocus"
+                                                                 SelectedItemsChanged="cmbsetcode_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
@@ -1296,11 +1306,11 @@
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="lbrSetcode" Grid.Column="0" Opacity="0.5" Margin="0,0,27,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize cardlabelSetCode}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize cardlabelSetCode}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -1317,45 +1327,45 @@
                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                     <Grid>
                                         <sdl:MultiSelectComboBox x:Name="cmbflag" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding FlagItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             LostFocus="cmbflag_LostFocus"
-                                                             SelectedItemsChanged="cmbflag_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding FlagItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 LostFocus="cmbflag_LostFocus"
+                                                                 SelectedItemsChanged="cmbflag_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding FlagName}" Margin="5"
-                                                               Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                                   Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding FlagName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="lbeFlag" Grid.Column="0" Opacity="0.5" Margin="0,0,27,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize cardLabelFlag}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize cardLabelFlag}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
 
@@ -1364,45 +1374,45 @@
                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                     <Grid>
                                         <sdl:MultiSelectComboBox x:Name="cmbrarity" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding RareItemsForUI, Source={x:Static ViewModels:RareRawDataViewModel.Instance}}"
-                                                             LostFocus="cmbrarity_LostFocus"
-                                                             SelectedItemsChanged="cmbrarity_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding RareItemsForUI, Source={x:Static ViewModels:RareRawDataViewModel.Instance}}"
+                                                                 LostFocus="cmbrarity_LostFocus"
+                                                                 SelectedItemsChanged="cmbrarity_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding Name}" Margin="5"
-                                                               Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                                   Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding Name}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="lbeRarity" Grid.Column="0" Opacity="0.5" Margin="0,0,27,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize Rarity}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize Rarity}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
 
@@ -1411,45 +1421,45 @@
                                         BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
                                     <Grid>
                                         <sdl:MultiSelectComboBox x:Name="cmbcategory" Margin="0" Padding="0"
-                                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                             HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
-                                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                             IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
-                                                             ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
-                                                             EnableAutoComplete="True" EnableBatchSelection="True"
-                                                             EnableFiltering="True" EnableGrouping="True"
-                                                             ClearSelectionOnFilterChanged="True"
-                                                             Style="{StaticResource MultiSelectComboBox.Custom.Style}"
-                                                             ItemsSource="{Binding CategoryItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
-                                                             LostFocus="cmbcategory_LostFocus"
-                                                             SelectedItemsChanged="cmbcategory_SelectedItemsChanged" >
+                                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                 HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                                                 Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                 IsEnabled="True" MaxDropDownHeight="300" IsEditable="True"
+                                                                 ClearFilterOnDropdownClosing="True" SelectionMode="Multiple"
+                                                                 EnableAutoComplete="True" EnableBatchSelection="True"
+                                                                 EnableFiltering="True" EnableGrouping="True"
+                                                                 ClearSelectionOnFilterChanged="True"
+                                                                 Style="{StaticResource MultiSelectComboBox.Custom.Style}"
+                                                                 ItemsSource="{Binding CategoryItems, Source={x:Static ViewModels:CardDataViewModel.Instance}}"
+                                                                 LostFocus="cmbcategory_LostFocus"
+                                                                 SelectedItemsChanged="cmbcategory_SelectedItemsChanged" >
                                             <sdl:MultiSelectComboBox.DropdownItemTemplate>
                                                 <DataTemplate>
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding CategoryName}" Margin="5"
-                                                               Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
-                                                               FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                                   Background="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontFamily="{Binding FontFamily, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}"
+                                                                   FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.DropdownItemTemplate>
                                             <sdl:MultiSelectComboBox.SelectedItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding CategoryName}" Margin="5,0,5,0"
-                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
+                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type sdl:MultiSelectComboBox}}}" />
                                                 </DataTemplate>
                                             </sdl:MultiSelectComboBox.SelectedItemTemplate>
                                         </sdl:MultiSelectComboBox>
                                         <TextBlock x:Name="lbeCategory" Grid.Column="0" Opacity="0.5" Margin="0,0,27,0"
-                                               HorizontalAlignment="Right" VerticalAlignment="Center"
-                                               Text="{Lag:Localize cardLabelCategory}" IsHitTestVisible="False"
-                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                               FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                   Text="{Lag:Localize cardLabelCategory}" IsHitTestVisible="False"
+                                                   Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                   FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -1487,7 +1497,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"    
@@ -1507,7 +1517,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" 
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"    
@@ -1531,7 +1541,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1555,7 +1565,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1592,7 +1602,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1610,7 +1620,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1629,7 +1639,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1649,7 +1659,7 @@
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.6"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1664,13 +1674,13 @@
                                     
                                     <Button x:Name="btnOpenLinkArrows" Grid.Column="8" Margin="0" Padding="2"
                                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
-                                            Background="Transparent" BorderThickness="0.7"
+                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderThickness="0.7"
                                             BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                             Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}" Height="auto"
                                             Click="btnOpenLinkArrows_Click" >
                                         <Viewbox>
-                                            <materialDesign:PackIcon Kind="ArrowAll" Grid.Column="0" Margin="0"
+                                            <materialDesign:PackIcon Kind="ArrowAll" Grid.Column="0" Margin="0" Background="Transparent"
                                                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                                                 <materialDesign:PackIcon.Style>
                                                     <Style TargetType="materialDesign:PackIcon">
@@ -1829,7 +1839,7 @@
                                              Margin="0" Padding="5,3,0,3" BorderThickness="0.6" Panel.ZIndex="2"
                                              TextAlignment="{Binding TextAlignmentC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1844,6 +1854,8 @@
                                              RenderOptions.ClearTypeHint="Enabled" 
                                              TextOptions.TextFormattingMode="Display"
                                              TextOptions.TextRenderingMode="ClearType"
+                                             materialDesign:TextFieldAssist.TextFieldCornerRadius="3"
+                                             materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                              materialDesign:ThemeAssist.Theme="Dark" />
 
                                     <Button x:Name="btnClearSearch" Width="18" Height="18" Margin="0" Padding="0" Panel.ZIndex="2"
@@ -1908,14 +1920,14 @@
 
                         <Grid x:Name="grDeckZone" Grid.Column="0" Margin="0" >
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="auto"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="auto"/>
                                 <RowDefinition Height="auto"/>
                             </Grid.RowDefinitions>
 
-                            <Border x:Name="blMainDeck" Grid.Row="1" Margin="0,0,0,2" BorderBrush="LimeGreen"  
-                                    AllowDrop="True" CornerRadius="5,5,2,2" BorderThickness="1" >
+                            <Border x:Name="blMainDeck" Grid.Row="0" Margin="0,0,0,1"
+                                    AllowDrop="True" CornerRadius="5,5,2,2" BorderThickness="1" BorderBrush="LimeGreen" 
+                                    Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -2155,8 +2167,9 @@
                                 </Grid>
                             </Border>
 
-                            <Border x:Name="blExtraDeck" Grid.Row="2" Margin="0" BorderBrush="Cyan"
-                                    AllowDrop="True" CornerRadius="5,5,2,2" BorderThickness="1" >
+                            <Border x:Name="blExtraDeck" Grid.Row="1" Margin="0,0,0,1"
+                                    AllowDrop="True" CornerRadius="5,5,2,2" BorderThickness="1" BorderBrush="Cyan"
+                                    Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -2405,8 +2418,9 @@
                                 </Grid>
                             </Border>
 
-                            <Border x:Name="blSideDeck" Grid.Row="3" Margin="0" BorderBrush="Yellow"
-                                    AllowDrop="True" CornerRadius="5,5,2,2" BorderThickness="1" >
+                            <Border x:Name="blSideDeck" Grid.Row="2" Margin="0,0,0,0"
+                                    AllowDrop="True" CornerRadius="5,5,2,2" BorderThickness="1" BorderBrush="Yellow"
+                                    Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -2640,10 +2654,11 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <Border Grid.Row="0" BorderThickness="0.5"
-                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                            <Border Grid.Row="0" BorderThickness="0.5" CornerRadius="3"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" >
-                                <Grid Margin="0,2,0,2" >
+                                <Grid Margin="5,2,0,2" >
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="auto" />
@@ -2692,7 +2707,7 @@
                             </Border>
 
                             <ListView x:Name="CardListView" Grid.Row="1" SelectionMode="Single" Focusable="False"
-                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                       ItemsSource="{Binding FilteredCards, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                       IsSynchronizedWithCurrentItem="False"

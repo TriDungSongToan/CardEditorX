@@ -21,6 +21,9 @@ namespace CardEditor.ViewModels
         public static UIConfigViewModel Instance => _instance.Value;
 
         private Brush _background = Brushes.White;
+        private Brush _backgroundControl = new SolidColorBrush(Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF));
+        private Brush _backgroundControlCode = new SolidColorBrush(Color.FromArgb(0xB3, 0xFF, 0xFF, 0xFF));
+        private Brush _backgroundUserControl = new SolidColorBrush(Color.FromArgb(0x00, 0xFF, 0xFF, 0xFF));
         private Brush _foreground = Brushes.Black;
         private Brush _themeColor = Brushes.Purple;
         private IHighlightingDefinition _syntaxHighlighting;
@@ -45,6 +48,42 @@ namespace CardEditor.ViewModels
                 {
                     _background = value;
                     OnPropertyChanged(nameof(Background));
+                }
+            }
+        }
+        public Brush BackgroundControl
+        {
+            get => _backgroundControl;
+            set
+            {
+                if (_backgroundControl != value)
+                {
+                    _backgroundControl = value;
+                    OnPropertyChanged(nameof(BackgroundControl));
+                }
+            }
+        }
+        public Brush BackgroundControlCode
+        {
+            get => _backgroundControlCode;
+            set
+            {
+                if (_backgroundControlCode != value)
+                {
+                    _backgroundControlCode = value;
+                    OnPropertyChanged(nameof(BackgroundControlCode));
+                }
+            }
+        }
+        public Brush BackgroundUserControl
+        {
+            get => _backgroundUserControl;
+            set
+            {
+                if (_backgroundUserControl != value)
+                {
+                    _backgroundUserControl = value;
+                    OnPropertyChanged(nameof(BackgroundUserControl));
                 }
             }
         }
@@ -201,6 +240,27 @@ namespace CardEditor.ViewModels
                 var appResources = Application.Current.Resources;
                 Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(ConfigViewModel.Instance.displaySetting.Background));
                 Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(ConfigViewModel.Instance.displaySetting.Foreground));
+                if (ConfigViewModel.Instance.displaySetting.UseBackgroundImage && Background is SolidColorBrush brushBG)
+                {
+                    var colorBG = brushBG.Color;
+                    BackgroundControl = new SolidColorBrush(Color.FromArgb(0x80, colorBG.R, colorBG.G, colorBG.B)); //A 50%
+                    BackgroundUserControl = new SolidColorBrush(Color.FromArgb(0x00, colorBG.R, colorBG.G, colorBG.B)); //A 50%
+                }
+                else
+                {
+                    BackgroundControl = Background;
+                    BackgroundUserControl = Background;
+                }
+                if (ConfigViewModel.Instance.displaySetting.UseBackgroundImageCode && Background is SolidColorBrush brushBGCode)
+                {
+                    var colorBGCode = brushBGCode.Color;
+                    BackgroundControlCode = new SolidColorBrush(Color.FromArgb(0xB3, colorBGCode.R, colorBGCode.G, colorBGCode.B)); //A 70%
+                }
+                else BackgroundControlCode = Background;
+
+                OnPropertyChanged(nameof(BackgroundControl));
+                OnPropertyChanged(nameof(BackgroundControlCode));
+
                 FontFamily = new FontFamily(ConfigViewModel.Instance.displaySetting.FontFamily);
                 FontSize = ConfigViewModel.Instance.displaySetting.FontSize.Value;
                 FlowDirectionC = ConfigViewModel.Instance.displaySetting.FlowDirectionC == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
@@ -256,7 +316,7 @@ namespace CardEditor.ViewModels
 
                 MiniMapBackgroundColor = BrushToColor(Background, _miniMapBackgroundColor);
                 MiniMapForegroundColor = BrushToColor(Foreground, _miniMapForegroundColor);
-                MiniMapSliderColor = BrushToColor(ThemeColor, _miniMapSliderColor);
+                MiniMapSliderColor = BrushToColorSlider(ThemeColor, _miniMapSliderColor);
 
                 var (result, highlightFilePath, message) = HighLightService.HighLightFilePath();
                 if (!result) CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning, message, new[] { CMess.ok.ToText() });
@@ -271,6 +331,14 @@ namespace CardEditor.ViewModels
         private static Color BrushToColor(Brush brush, Color fallback)
         {
             return brush is SolidColorBrush solid ? solid.Color : fallback;
+        }
+        private static Color BrushToColorSlider(Brush brush, Color fallback)
+        {
+            Color color = brush is SolidColorBrush solid  ? solid.Color  : fallback;
+
+            byte alpha = (byte)(255 * 0.5);
+
+            return Color.FromArgb(alpha, color.R, color.G, color.B);
         }
         public void Dispose()
         {

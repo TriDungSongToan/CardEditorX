@@ -29,8 +29,6 @@
 0x45	Data
 0x46	Export
 0x47	Export as zip
-0x48	Export CEDS
-0x49	Export Excel
 
 0x55	Manager
 
@@ -92,6 +90,9 @@
 0x12f	Don’t ask again
 0x130	Copy Info
 
+0x135	Convert Format
+0x136	Open Compatibility Tab
+
 #=======Config=======#
 0x201	User Settings
 0x202	User Name
@@ -101,22 +102,25 @@
 0x206	Browser Path
 
 0x211	Display Settings
-0x212	Background
-0x213	Foreground
-0x214	Theme
-0x215	FontFamily
-0x216	FontSize
-0x217	Highlight
-0x218	Flow Direction
-0x219	Left To Right
-0x21a	Right To Left
-0x21b	Text Alignment
-0x21c	Left
-0x21d	Right
-0x21e	Justify
-0x21f	Center
-0x220	Word Wrap
-0x221	Code Folding
+0x212	Background Image
+0x213	Use Image as Background App
+0x214	Use Image as CodeEditor BG
+0x215	Background
+0x216	Foreground
+0x217	Theme
+0x218	FontFamily
+0x219	FontSize
+0x21a	Highlight
+0x21b	Flow Direction
+0x21c	Left To Right
+0x21d	Right To Left
+0x21e	Text Alignment
+0x21f	Left
+0x220	Right
+0x221	Justify
+0x222	Center
+0x223	Word Wrap
+0x224	Code Folding
 
 0x22a	Sort
 0x22b	Sort Settings
@@ -185,7 +189,7 @@
 0x279	Allow New
 
 #=======Filter=======#
-0x301	Filter Card
+0x301	Filter
 
 0x302	Selected Cards
 0x303	Found Cards
@@ -309,16 +313,17 @@
 0x3a4	Normal Card
 
 #=======Tooltip=======#
-0x501	Create a new Archive.
-0x502	Save all cards in the list to the original Card Database file.
-0x503	Save all cards in the list to the original CardEditorSet file.
-0x504	Save all cards in the list to the original Excel file.
-0x505	Save all cards to a new Card Database file.
+0x502	Save all cards in the current list to the original Card Database file.
+0x503	Save all cards in the current list to the original CardEditorSet file.
+0x504	Save all cards in the current list to the original Excel file.
+0x505	Save all cards in the current list to a new Card Database file.
+0x506	Save all cards in the current list to a new CardEditorSet file.
+0x507	Save all cards in the current list to a new Excel file.
 
 0x50a	Open the Script Support Window.
 
-0x511	Copy cards to the clipboard.
-0x512	Paste cards from the clipboard into the list.
+0x511	Copy cards from the current list to the clipboard.
+0x512	Paste cards from the clipboard into the current list.
 
 0x51a	Filter and display cards on the list using a Card Database file.
 0x51b	Filter and display cards on the list that APPEAR in the selected Card Database.
@@ -334,12 +339,6 @@
 
 0x525	Export Database (and all Images, Scripts of each card in Database) as ZIP file.
 
-0x52a	Export cards as CardEditorSet file.
-0x52b	Import cards from the CardEditorSet file into the list.
-
-0x52c	Export cards as Excel file.
-0x52d	Import cards from the Excel file into the list.
-
 0x531	Analyze code for formatting issues and fix any detected inconsistencies.
 0x532	Export Windows Registry Key file.
 0x533	Source code on Github.
@@ -354,6 +353,7 @@
 0x541	Open Card in YGO Resources Website
 
 0x545	Select File to Open:
+0x546	Select {0} File Format
 
 0x54a	The card must satisfy all filter conditions.
 0x54b	The card only needs to satisfy any one of the filter conditions.
@@ -365,11 +365,15 @@
 0x553	Import cards from the imported database file. Existing cards will only replace the selected fields, skip them if no fields are selected.
 
 #=======Object=======#
-0x5a1	{0} File
-0x5a2	Save {0}
-0x5a3	Select {0}
+0x591	{0} File
+0x592	Save {0}
+0x593	Save {0} {1}
+0x594	Open {0}
+0x595	Open {0} {1}
+0x596	Select {0}
 
-0x5a4	Card Archive
+0x5a3	Card Archive
+0x5a4	Card List
 0x5a5	Card Database
 0x5a6	Card Rare Database
 0x5a7	List Rare Database
@@ -402,7 +406,7 @@
 
 #=======Card Element=======#
 0x5d1	ID
-0x5d2	Identification
+0x5d2	Card ID
 0x5d3	Alias
 0x5d4	Card Name
 0x5d5	Card Desc
@@ -415,6 +419,7 @@
 0x5dc	Archetype
 0x5dd	Category
 0x5de	Flag
+0x5df	Genre
 
 0x5e1	Level
 0x5e2	Minus Level
@@ -438,8 +443,9 @@
 --0x2af	Right click to sort by default.
 
 #=======Script Support=======#
-0x5f8	Card Text
-0x5f9	Card Data
+0x5f7	Card Text
+0x5f8	Card Data
+0x5f9	Card Image
 0x5fa	Card Information
 
 0x5fb	Search Card
@@ -562,10 +568,14 @@
 0x6e6	Original Data
 0x6e7	Unsaved Data
 
-0x701	You are closing {0} tabs.
-0x702	There is unsaved data.
-0x703	There is one snapshot that hasn't been rolled back from the previous run.
-0x704	There are {0} duplicate IDs in the Card List.
+0x6ea	Automatically convert the format (some data may be lost)
+0x6eb	Open a new tab compatible with this format
+
+0x700	You are closing {0} tabs.
+0x701	There is unsaved data.
+0x702	There is one snapshot that hasn't been rolled back from the previous run.
+0x703	There are {0} duplicate IDs in the Card List.
+0x704	Do you want to include a "flag" column?
 0x705	Do you want to continue?
 0x706	Do you want to open it?
 0x707	Do you want to overwrite it?
@@ -578,11 +588,12 @@
 0x70d	Are you sure you want to clear the recently opened {0} history?
 0x70e	Are you sure you want to save a blank file?
 0x70f	Are you sure you want to unregister the CardEditorX file types from the Windows Registry?
-0x710	Update Available, dowload it now?
-0x711	Download Card Resource Pack now?
-0x712	How would you like to handle the selected data?
-0x713	No updates found.
-0x714	Update Complete!
+0x710	Data you are about to {0} is in the {1} format, which is not compatible with the current Tab. How would you like to proceed?
+0x711	Update Available, dowload it now?
+0x712	Download Card Resource Pack now?
+0x713	How would you like to handle the selected data?
+0x714	No updates found.
+0x715	Update Complete!
 
 0x725	Unable to delete existing file after multiple attempts.
 0x726	git.exe path not found, make sure Git is installed and using correct path in application configuration.

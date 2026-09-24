@@ -8,6 +8,7 @@ using SkiaSharp;
 using CardEditor.Models;
 using CardEditor.Models.Settings;
 using CardEditor.Services;
+using CardEditor.Services.CreateFile;
 using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor.ViewModels
@@ -222,7 +223,7 @@ namespace CardEditor.ViewModels
         {
             if (string.IsNullOrEmpty(SettingFilePath) || !System.IO.File.Exists(SettingFilePath))
             {
-                var (resultCreate, messageCreate) = CreateFileServices.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
+                var (resultCreate, messageCreate) = CreateSettingService.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
                 if (!resultCreate) return (false, messageCreate);
             }
 
@@ -266,7 +267,7 @@ namespace CardEditor.ViewModels
         {
             if (string.IsNullOrEmpty(SettingFilePath) || !System.IO.File.Exists(SettingFilePath))
             {
-                var (resultCreate, messageCreate) = CreateFileServices.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
+                var (resultCreate, messageCreate) = CreateSettingService.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
                 if (!resultCreate) return (false, messageCreate);
             }
 
@@ -307,7 +308,7 @@ namespace CardEditor.ViewModels
         {
             if (string.IsNullOrEmpty(SettingFilePath) || !System.IO.File.Exists(SettingFilePath))
             {
-                var (resultCreate, messageCreate) = CreateFileServices.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
+                var (resultCreate, messageCreate) = CreateSettingService.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
                 if (!resultCreate) return (false, messageCreate);
             }
 
@@ -359,7 +360,7 @@ namespace CardEditor.ViewModels
         {
             if (string.IsNullOrEmpty(SettingFilePath) || !System.IO.File.Exists(SettingFilePath))
             {
-                var (resultCreate, messageCreate) = CreateFileServices.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
+                var (resultCreate, messageCreate) = CreateSettingService.CreateSetting(CardAppContext.Instance.ConfigFolderPath, "AppSetting.db");
                 if (!resultCreate) return (false, messageCreate);
             }
 
@@ -373,7 +374,7 @@ namespace CardEditor.ViewModels
                 using (var deleteCmd = new SQLiteCommand("DELETE FROM Settings", connection))
                     deleteCmd.ExecuteNonQuery();
 
-                CreateFileServices.CreateDefaultSettings(connection);
+                CreateSettingService.CreateDefaultSettings(connection);
                 transaction.Commit();
                 return (true, string.Empty);
             }

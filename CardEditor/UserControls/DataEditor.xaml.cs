@@ -5,15 +5,15 @@ using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Threading;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -24,10 +24,14 @@ using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Manager;
-using CardEditor.Constants;
 using CardEditor.Commands;
 using CardEditor.Services;
+using CardEditor.Services.LoadData;
+using CardEditor.Services.SaveData;
+using CardEditor.Services.CreateFile;
+using CardEditor.Services.ClipboardData;
 using CardEditor.ImageGene;
+using CardEditor.Constants;
 using CardEditor.ViewModels;
 using CardEditor.Collections;
 using CardEditor.Localization;
@@ -42,8 +46,8 @@ namespace CardEditor.UserControls
     {
         #region Variable
         private IMainWindowService MainWindowService;
-        private string _mainWindowTitle = string.Empty;
-        public string MainWindowTitle
+        private AppTitle _mainWindowTitle = new();
+        public AppTitle MainWindowTitle
         {
             get => _mainWindowTitle;
             set
@@ -52,27 +56,24 @@ namespace CardEditor.UserControls
                 {
                     _mainWindowTitle = value;
                     OnPropertyChanged(nameof(MainWindowTitle));
+
                     if (MainWindowService == null) return;
                     MainWindowService.UpdateWindowTitle(MainWindowTitle);
-                    string header = string.IsNullOrWhiteSpace(archiveFilePath)
-                        ? System.IO.Path.GetFileName(MainWindowTitle)
-                        : archiveEntryName;
-                    MainWindowService.UpdateTabItemHeader(header);
+                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
                 }
             }
         }
+
         private void RebuildWindowTitle()
         {
-            string display = string.Empty;
             if (string.IsNullOrWhiteSpace(archiveFilePath))
             {
-                if (!string.IsNullOrEmpty(cdbFilePath)) display = cdbFilePath;
-                else if (!string.IsNullOrEmpty(xlsxFilePath)) display = xlsxFilePath;
-                else if (!string.IsNullOrEmpty(cedsFilePath)) display = cedsFilePath;
+                if (!string.IsNullOrEmpty(cdbFilePath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(cdbFilePath);
+                else if (!string.IsNullOrEmpty(xlsxFilePath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(xlsxFilePath);
+                else if (!string.IsNullOrEmpty(cedsFilePath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(cedsFilePath);
+                else MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(string.Empty);
             }
-            else display = Path.Combine(archiveFilePath, archiveEntryName.Replace('/', Path.DirectorySeparatorChar));
-
-            MainWindowTitle = display;
+            else MainWindowTitle = FileLocationService.BuildTitleZipEntry(archiveFilePath, archiveEntryName);
         }
 
         private bool _isSaved { get; set; } = true;
@@ -102,9 +103,48 @@ namespace CardEditor.UserControls
         public string archiveFilePath;
         public string archiveEntryName;
 
-        public bool _cdbFileHasFlag = false;
-        public bool _cedsFileHasFlag = false;
-        public bool _xlsxFileHasFlag = false;
+        private bool _cdbFileHasFlag = false;
+        public bool CdbFileHasFlag
+        {
+            get => _cdbFileHasFlag;
+            set
+            {
+                if (_cdbFileHasFlag != value)
+                {
+                    _cdbFileHasFlag = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasFlag));
+                }
+            }
+        }
+        private bool _xlsxFileHasFlag = false;
+        public bool XlsxFileHasFlag
+        {
+            get => _xlsxFileHasFlag;
+            set
+            {
+                if (_xlsxFileHasFlag != value)
+                {
+                    _xlsxFileHasFlag = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasFlag));
+                }
+            }
+        }
+        private bool _cedsFileHasFlag = false;
+        public bool CedsFileHasFlag
+        {
+            get => _cedsFileHasFlag;
+            set
+            {
+                if (_cedsFileHasFlag != value)
+                {
+                    _cedsFileHasFlag = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasFlag));
+                }
+            }
+        }
 
         private SnackbarMessageQueue MessageNotifi = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
         private SnackbarMessageQueue MessageDelete = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
@@ -170,6 +210,10 @@ namespace CardEditor.UserControls
                 }
             }
         }
+        public bool HasFlag =>
+            CdbFileHasFlag ||
+            CedsFileHasFlag ||
+            XlsxFileHasFlag;
 
         private PendulumLanguageRule _selectedPenLangRule;
         public PendulumLanguageRule SelectedPenLangRule
@@ -463,9 +507,9 @@ namespace CardEditor.UserControls
                 Mouse.OverrideCursor = Cursors.Wait;
                 LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
-                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
-                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
-                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
                     _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
 
@@ -524,9 +568,9 @@ namespace CardEditor.UserControls
                 Mouse.OverrideCursor = Cursors.Wait;
                 LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
-                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
-                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
-                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
                     _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
 
@@ -1473,7 +1517,7 @@ namespace CardEditor.UserControls
             }
         }
 
-        #region Visibility
+        #region Visibility/Enabled
         private void cmbrule_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
         {
             if(cmbrule.SelectedItems != null && cmbrule.SelectedItems.Count > 0)
@@ -1552,6 +1596,10 @@ namespace CardEditor.UserControls
                 tbflag.Visibility = Visibility.Collapsed;
             else tbflag.Visibility = Visibility.Visible;
         }
+        private void FlagBorder_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            popUpFlag.IsOpen = true;
+        }
         private void cmbrarity_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
         {
             if (cmbrarity.SelectedItems != null && cmbrarity.SelectedItems.Count > 0)
@@ -1581,37 +1629,38 @@ namespace CardEditor.UserControls
         #region Save
         public async Task<bool> Save()
         {
-            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+            WriteResult? saveResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                saveResult = await SaveDatabaseServices.SaveCardList(Cards.ToList(), cdbFilePath);
+                saveResult = await SaveDatabaseYGOService.SaveCardList(Cards.ToList(), cdbFilePath, CdbFileHasFlag);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                saveResult = await SaveExcelService.SaveCardList(Cards.ToList(), xlsxFilePath);
+                saveResult = await SaveExcelYGOService.SaveCardList(Cards.ToList(), xlsxFilePath, XlsxFileHasFlag);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                saveResult = await SaveCedsService.SaveCardList(Cards.ToList(), cedsFilePath);
+                saveResult = await SaveCedsYGOService.SaveCardList(Cards.ToList(), cedsFilePath, CedsFileHasFlag);
             else
             {
                 string dbFilePath = FileDiaLogHelper.SaveDataBase();
                 if (string.IsNullOrEmpty(dbFilePath) || !System.IO.File.Exists(dbFilePath)) return false;
                 string folderPath = System.IO.Path.GetDirectoryName(dbFilePath);
                 string cdbFileName = System.IO.Path.GetFileName(dbFilePath);
-                var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateDatabase(folderPath, cdbFileName));
-                if (!resultCreate)
+
+                CreateCardListResult resultCreate = await Task.Run(() => CreateDatabaseService.CreateDatabaseYGO(folderPath, cdbFileName));
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return false;
                 }
-                cdbFilePath = messageCreate;
-                saveResult = await SaveDatabaseServices.SaveCardList(Cards.ToList(), cdbFilePath);
+                cdbFilePath = resultCreate.FilePath;
+                saveResult = await SaveDatabaseYGOService.SaveCardList(Cards.ToList(), cdbFilePath);
             }
 
             if (saveResult == null) return false;
-            if (!saveResult.Value.resultSaveDB)
+            if (!saveResult.Result)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText())} {saveResult.Value.messageSaveDB}",
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText())} {saveResult.Messenger}",
                     new[] { CMess.ok.ToText() });
                 return false;
             }
@@ -1645,7 +1694,7 @@ namespace CardEditor.UserControls
             if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
                 return (false, CMess.fileNotExit.ToText());
 
-            return await LoadDataServices.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
+            return await LoadArchiveService.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
         }
         #endregion
 
@@ -1674,15 +1723,15 @@ namespace CardEditor.UserControls
 
                 _cdbFileHasFlag = hasFlag;
 
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateDatabaseCommand(dbFilePath, hasFlag);
-                if (!resultCreate)
+                CreateCardListResult resultCreate = await CreateDatabaseService.CreateDatabaseYGOCommand(dbFilePath, hasFlag);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
-                cdbFilePath = messageCreate;
+                cdbFilePath = resultCreate.FilePath;
             }
 
             var (resultSave, messageSave) = await SaveAsCardDBFileAllData(cdbFilePath);
@@ -1762,9 +1811,9 @@ namespace CardEditor.UserControls
             if (cardList == null) return (false, CMess.noCardExport.ToText());
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
 
-            var (resultSave, messageSave) = await Task.Run(() => SaveDatabaseServices.SaveCardList(cardList, filePath, _cdbFileHasFlag));
-            if (resultSave) return await SaveToArchive();
-            else return (false, messageSave);
+            WriteResult resultSave = await Task.Run(() => SaveDatabaseYGOService.SaveCardList(cardList, filePath, CdbFileHasFlag));
+            if (resultSave.Result) return await SaveToArchive();
+            else return (false, resultSave.Messenger);
         }
         #endregion
 
@@ -1793,15 +1842,15 @@ namespace CardEditor.UserControls
 
                 _xlsxFileHasFlag = hasFlag;
 
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateExcelCommand(excelFilepath, hasFlag);
-                if (!resultCreate)
+                CreateCardListResult resultCreate = await CreateExcelService.CreateExcelYGOCommand(excelFilepath, hasFlag);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
-                xlsxFilePath = messageCreate;
+                xlsxFilePath = resultCreate.FilePath;
             }
 
             var (resultSave, messageSave) = await SaveAsExcelFileAllData(xlsxFilePath);
@@ -1881,9 +1930,9 @@ namespace CardEditor.UserControls
             if (cardList == null) return (false, CMess.noCardExport.ToText());
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
 
-            var(resultSave, messageSave) = await Task.Run(() => SaveExcelService.SaveCardList(cardList, filePath, _xlsxFileHasFlag));
-            if (resultSave) return await SaveToArchive();
-            else return (false, messageSave);
+            WriteResult resultSave = await Task.Run(() => SaveExcelYGOService.SaveCardList(cardList, filePath, XlsxFileHasFlag));
+            if (resultSave.Result) return await SaveToArchive();
+            else return (false, resultSave.Messenger);
         }
         #endregion
 
@@ -1912,15 +1961,15 @@ namespace CardEditor.UserControls
 
                 _cedsFileHasFlag = hasFlag;
 
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateCedsCommand(cedsFilePath);
-                if (!resultCreate)
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
-                cedsFilePath = messageCreate;
+                cedsFilePath = resultCreate.FilePath;
             }
 
             var (resultSave, messageSave) = await SaveAsCedsFileAllData(cedsFilePath);
@@ -2001,9 +2050,9 @@ namespace CardEditor.UserControls
             if (cardList == null) return (false, CMess.noCardExport.ToText());
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
 
-            var (resultSave, messageSave) = await Task.Run(() => SaveCedsService.SaveCardList(cardList, filePath));
-            if (resultSave) return await SaveToArchive();
-            else return (false, messageSave);
+            WriteResult resultSave = await Task.Run(() => SaveCedsYGOService.SaveCardList(cardList, filePath, CedsFileHasFlag));
+            if (resultSave.Result) return await SaveToArchive();
+            else return (false, resultSave.Messenger);
         }
         #endregion
 
@@ -2054,18 +2103,18 @@ namespace CardEditor.UserControls
         }
         public async Task<(bool, string)> AddNewCardCommand(CardEditor.Models.Card newCard )
         {
-            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+            WriteResult? saveResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                saveResult = await SaveDatabaseServices.AddNewCard(newCard, cdbFilePath);
+                saveResult = await SaveDatabaseYGOService.AddNewCard(newCard, cdbFilePath, CdbFileHasFlag);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                saveResult = await SaveExcelService.AddNewCard(newCard, xlsxFilePath);
+                saveResult = await SaveExcelYGOService.AddNewCard(newCard, xlsxFilePath, XlsxFileHasFlag);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                saveResult = await SaveCedsService.AddNewCard(newCard, cedsFilePath);
+                saveResult = await SaveCedsYGOService.AddNewCard(newCard, cedsFilePath, CedsFileHasFlag);
 
             if (saveResult != null)
             {
-                if (!saveResult.Value.resultSaveDB) return (false, saveResult.Value.messageSaveDB);
+                if (!saveResult.Result) return (false, saveResult.Messenger);
                 var (resultArchive, messageArchive) = await SaveToArchive();
                 if (!resultArchive) return (false, messageArchive);
             }
@@ -2143,18 +2192,18 @@ namespace CardEditor.UserControls
             if (newCard == null) newCard = ExtractCardFromForm();
             if (newCard == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
 
-            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+            WriteResult? saveResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                saveResult = await SaveDatabaseServices.ModifyCurrentCard(newCard, cdbFilePath);
+                saveResult = await SaveDatabaseYGOService.ModifyCurrentCard(newCard, cdbFilePath, CdbFileHasFlag);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                saveResult = await SaveExcelService.ModifyCurrentCard(newCard, xlsxFilePath);
+                saveResult = await SaveExcelYGOService.ModifyCurrentCard(newCard, xlsxFilePath, XlsxFileHasFlag);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                saveResult = await SaveCedsService.ModifyCurrentCard(newCard, cedsFilePath);
+                saveResult = await SaveCedsYGOService.ModifyCurrentCard(newCard, cedsFilePath, CedsFileHasFlag);
 
             if (saveResult != null)
             {
-                if (!saveResult.Value.resultSaveDB) return (false, saveResult.Value.messageSaveDB);
+                if (!saveResult.Result) return (false, saveResult.Messenger);
                 var (resultArchive, messageArchive) = await SaveToArchive();
                 if (!resultArchive) return (false, messageArchive);
             }
@@ -2473,18 +2522,18 @@ namespace CardEditor.UserControls
         {
             if (cardID <= 0) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()));
 
-            (bool resultDelete, string messageDelete)? deleteResult = null;
+            WriteResult? deleteResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                deleteResult = await SaveDatabaseServices.DeleteCard(cardID, cdbFilePath);
+                deleteResult = await SaveDatabaseYGOService.DeleteCard(cardID, cdbFilePath);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                deleteResult = await SaveExcelService.DeleteCard(cardID, xlsxFilePath);
+                deleteResult = await SaveExcelYGOService.DeleteCard(cardID, xlsxFilePath, XlsxFileHasFlag);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                deleteResult = await SaveCedsService.DeleteCard(cardID, cedsFilePath);
+                deleteResult = await SaveCedsYGOService.DeleteCard(cardID, cedsFilePath, CedsFileHasFlag);
 
             if (deleteResult != null)
             {
-                if (!deleteResult.Value.resultDelete) return (false, deleteResult.Value.messageDelete);
+                if (!deleteResult.Result) return (false, deleteResult.Messenger);
                 var (resultAtchive, messageArchive) = await SaveToArchive();
                 if (!resultAtchive) return (false, messageArchive);
             }
@@ -2558,15 +2607,15 @@ namespace CardEditor.UserControls
                     return;
                 }
 
-                var (resultCopy, messageCopy) = await CopyCardsCommand(selectedItems);
-                if (resultCopy)
+                SetClipboardResult result = await CopyCardsCommand(selectedItems);
+                if (result.Result)
                 {
                     MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -2595,15 +2644,15 @@ namespace CardEditor.UserControls
                     return;
                 }
 
-                var (resultCopy, messageCopy) = await CopyCardsCommand(filteredItems);
-                if (resultCopy)
+                SetClipboardResult result = await CopyCardsCommand(filteredItems);
+                if (result.Result)
                 {
                     MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -2624,15 +2673,15 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var (resultCopy, messageCopy) = await CopyCardsCommand(Cards.ToList());
-                if (resultCopy)
+                SetClipboardResult result = await CopyCardsCommand(Cards.ToList());
+                if (result.Result)
                 {
                     MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -2642,11 +2691,17 @@ namespace CardEditor.UserControls
             }
         }
 
-        private async Task<(bool, string)> CopyCardsCommand(List<CardEditor.Models.Card> cardList)
+        private async Task<SetClipboardResult> CopyCardsCommand(List<CardEditor.Models.Card> cardList)
         {
-            if (cardList == null || !cardList.Any()) return (false, CMess.noCardExport.ToText());
-
-            return await Task.Run(() => ClipboardService.CopyCardJSON(cardList));
+            if (cardList == null || !cardList.Any())
+            {
+                SetClipboardResult result = new SetClipboardResult
+                {
+                    Result = false,
+                    Messenger = CMess.noCardExport.ToText()
+                };
+            }
+            return await Task.Run(() => CopyCardService.CopyCardToJSON(cardList, HasFlag));
         }
 
         private async Task CopyCardDescExecute()
@@ -2663,8 +2718,8 @@ namespace CardEditor.UserControls
         {
             try
             {
-                var (resultCopy, messageCopy) = ClipboardService.CopyTextToClipboard(txtcarddesc.Text);
-                return resultCopy;
+                SetClipboardResult result = CopyTextService.CopyTextToClipboard(txtcarddesc.Text);
+                return result.Result;
             }
             catch
             {
@@ -2751,7 +2806,11 @@ namespace CardEditor.UserControls
                 !string.IsNullOrWhiteSpace(cedsFilePath) ? cedsFilePath :
                 null;
 
-            return await Task.Run(() => SaveArchiveService.SaveCompressed(cardList, targetPath, dbFilePath));
+            string[] CardDBExtensions = { ".db", ".cdb", ".bytes", ".sqlite", };
+            int chooseExtension = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                "Chọn Phần mở rộng", CardDBExtensions);
+            string selectedExtension = CardDBExtensions[chooseExtension];
+            return await Task.Run(() => SaveArchiveService.SaveCompressedYGO(cardList, selectedExtension, HasFlag, targetPath, dbFilePath));
         }
         #endregion
 
@@ -2971,7 +3030,7 @@ namespace CardEditor.UserControls
                 ? RegexOptions.None
                 : RegexOptions.IgnoreCase;
 
-            int modifiedCount = await Task.Run(() => SearchPattern.Replace(targetCards, findWhat, replaceWith, opt, regexOpt));
+            int modifiedCount = await Task.Run(() => SearchPattern.ReplaceCard(targetCards, findWhat, replaceWith, opt, regexOpt));
 
             if (modifiedCount > 0)
             {
@@ -2996,7 +3055,8 @@ namespace CardEditor.UserControls
         #endregion
 
         #region Replace Field
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags, bool isAddNew)
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataCommand(CardListFormat cardListFormat,
+            IEnumerable<CardEditor.Models.Card> cardList, ulong flags, bool isAddNew)
         {
             if (cardList == null || flags == 0) return (false, 0, 0, CMess.noCardReplace.ToText());
 
@@ -3005,19 +3065,27 @@ namespace CardEditor.UserControls
 
             if (flags != 0)
             {
-                var selected = (CardField)flags;
-                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                if (cardListFormat == CardListFormat.YGOHasFlag)
+                {
+                    var selected = (CardFieldHasFlag)flags;
+                    updaters = CardFieldHasFlagUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                }
+                else
+                {
+                    var selected = (CardFieldNoFlag)flags;
+                    updaters = CardFieldNoFlagUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                }
             }
 
-            return ReplaceDataField(cardList, isAddNew, updaters);
+            return ReplaceDataField(cardListFormat, cardList, isAddNew, updaters);
         }
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
-            params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.Card> cardList,
+            bool isAddNew, params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
         {
-            return ReplaceDataField(cardList, isAddNew, updaters.AsEnumerable());
+            return ReplaceDataField(cardListFormat, cardList, isAddNew, updaters.AsEnumerable());
         }
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.Card> cardList,
+            bool isAddNew, IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
         {
             if (cardList == null || Cards == null)
                 return (false, 0, 0, CMess.noCardReplace.ToText());
@@ -3066,7 +3134,7 @@ namespace CardEditor.UserControls
             var duplicates = Cards.GroupBy(c => c.id).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
             return (duplicates.Count > 0, duplicates);
         }
-        public (bool, string) ImportDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags)
+        public (bool, string) ImportDataCommand(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.Card> cardList, ulong flags)
         {
             if (cardList == null) return (false, CMess.noCardReplace.ToText());
 
@@ -3075,13 +3143,21 @@ namespace CardEditor.UserControls
 
             if (flags != 0)
             {
-                var selected = (CardField)flags;
-                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                if (cardListFormat == CardListFormat.YGOHasFlag)
+                {
+                    var selected = (CardFieldHasFlag)flags;
+                    updaters = CardFieldHasFlagUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                }
+                else
+                {
+                    var selected = (CardFieldNoFlag)flags;
+                    updaters = CardFieldNoFlagUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                }
             }
 
-            return ImportDataField(cardList, updaters);
+            return ImportDataField(cardListFormat, cardList, updaters);
         }
-        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
+        public (bool, string) ImportDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.Card> cardList,
             IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
         {
             if (cardList == null || Cards == null)
@@ -3114,10 +3190,10 @@ namespace CardEditor.UserControls
                 return (false, ex.Message);
             }
         }
-        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
+        public (bool, string) ImportDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.Card> cardList,
             params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
         {
-            return ImportDataField(cardList, updaters.AsEnumerable());
+            return ImportDataField(cardListFormat, cardList, updaters.AsEnumerable());
         }
 
         public void ImportCreateNew(IEnumerable<CardEditor.Models.Card> importedCards)
@@ -3190,7 +3266,7 @@ namespace CardEditor.UserControls
 
             if (MainWindowService != null)
             {
-                MainWindowService.OpenPreViewDescWindow(CurrentCard, SelectedPenLangRule);
+                MainWindowService.OpenPreViewDescWindowCard(CurrentCard, SelectedPenLangRule);
             }
         }
         private void ApplyPendulumLanguageDesc()
@@ -3240,7 +3316,7 @@ namespace CardEditor.UserControls
 
             try
             {
-                PenDescProcessSummary result = await PenLanguageViewModel.Instance.ProcessPenDesc(cardList, rule, _applyPenLangCts.Token, overwrite);
+                PenDescProcessSummary result = await PenLanguageViewModel.Instance.ProcessPenDescCard(cardList, rule, _applyPenLangCts.Token, overwrite);
                 // Total: Tổng số card có cờ CardType.Pendulum được đưa vào xử lý (đếm ngay từ đầu vòng lặp, trước khi biết kết quả thành hay bại)
                 // Success: Số card đã build lại desc thành công bằng newRule, toàn bộ pipeline Analyze → BuildDesc chạy trót lọt không throw exception, và card.desc đã được gán giá trị mới.
                 // Error: Số card mà Analyze hoặc BuildDesc throw exception trong lúc xử lý. Card này bị bỏ qua, card.desc giữ nguyên giá trị gốc (không được gán lại). ID của các card này nằm trong ErrorCardIds.
@@ -3264,7 +3340,7 @@ namespace CardEditor.UserControls
         }
         public (bool, string) RollBackPenlang()
         {
-            var result = PenLanguageViewModel.Instance.PerformManualRollback();
+            var result = PenLanguageViewModel.Instance.PerformManualRollbackCard();
             IsSaved = false;
             return result;
         }
@@ -3318,7 +3394,7 @@ namespace CardEditor.UserControls
 
             try
             {
-                var result = await CreditsViewModel.Instance.CreditTeam(cardList, credit, writeMode, _applyCreditCts.Token);
+                var result = await CreditsViewModel.Instance.CreditTeamCard(cardList, credit, writeMode, _applyCreditCts.Token);
                 IsSaved = false;
                 return result;
             }
@@ -3360,13 +3436,13 @@ namespace CardEditor.UserControls
                 };
             }
 
-            var result = await CreditsViewModel.Instance.RemoveAllCredits(cardList);
+            var result = await CreditsViewModel.Instance.RemoveAllCreditsCard(cardList);
             IsSaved = false;
             return result;
         }
         public (bool, string) RollbackCredits()
         {
-            var result = CreditsViewModel.Instance.PerformManualRollback();
+            var result = CreditsViewModel.Instance.PerformManualRollbackCard();
             IsSaved = false;
             return result;
         }
@@ -5250,7 +5326,7 @@ namespace CardEditor.UserControls
         }
         #endregion
 
-        #region Scriot Card
+        #region Script Card
         private (ulong, ulong) GetCardPassword()
         {
             if (string.IsNullOrWhiteSpace(txtid.Text)) return (0, 0);
@@ -5296,13 +5372,13 @@ namespace CardEditor.UserControls
 
         private (bool, string) CreateScriptFile(string DirectoryPath, ulong password, string luaContent, LanguageArea Area)
         {
-            var (resultCreate, messageCreate) = CreateFileServices.CreateScript(DirectoryPath, $"c{password}.lua", newScript: true, luaContent, Area);
-            if (resultCreate)
+            CreateFileResult resultCreate = CreateScriptService.CreateScript(DirectoryPath, $"c{password}.lua", newScript: true, luaContent, Area);
+            if (resultCreate.Result)
             {
-                CardEXDataViewModel.Instance.AddScriptPath(password, messageCreate);
-                return (true, messageCreate);
+                CardEXDataViewModel.Instance.AddScriptPath(password, resultCreate.FilePath);
+                return (true, resultCreate.FilePath);
             }
-            else return (false, messageCreate);
+            else return (false, resultCreate.Messenger);
         }
         private async Task ScriptCardHandler(ulong password, string luaContent, LanguageArea Area, string DirectoryPath)
         {
@@ -5311,12 +5387,12 @@ namespace CardEditor.UserControls
             #region Archive
             if (!string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath))
             {
-                var resultFilterArchive = await LoadDataServices.FindEntriesByName(archiveFilePath, $"c{password}", "lua");
+                var resultFilterArchive = await LoadArchiveService.FindEntriesByName(archiveFilePath, $"c{password}", "lua");
                 if (resultFilterArchive.success)
                 {
                     if (resultFilterArchive.fileLists.Count() > 0)
                     {
-                        var resultExtract = await LoadDataServices.ExtractTempEntry(archiveFilePath, resultFilterArchive.fileLists);
+                        var resultExtract = await LoadArchiveService.ExtractTempEntry(archiveFilePath, resultFilterArchive.fileLists);
                         if (resultExtract.result && resultExtract.extractedEntries.Count() > 0)
                         {
                             foreach (var entry in resultExtract.extractedEntries)

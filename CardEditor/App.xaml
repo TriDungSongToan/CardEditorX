@@ -53,9 +53,7 @@
                 <Setter Property="Template" Value="{DynamicResource MahApps.Templates.WindowButtonCommands.Win10}" />
             </Style>
 
-            <ObjectDataProvider x:Key="UIConfigProvider" 
-                    ObjectType="{x:Type ViewModels:UIConfigViewModel}" 
-                    MethodName="get_Instance"/>
+            <ObjectDataProvider x:Key="UIConfigProvider" ObjectType="{x:Type ViewModels:UIConfigViewModel}" MethodName="get_Instance"/>
 
             <Style TargetType="{x:Type dragablz:TabablzControl}" BasedOn="{StaticResource MaterialDesignTabablzControlStyle}" >
                 <Setter Property="HeaderItemTemplate">

@@ -626,12 +626,33 @@
 
                         <Grid Grid.Row="2" >
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="3" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="3" />
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox x:Name="txtReplaceFieldFilePath" Grid.Column="0" Height="43"
+                            <ComboBox Grid.Column="0" Height="43"
+                                      BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      ItemsSource="{Binding CardListFormats}"
+                                      SelectedItem="{Binding SelectedReplaceFieldCardListFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                      VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                      materialDesign:ColorZoneAssist.Mode="Custom"
+                                      materialDesign:HintAssist.Hint="{Lag:Localize Format}"
+                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      TextOptions.TextFormattingMode="Display"
+                                      TextOptions.TextRenderingMode="ClearType"
+                                      materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+
+                            <TextBox x:Name="txtReplaceFieldFilePath" Grid.Column="2" Height="43"
                                      Padding="10,12,3,0" BorderThickness="0.7"
                                      Text="{Binding ReplaceFieldFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -652,7 +673,7 @@
                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                      materialDesign:ThemeAssist.Theme="Dark" />
 
-                            <Button Grid.Column="0" Margin="0,0,5,0" Padding="0" Width="25" Height="25"
+                            <Button Grid.Column="2" Margin="0,0,5,0" Padding="0" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" 
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                     Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
@@ -663,7 +684,7 @@
                                 </Button.Content>
                             </Button>
 
-                            <Button Grid.Column="2" Height="auto" MinHeight="35" Padding="10,5,10,5"
+                            <Button Grid.Column="4" Height="auto" MinHeight="35" Padding="5,5,5,5"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Center"
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                     Content="{Lag:Localize Replace}" Command="{Binding ReplaceFieldCommand}"
@@ -771,12 +792,33 @@
                         
                         <Grid Grid.Row="2" >
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="3" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="3" />
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox x:Name="txtImportDataFilePath" Grid.Column="0" Height="43"
+                            <ComboBox Grid.Column="0" Height="43"
+                                      BorderThickness="0.7" Padding="10,18,12,5" IsEditable="False"
+                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                      ItemsSource="{Binding CardListFormats}"
+                                      SelectedItem="{Binding SelectedImportDataCardListFormat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                      VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                      materialDesign:ColorZoneAssist.Mode="Custom"
+                                      materialDesign:HintAssist.Hint="{Lag:Localize Format}"
+                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      TextOptions.TextFormattingMode="Display"
+                                      TextOptions.TextRenderingMode="ClearType"
+                                      materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" />
+
+                            <TextBox x:Name="txtImportDataFilePath" Grid.Column="2" Height="43"
                                      Padding="10,12,3,0" BorderThickness="0.7"
                                      Text="{Binding ImportDataFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -797,7 +839,7 @@
                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10"
                                      materialDesign:ThemeAssist.Theme="Dark" />
                             
-                            <Button Grid.Column="0" Margin="0,0,5,0" Padding="0" Width="25" Height="25"
+                            <Button Grid.Column="2" Margin="0,0,5,0" Padding="0" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" 
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                     Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
@@ -808,7 +850,7 @@
                                 </Button.Content>
                             </Button>
 
-                            <Button Grid.Column="2" Height="auto" MinHeight="35" Padding="10,5,10,5"
+                            <Button Grid.Column="4" Height="auto" MinHeight="35" Padding="5,5,5,5"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Center"
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                     Content="{Lag:Localize Import}" Command="{Binding ImportDataCommand}"

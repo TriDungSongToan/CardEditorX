@@ -10,13 +10,13 @@ using System.Windows.Media.Animation;
 using System.Windows.Interop;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Reflection;
-using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
+using System.Diagnostics;
 using System.Configuration;
 using System.ComponentModel;
 using MahApps.Metro.Controls;
@@ -24,15 +24,19 @@ using Dragablz;
 using CardEditor.Enums;
 using CardEditor.Views;
 using CardEditor.Models;
-using CardEditor.Manager;
 using CardEditor.Helpers;
+using CardEditor.Manager;
 using CardEditor.Commands;
 using CardEditor.Services;
+using CardEditor.Services.LoadData;
+using CardEditor.Services.CreateFile;
+using CardEditor.Services.ClipboardData;
+using CardEditor.Converter;
 using CardEditor.Constants;
 using CardEditor.ImageGene;
 using CardEditor.ViewModels;
-using CardEditor.UserControls;
 using CardEditor.Localization;
+using CardEditor.UserControls;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
 
@@ -69,15 +73,15 @@ namespace CardEditor
         #endregion
 
         #region Property
-        private string _mainWindowtitle = string.Empty;
-        public string MainWindowTitle
+        private AppTitle _mainWindowTitle = new();
+        public AppTitle MainWindowTitle
         {
-            get => _mainWindowtitle;
+            get => _mainWindowTitle;
             set
             {
-                if (_mainWindowtitle != value)
+                if (_mainWindowTitle != value)
                 {
-                    _mainWindowtitle = value;
+                    _mainWindowTitle = value;
                     OnPropertyChanged(nameof(MainWindowTitle));
                     OnPropertyChanged(nameof(CanBrowseWindowTitle));
 
@@ -85,9 +89,10 @@ namespace CardEditor
                 }
             }
         }
+
         public bool CanBrowseWindowTitle =>
-            !string.IsNullOrEmpty(MainWindowTitle)
-            && File.Exists(MainWindowTitle);
+            !string.IsNullOrEmpty(MainWindowTitle.PhysicalFullPath)
+            && File.Exists(MainWindowTitle.PhysicalFullPath);
         private bool _isSaved = true;
         public bool IsSaved
         {
@@ -279,6 +284,7 @@ namespace CardEditor
 
                 case ".cdb":
                 case ".db":
+                case ".bytes":
                 case ".sqlite":
                 case ".ceds":
                 case ".xlsx":
@@ -388,25 +394,25 @@ namespace CardEditor
 
         private void LoadBGImage()
         {
-            string imagePath = System.IO.Path.Combine(CardAppContext.Instance.DataFolderPath, @"CardData\Images\MainLogo.png");
-            BitmapImage bitmap = new BitmapImage();
-
-            if (System.IO.File.Exists(imagePath))
+            try
             {
+                string imagePath = ConfigViewModel.Instance.displaySetting.BackgroundImagePath;
+                if (!System.IO.File.Exists(imagePath)) return;
+
+                BitmapImage bitmap = new BitmapImage();
+
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(imagePath, UriKind.Absolute);
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
+                bitmap.Freeze();
+
+                imgmainbg.Source = bitmap;
             }
-            else
+            catch
             {
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri("pack://application:,,,/CardEditor;component/Images/MainLogo.png", UriKind.Absolute);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.EndInit();
+                ///
             }
-            bitmap.Freeze();
-            imgmainbg.Source = bitmap;
         }
 
         public void LoadConfig()
@@ -666,7 +672,7 @@ namespace CardEditor
                         {
                             Mouse.OverrideCursor = null;
                             CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                                $"[Card Image] {CMess.updateCompe.ToText()}", new[] { CMess.ok.ToText() });
+                                $"{CMess.CardImage.ToText()} {CMess.updateCompe.ToText()}", new[] { CMess.ok.ToText() });
                         }
                         else
                         {
@@ -1033,10 +1039,6 @@ namespace CardEditor
 
             Tabs.Add(newTab);
             TabControlMain.SelectedItem = newTab;
-
-            // DataViewModel.Instance.Tabs.Add(newTab);
-            // DataViewModel.Instance.SelectedTab = newTab;
-            // TabControlMain.SelectedItem = newTab;
         }
         private void menudataeditor_Click(object sender, RoutedEventArgs e)
         {
@@ -1055,7 +1057,7 @@ namespace CardEditor
             var newdataEditor = new OmegaDataEditor(this);
             var newTab = new TabContent
             {
-                Header = CMess.DataEdit.ToText(),
+                Header = $"{CMess.DataEdit.ToText()} Ω",
                 Content = newdataEditor
             };
 
@@ -1090,7 +1092,7 @@ namespace CardEditor
             var newbanlistEditor = new BanListEditor(this);
             var newTab = new TabContent
             {
-                Header = "BanList Editor",
+                Header = CMess.BanListEdit.ToText(),
                 Content = newbanlistEditor
             };
             Tabs.Add(newTab);
@@ -1367,104 +1369,123 @@ namespace CardEditor
         #region File
 
         #region New
-        private async Task<string> CreateDatabase()
+        private async Task<CreateCardListResult> CreateDatabase(CardListFormat? format = null)
         {
+            CreateCardListResult result = new();
+
             try
             {
                 string filePath = FileDiaLogHelper.SaveDataBase();
-                if (string.IsNullOrWhiteSpace(filePath)) return string.Empty;
+                if (string.IsNullOrWhiteSpace(filePath)) return result;
 
-                bool hasFlag;
-                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
-                if (chooseFlag == 0) hasFlag = true;
-                else if (chooseFlag == 1) hasFlag = false;
-                else return string.Empty;
-
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateDatabaseCommand(filePath, hasFlag);
-                if (!resultCreate)
+                if (format == null)
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
-                        new[] { CMess.ok.ToText() });
-                    return string.Empty;
+                    int chooseFormat = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                        string.Format(CMess.selectFileFormat.ToText(), CMess.CardDB.ToText()),
+                        new[] { "YGO No Flag", "YGO Has Flag", "OMEGA" });
+                    if (chooseFormat == 0) format = CardListFormat.YGONoFlag;
+                    else if (chooseFormat == 1) format = CardListFormat.YGOHasFlag;
+                    else if (chooseFormat == 2) format = CardListFormat.OMEGA;
+                    else format = CardListFormat.YGONoFlag;
                 }
-                else return messageCreate;
+
+                result = format switch
+                {
+                    CardListFormat.YGONoFlag => await CreateDatabaseService.CreateDatabaseYGOCommand(filePath, hasFlag: false),
+                    CardListFormat.YGOHasFlag => await CreateDatabaseService.CreateDatabaseYGOCommand(filePath, hasFlag: true),
+                    CardListFormat.OMEGA => await CreateDatabaseService.CreateDatabaseOMEGACommand(filePath),
+                    _ => new CreateCardListResult { Result = false, Messenger = "Invalid file format" }
+                };
+
+                if (!result.Result)
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {result.Messenger}",
+                        new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {ex.Message}",
                        new[] { CMess.ok.ToText() });
-                return string.Empty;
             }
+            return result;
         }
-        private async Task<string> CreateExcel()
+        private async Task<CreateCardListResult> CreateExcel(CardListFormat? format = null)
         {
+            CreateCardListResult result = new();
+
             try
             {
                 string filePath = FileDiaLogHelper.SaveExcel();
-                if (string.IsNullOrWhiteSpace(filePath)) return string.Empty;
+                if (string.IsNullOrWhiteSpace(filePath)) return result;
 
-                bool hasFlag;
-                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
-                if (chooseFlag == 0) hasFlag = true;
-                else if (chooseFlag == 1) hasFlag = false;
-                else return string.Empty;
-
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateExcelCommand(filePath, hasFlag);
-
-                if (!resultCreate)
+                if (format == null)
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
-                        new[] { CMess.ok.ToText() });
-                    return string.Empty;
+                    int chooseFormat = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                        string.Format(CMess.selectFileFormat.ToText(), CMess.CardDB.ToText()),
+                        new[] { "YGO No Flag", "YGO Has Flag", "OMEGA" });
+                    if (chooseFormat == 0) format = CardListFormat.YGONoFlag;
+                    else if (chooseFormat == 1) format = CardListFormat.YGOHasFlag;
+                    else if (chooseFormat == 2) format = CardListFormat.OMEGA;
+                    else format = CardListFormat.YGONoFlag;
                 }
-                else return messageCreate;
+
+                result = format switch
+                {
+                    CardListFormat.YGONoFlag => await CreateExcelService.CreateExcelYGOCommand(filePath, hasFlag: false),
+                    CardListFormat.YGOHasFlag => await CreateExcelService.CreateExcelYGOCommand(filePath, hasFlag: true),
+                    CardListFormat.OMEGA => await CreateExcelService.CreateExcelOMEGACommand(filePath),
+                    _ => new CreateCardListResult { Result = false, Messenger = "Invalid file format" }
+                };
+
+                if (!result.Result)
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {result.Messenger}",
+                        new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {ex.Message}",
                        new[] { CMess.ok.ToText() });
-                return string.Empty;
             }
+            return result;
         }
-        private async Task<string> CreateCeds()
+        private async Task<CreateCardListResult> CreateCeds(CardListFormat? format = null)
         {
+            CreateCardListResult result = new();
+
             try
             {
-                string cedsFilePath = FileDiaLogHelper.SaveCeds();
-                if (string.IsNullOrEmpty(cedsFilePath)) return string.Empty;
+                string filePath = FileDiaLogHelper.SaveCeds();
+                if (string.IsNullOrWhiteSpace(filePath)) return result;
 
-                bool hasFlag;
-                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
-                if (chooseFlag == 0) hasFlag = true;
-                else if (chooseFlag == 1) hasFlag = false;
-                else return string.Empty;
-
-                /// _cedsFileHasFlag = hasFlag;
-
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateCedsCommand(cedsFilePath);
-                if (!resultCreate)
+                if (format == null)
                 {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
-                        new[] { CMess.ok.ToText() });
-                    return string.Empty;
+                    int chooseFormat = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                        string.Format(CMess.selectFileFormat.ToText(), CMess.CardDB.ToText()),
+                        new[] { "YGO No Flag", "YGO Has Flag", "OMEGA" });
+                    if (chooseFormat == 0) format = CardListFormat.YGONoFlag;
+                    else if (chooseFormat == 1) format = CardListFormat.YGOHasFlag;
+                    else if (chooseFormat == 2) format = CardListFormat.OMEGA;
+                    else format = CardListFormat.YGONoFlag;
                 }
-                else return messageCreate;
+
+                result = await CreateCedsService.CreateCedsCommand(filePath);
+                result.Format = format.Value;
+                result.HasFlag = (format == CardListFormat.YGONoFlag) ? false : true;
+                if (!result.Result)
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {result.Messenger}",
+                        new[] { CMess.ok.ToText() });
             }
             catch (Exception ex)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {ex.Message}",
                        new[] { CMess.ok.ToText() });
-                return string.Empty;
             }
+            return result;
         }
         private async Task<string> CreateScript(bool newScript)
         {
@@ -1473,50 +1494,16 @@ namespace CardEditor
                 string filePath = FileDiaLogHelper.SaveScript();
                 if (string.IsNullOrWhiteSpace(filePath)) return string.Empty;
 
-                var (resultCreate, messageCreate) = CreateFileServices.CreateScriptCommand(filePath, newScript);
-                if (!resultCreate)
+                CreateFileResult resultCreate = await CreateScriptService.CreateScriptCommand(filePath, newScript);
+
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return string.Empty;
                 }
-                else return messageCreate;
-
-                //if (!string.IsNullOrEmpty(filePath))
-                //{
-                //    string scriptFilePath = filePath;
-                //    string[] validExtensions = { ".lua", ".txt", ".md", ".log", ".ydk", ".yml", ".conf" };
-                //    string extension = System.IO.Path.GetExtension(scriptFilePath).ToLower();
-
-                //    if (string.IsNullOrEmpty(extension) || !validExtensions.Contains(extension))
-                //    {
-                //        scriptFilePath += ".lua";
-                //    }
-                //    if (System.IO.File.Exists(scriptFilePath))
-                //    {
-                //        var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                //            $"{CMess.filealreadyExit.ToText()} {CMess.QuestOverwrite.ToText()}",
-                //            new[] { CMess.yes.ToText(), CMess.no.ToText() });
-                //        if (result != 0) return (string.Empty);
-                //    }
-
-                //    string folderPath = System.IO.Path.GetDirectoryName(scriptFilePath);
-                //    string scriptFileName = System.IO.Path.GetFileName(scriptFilePath);
-                //    if (!System.IO.Directory.Exists(folderPath))
-                //    {
-                //        System.IO.Directory.CreateDirectory(folderPath);
-                //    }
-                //    var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateScript(folderPath, scriptFileName, newScript));
-                //    if (resultCreate) return messageCreate;
-                //    else
-                //    {
-                //        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                //            $"{CMess.errorOcc.ToText()} {messageCreate}", new[] { CMess.ok.ToText() });
-                //        return string.Empty;
-                //    }
-                //}
-                //else return string.Empty;
+                return resultCreate.FilePath;
             }
             catch (Exception ex)
             {
@@ -1586,45 +1573,111 @@ namespace CardEditor
 
         private async Task NewDatabaseCommand()
         {
-            string dbFilePath = await CreateDatabase();
-            if (string.IsNullOrEmpty(dbFilePath)) return;
+            await NewCardListCommand(FileType.Database);
+        }
+        private async Task NewExcelCommand()
+        {
+            await NewCardListCommand(FileType.Excel);
+        }
+        private async Task NewCedsCommand()
+        {
+            await NewCardListCommand(FileType.Ceds);
+        }
+        private async Task NewCardListCommand(FileType fileType)
+        {
+            CreateCardListResult resultCreate = fileType switch
+            {
+                FileType.Database => await CreateDatabase(),
+                FileType.Excel => await CreateExcel(),
+                FileType.Ceds => await CreateCeds(),
+                _ => new CreateCardListResult { Result = false }
+            };
+            if (!resultCreate.Result) return;
 
+            string typeName = fileType switch
+            {
+                FileType.Database => CMess.CardDB.ToText(),
+                FileType.Excel => CMess.Excel.ToText(),
+                FileType.Ceds => CMess.Ceds.ToText(),
+                _ => string.Empty
+            };
             var result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                $"{string.Format(CMess.FourPlaceholderSuccess.ToText(), System.IO.Path.GetFileName(dbFilePath), CMess.CardDB.ToText(), CMess.File.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
+                $"{string.Format(CMess.FourPlaceholderSuccess.ToText(), System.IO.Path.GetFileName(resultCreate.FilePath), typeName, CMess.File.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
                 // FileName Card Database created successfully! Do you want to open it?
                 new[] { CMess.yes.ToText(), CMess.no.ToText() });
             if (result != 0) return;
 
-            string cdbFileName = System.IO.Path.GetFileName(dbFilePath);
+            string dbFileName = System.IO.Path.GetFileName(resultCreate.FilePath);
 
             try
             {
-                if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.cedsFilePath) &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.xlsxFilePath))
+                switch (resultCreate.Format)
                 {
-                    var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
-                    if (currentTab != null)
-                    {
-                        currentTab.Header = System.IO.Path.GetFileName(dbFilePath);
-                    }
-                    await currentDataEditor.LoadFileCardList(dbFilePath);
-                }
-                else
-                {
-                    var newDataEditor = new DataEditor(this);
-                    var newTab = new CardEditor.Models.TabContent
-                    {
-                        Header = cdbFileName,
-                        Content = newDataEditor
-                    };
-                    Tabs.Add(newTab);
-                    await Dispatcher.BeginInvoke(new Func<Task>(async () =>
-                    {
-                        TabControlMain.SelectedItem = newTab;
-                        await newDataEditor.LoadFileCardList(dbFilePath);
-                    }), System.Windows.Threading.DispatcherPriority.Render);
+                    case CardListFormat.YGONoFlag:
+                    case CardListFormat.YGOHasFlag:
+                        {
+                            if (currentUserControl is DataEditor currentDataEditor &&
+                                string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) &&
+                                string.IsNullOrWhiteSpace(currentDataEditor.cedsFilePath) &&
+                                string.IsNullOrWhiteSpace(currentDataEditor.xlsxFilePath))
+                            {
+                                var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
+                                if (currentTab != null)
+                                {
+                                    currentTab.Header = dbFileName;
+                                }
+                                await currentDataEditor.LoadFileCardList(resultCreate.FilePath);
+                                return;
+                            }
+
+                            var newDataEditor = new DataEditor(this);
+                            var newTab = new CardEditor.Models.TabContent
+                            {
+                                Header = dbFileName,
+                                Content = newDataEditor
+                            };
+                            Tabs.Add(newTab);
+                            await Dispatcher.BeginInvoke(new Func<Task>(async () =>
+                            {
+                                TabControlMain.SelectedItem = newTab;
+                                await newDataEditor.LoadFileCardList(resultCreate.FilePath);
+                            }), System.Windows.Threading.DispatcherPriority.Render);
+
+                            break;
+                        }
+
+                    case CardListFormat.OMEGA:
+                        {
+                            if (currentUserControl is OmegaDataEditor currentOmegaDataEditor &&
+                                string.IsNullOrWhiteSpace(currentOmegaDataEditor.cdbFilePath) &&
+                                string.IsNullOrWhiteSpace(currentOmegaDataEditor.xlsxFilePath) &&
+                                string.IsNullOrWhiteSpace(currentOmegaDataEditor.cedsFilePath))
+                            {
+                                var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
+                                if (currentTab != null)
+                                {
+                                    currentTab.Header = dbFileName;
+                                }
+                                await currentOmegaDataEditor.LoadFileCardList(resultCreate.FilePath);
+                                return;
+                            }
+
+                            var newOmegaDataEditor = new OmegaDataEditor(this);
+                            var newTab = new CardEditor.Models.TabContent
+                            {
+                                Header = dbFileName,
+                                Content = newOmegaDataEditor
+                            };
+                            Tabs.Add(newTab);
+                            await Dispatcher.BeginInvoke(new Func<Task>(async () =>
+                            {
+                                TabControlMain.SelectedItem = newTab;
+                                await newOmegaDataEditor.LoadFileCardList(resultCreate.FilePath);
+                            }), System.Windows.Threading.DispatcherPriority.Render);
+
+                            break;
+                        }
+                    default: return;
                 }
             }
             catch (Exception ex)
@@ -1632,102 +1685,7 @@ namespace CardEditor
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
         }
-        private async Task NewExcelCommand()
-        {
-            string excelFilePath = await CreateExcel();
-            if (string.IsNullOrEmpty(excelFilePath)) return;
 
-            var result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                $"{string.Format(CMess.FourPlaceholderSuccess.ToText(), System.IO.Path.GetFileName(excelFilePath), CMess.Excel.ToText(), CMess.File.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
-                // FileName Excel File created successfully! Do you want to open it?
-                new[] { CMess.yes.ToText(), CMess.no.ToText() });
-            if (result != 0) return;
-
-            string cdbFileName = System.IO.Path.GetFileName(excelFilePath);
-
-            try
-            {
-                if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.cedsFilePath) &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.xlsxFilePath))
-                {
-                    var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
-                    if (currentTab != null)
-                    {
-                        currentTab.Header = System.IO.Path.GetFileName(excelFilePath);
-                    }
-                    await currentDataEditor.LoadFileCardList(excelFilePath);
-                }
-                else
-                {
-                    var newDataEditor = new DataEditor(this);
-                    var newTab = new CardEditor.Models.TabContent
-                    {
-                        Header = cdbFileName,
-                        Content = newDataEditor
-                    };
-                    Tabs.Add(newTab);
-                    await Dispatcher.BeginInvoke(new Func<Task>(async () =>
-                    {
-                        TabControlMain.SelectedItem = newTab;
-                        await newDataEditor.LoadFileCardList(excelFilePath);
-                    }), System.Windows.Threading.DispatcherPriority.Render);
-                }
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
-        private async Task NewCedsCommand()
-        {
-            string cedsFilePath = await CreateCeds();
-            if (string.IsNullOrEmpty(cedsFilePath)) return;
-
-            var result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                $"{string.Format(CMess.FourPlaceholderSuccess.ToText(), System.IO.Path.GetFileName(cedsFilePath), CMess.Ceds.ToText(), CMess.File.ToText(), CMess.Create.ToText())}\n{CMess.QuestOpen.ToText()}",
-                // FileName Ceds File created successfully! Do you want to open it?
-                new[] { CMess.yes.ToText(), CMess.no.ToText() });
-            if (result != 0) return;
-
-            string cdbFileName = System.IO.Path.GetFileName(cedsFilePath);
-
-            try
-            {
-                if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.cedsFilePath) &&
-                    string.IsNullOrWhiteSpace(currentDataEditor.xlsxFilePath))
-                {
-                    var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
-                    if (currentTab != null)
-                    {
-                        currentTab.Header = System.IO.Path.GetFileName(cedsFilePath);
-                    }
-                    await currentDataEditor.LoadFileCardList(cedsFilePath);
-                }
-                else
-                {
-                    var newDataEditor = new DataEditor(this);
-                    var newTab = new CardEditor.Models.TabContent
-                    {
-                        Header = cdbFileName,
-                        Content = newDataEditor
-                    };
-                    Tabs.Add(newTab);
-                    await Dispatcher.BeginInvoke(new Func<Task>(async () =>
-                    {
-                        TabControlMain.SelectedItem = newTab;
-                        await newDataEditor.LoadFileCardList(cedsFilePath);
-                    }), System.Windows.Threading.DispatcherPriority.Render);
-                }
-            }
-            catch (Exception ex)
-            {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-            }
-        }
         private async void NewScriptCommand()
         {
             string createdScriptPath = await CreateScript(true);
@@ -1744,7 +1702,8 @@ namespace CardEditor
                     {
                         if (currentUserControl != null && currentUserControl is CodeEditor currentCodeEditor &&
                             string.IsNullOrWhiteSpace(currentCodeEditor.luaFilePath) &&
-                            string.IsNullOrWhiteSpace(currentCodeEditor.luaFileName))
+                            string.IsNullOrWhiteSpace(currentCodeEditor.luaFileName) &&
+                            currentCodeEditor.OmegaScript == null)
                         {
                             var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
                             if (currentTab != null)
@@ -1752,7 +1711,7 @@ namespace CardEditor
                                 currentTab.Header = scriptFileName;
                             }
                             currentCodeEditor.luaFilePath = createdScriptPath;
-                            await currentCodeEditor.LoadLuaFile();
+                            await currentCodeEditor.LoadLuaFileYGO();
                         }
                         else
                         {
@@ -1767,7 +1726,7 @@ namespace CardEditor
                             {
                                 TabControlMain.SelectedItem = newTab;
                                 newcodeEditor.luaFilePath = createdScriptPath;
-                                await newcodeEditor.LoadLuaFile();
+                                await newcodeEditor.LoadLuaFileYGO();
                             }), System.Windows.Threading.DispatcherPriority.Render);
                         }
                     }
@@ -2001,7 +1960,7 @@ namespace CardEditor
                 if (listEntryFullName == null || !listEntryFullName.Any())
                     return (false, CMess.noFileFound.ToText());
 
-                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+                var extractResult = await LoadArchiveService.ExtractTempEntry(archiveFilePath, listEntryFullName);
 
                 if (!extractResult.result) return (false, extractResult.message);
                 if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
@@ -2028,7 +1987,7 @@ namespace CardEditor
                 if (listEntryFullName == null || !listEntryFullName.Any())
                     return (false, CMess.noFileFound.ToText());
 
-                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+                var extractResult = await LoadArchiveService.ExtractTempEntry(archiveFilePath, listEntryFullName);
 
                 if (!extractResult.result) return (false, extractResult.message);
                 if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
@@ -2055,7 +2014,7 @@ namespace CardEditor
                 if (listEntryFullName == null || !listEntryFullName.Any())
                     return (false, CMess.noFileFound.ToText());
 
-                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+                var extractResult = await LoadArchiveService.ExtractTempEntry(archiveFilePath, listEntryFullName);
 
                 if (!extractResult.result) return (false, extractResult.message);
                 if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
@@ -2103,7 +2062,7 @@ namespace CardEditor
                 if (listEntryFullName == null || !listEntryFullName.Any())
                     return (false, CMess.noFileFound.ToText());
 
-                var extractResult = await LoadDataServices.ExtractTempEntry(archiveFilePath, listEntryFullName);
+                var extractResult = await LoadArchiveService.ExtractTempEntry(archiveFilePath, listEntryFullName);
 
                 if (!extractResult.result) return (false, extractResult.message);
                 if (extractResult.extractedEntries == null || extractResult.extractedEntries.Count == 0) return (false, CMess.noFileFound.ToText());
@@ -2145,7 +2104,7 @@ namespace CardEditor
         #endregion
 
         #region Open Methods
-        public async Task<(bool, string)> OpenDataBase(string selectedFilePath, string archiveFilePath = null, string archiveEntryName = null)
+        public async Task<(bool, string)> OpenDataBase(string selectedFilePath, string archiveFilePath = null, string archiveEntryName = null, ulong cardID = 0)
         {
             if (string.IsNullOrWhiteSpace(selectedFilePath) || !File.Exists(selectedFilePath)) return (false, CMess.fileNotExit.ToText());
 
@@ -2153,89 +2112,192 @@ namespace CardEditor
             {
                 Mouse.OverrideCursor = Cursors.Wait;
 
-                LoadCardDataResult resultCard = Path.GetExtension(selectedFilePath).ToLowerInvariant() switch
+                LoadCardDataResult resultOpen = Path.GetExtension(selectedFilePath).ToLowerInvariant() switch
                 {
-                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(selectedFilePath),
-                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(selectedFilePath),
-                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(selectedFilePath),
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(selectedFilePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(selectedFilePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(selectedFilePath),
                     _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
 
-                if (resultCard.Result && resultCard.CardList != null)
+                if (!resultOpen.Result || resultOpen.CardList == null) return (false, resultOpen.Message);
+
+                string cardListFileName = System.IO.Path.GetFileName(selectedFilePath);
+
+                switch (resultOpen.Format)
                 {
-                    string fileName = System.IO.Path.GetFileName(selectedFilePath);
-                    if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor &&
-                        string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) &&
-                        string.IsNullOrWhiteSpace(currentDataEditor.cedsFilePath) &&
-                        string.IsNullOrWhiteSpace(currentDataEditor.xlsxFilePath))
-                    {
-                        var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
-                        if (currentTab != null)
+                    case CardListFormat.YGONoFlag:
+                    case CardListFormat.YGOHasFlag:
                         {
-                            currentTab.Header = System.IO.Path.GetFileName(selectedFilePath);
-                        }
-                        currentDataEditor.archiveFilePath = archiveFilePath;
-                        currentDataEditor.archiveEntryName = archiveEntryName;
-                        switch (Path.GetExtension(selectedFilePath).ToLowerInvariant())
-                        {
-                            case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
-                                currentDataEditor.cdbFilePath = selectedFilePath;
-                                currentDataEditor._cdbFileHasFlag = resultCard.HasFlag;
-                                break;
-
-                            case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
-                                currentDataEditor.xlsxFilePath = selectedFilePath;
-                                currentDataEditor._xlsxFileHasFlag = resultCard.HasFlag;
-                                break;
-
-                            case var ext when ConstantExtension.CedsExtensions.Contains(ext):
-                                currentDataEditor.cedsFilePath = selectedFilePath;
-                                currentDataEditor._cedsFileHasFlag = resultCard.HasFlag;
-                                break;
-                        }
-                        currentDataEditor.ImportAppendwrite(resultCard.CardList);
-                        currentDataEditor.IsSaved = true;
-                    }
-                    else
-                    {
-                        var newDataEditor = new DataEditor(this);
-                        var newTab = new TabContent
-                        {
-                            Header = fileName,
-                            Content = newDataEditor
-                        };
-                        Tabs.Add(newTab);
-
-                        await Dispatcher.BeginInvoke(new Func<Task>(async () =>
-                        {
-                            TabControlMain.SelectedItem = newTab;
-                            newDataEditor.archiveFilePath = archiveFilePath;
-                            newDataEditor.archiveEntryName = archiveEntryName;
-                            switch (Path.GetExtension(selectedFilePath).ToLowerInvariant())
+                            if (currentUserControl is DataEditor currentDataEditor &&
+                                string.IsNullOrWhiteSpace(currentDataEditor.cdbFilePath) &&
+                                string.IsNullOrWhiteSpace(currentDataEditor.cedsFilePath) &&
+                                string.IsNullOrWhiteSpace(currentDataEditor.xlsxFilePath))
                             {
-                                case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
-                                    newDataEditor.cdbFilePath = selectedFilePath;
-                                    newDataEditor._cdbFileHasFlag = resultCard.HasFlag;
-                                    break;
-                                
-                                case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
-                                    newDataEditor.xlsxFilePath = selectedFilePath;
-                                    newDataEditor._xlsxFileHasFlag = resultCard.HasFlag;
-                                    break;
-                                case var ext when ConstantExtension.CedsExtensions.Contains(ext):
-                                    newDataEditor.cedsFilePath = selectedFilePath;
-                                    newDataEditor._cedsFileHasFlag = resultCard.HasFlag;
-                                    break;
+                                var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
+                                if (currentTab != null)
+                                {
+                                    currentTab.Header = cardListFileName;
+                                }
+                                currentDataEditor.archiveFilePath = archiveFilePath;
+                                currentDataEditor.archiveEntryName = archiveEntryName;
+                                switch (Path.GetExtension(selectedFilePath).ToLowerInvariant())
+                                {
+                                    case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                                        currentDataEditor.cdbFilePath = selectedFilePath;
+                                        currentDataEditor.CdbFileHasFlag = resultOpen.HasFlag;
+                                        break;
+
+                                    case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                                        currentDataEditor.xlsxFilePath = selectedFilePath;
+                                        currentDataEditor.XlsxFileHasFlag = resultOpen.HasFlag;
+                                        break;
+
+                                    case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                                        currentDataEditor.cedsFilePath = selectedFilePath;
+                                        currentDataEditor.CedsFileHasFlag = resultOpen.HasFlag;
+                                        break;
+                                }
+                                currentDataEditor.ImportAppendwrite(resultOpen.CardList);
+                                currentDataEditor.IsSaved = true;
+                                if (cardID != 0)
+                                {
+                                    await Dispatcher.InvokeAsync(() =>
+                                    {
+                                        currentDataEditor.FocusCardById(cardID);
+                                    }, DispatcherPriority.Render);
+                                }
+                                return (true, string.Empty);
                             }
-                            newDataEditor.ImportCreateNew(resultCard.CardList);
-                        }), System.Windows.Threading.DispatcherPriority.Render);
 
-                        newDataEditor.IsSaved = true;
-                    }
+                            var newDataEditor = new DataEditor(this);
+                            var newTab = new TabContent
+                            {
+                                Header = cardListFileName,
+                                Content = newDataEditor
+                            };
+                            Tabs.Add(newTab);
 
-                    return (true, string.Empty);
+                            await Dispatcher.BeginInvoke(new Func<Task>(async () =>
+                            {
+                                TabControlMain.SelectedItem = newTab;
+                                newDataEditor.archiveFilePath = archiveFilePath;
+                                newDataEditor.archiveEntryName = archiveEntryName;
+                                switch (Path.GetExtension(selectedFilePath).ToLowerInvariant())
+                                {
+                                    case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                                        newDataEditor.cdbFilePath = selectedFilePath;
+                                        newDataEditor.CdbFileHasFlag = resultOpen.HasFlag;
+                                        break;
+
+                                    case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                                        newDataEditor.xlsxFilePath = selectedFilePath;
+                                        newDataEditor.XlsxFileHasFlag = resultOpen.HasFlag;
+                                        break;
+                                    case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                                        newDataEditor.cedsFilePath = selectedFilePath;
+                                        newDataEditor.CedsFileHasFlag = resultOpen.HasFlag;
+                                        break;
+                                }
+                                newDataEditor.ImportCreateNew(resultOpen.CardList);
+                            }), System.Windows.Threading.DispatcherPriority.Render);
+                            newDataEditor.IsSaved = true;
+                            if (cardID != 0)
+                            {
+                                await Dispatcher.InvokeAsync(() =>
+                                {
+                                    newDataEditor.FocusCardById(cardID);
+                                }, DispatcherPriority.Render);
+                            }
+                            return (true, string.Empty);
+                        }
+                    case CardListFormat.OMEGA:
+                        {
+                            if (currentUserControl is OmegaDataEditor currentOmegaDataEditor &&
+                                string.IsNullOrWhiteSpace(currentOmegaDataEditor.cdbFilePath) &&
+                                string.IsNullOrWhiteSpace(currentOmegaDataEditor.cedsFilePath) &&
+                                string.IsNullOrWhiteSpace(currentOmegaDataEditor.xlsxFilePath))
+                            {
+                                var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
+                                if (currentTab != null)
+                                {
+                                    currentTab.Header = cardListFileName;
+                                }
+                                currentOmegaDataEditor.archiveFilePath = archiveFilePath;
+                                currentOmegaDataEditor.archiveEntryName = archiveEntryName;
+                                switch (Path.GetExtension(selectedFilePath).ToLowerInvariant())
+                                {
+                                    case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                                        currentOmegaDataEditor.cdbFilePath = selectedFilePath;
+                                        currentOmegaDataEditor.CdbFileHasFlag = resultOpen.HasFlag;
+                                        break;
+
+                                    case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                                        currentOmegaDataEditor.xlsxFilePath = selectedFilePath;
+                                        currentOmegaDataEditor.XlsxFileHasFlag = resultOpen.HasFlag;
+                                        break;
+
+                                    case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                                        currentOmegaDataEditor.cedsFilePath = selectedFilePath;
+                                        currentOmegaDataEditor.CedsFileHasFlag = resultOpen.HasFlag;
+                                        break;
+                                }
+                                currentOmegaDataEditor.ImportAppendwrite(resultOpen.OmegaCardList);
+                                currentOmegaDataEditor.IsSaved = true;
+                                if (cardID != 0)
+                                {
+                                    await Dispatcher.InvokeAsync(() =>
+                                    {
+                                        currentOmegaDataEditor.FocusCardById(cardID);
+                                    }, DispatcherPriority.Render);
+                                }
+                                return (true, string.Empty);
+                                return (true, string.Empty);
+                            }
+
+                            var newOmegaDataEditor = new OmegaDataEditor(this);
+                            var newTab = new TabContent
+                            {
+                                Header = cardListFileName,
+                                Content = newOmegaDataEditor
+                            };
+                            Tabs.Add(newTab);
+
+                            await Dispatcher.BeginInvoke(new Func<Task>(async () =>
+                            {
+                                TabControlMain.SelectedItem = newTab;
+                                newOmegaDataEditor.archiveFilePath = archiveFilePath;
+                                newOmegaDataEditor.archiveEntryName = archiveEntryName;
+                                switch (Path.GetExtension(selectedFilePath).ToLowerInvariant())
+                                {
+                                    case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                                        newOmegaDataEditor.cdbFilePath = selectedFilePath;
+                                        newOmegaDataEditor.CdbFileHasFlag = resultOpen.HasFlag;
+                                        break;
+
+                                    case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                                        newOmegaDataEditor.xlsxFilePath = selectedFilePath;
+                                        newOmegaDataEditor.XlsxFileHasFlag = resultOpen.HasFlag;
+                                        break;
+                                    case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                                        newOmegaDataEditor.cedsFilePath = selectedFilePath;
+                                        newOmegaDataEditor.CedsFileHasFlag = resultOpen.HasFlag;
+                                        break;
+                                }
+                                newOmegaDataEditor.ImportCreateNew(resultOpen.OmegaCardList);
+                            }), System.Windows.Threading.DispatcherPriority.Render);
+                            newOmegaDataEditor.IsSaved = true;
+                            if (cardID != 0)
+                            {
+                                await Dispatcher.InvokeAsync(() =>
+                                {
+                                    newOmegaDataEditor.FocusCardById(cardID);
+                                }, DispatcherPriority.Render);
+                            }
+                            return (true, string.Empty);
+                        }
+                    default: return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()));
                 }
-                else return (false, resultCard.Message);
             }
             catch (Exception ex)
             {
@@ -2270,7 +2332,7 @@ namespace CardEditor
                     currentCodeEditor.archiveFilePath = archiveFilePath;
                     currentCodeEditor.archiveEntryName = archiveEntryName;
 
-                    await currentCodeEditor.LoadLuaFile();
+                    await currentCodeEditor.LoadLuaFileYGO();
                 }
                 else
                 {
@@ -2289,7 +2351,7 @@ namespace CardEditor
                         newCodeEditor.archiveEntryName = archiveEntryName;
                         newCodeEditor.luaFilePath = selectedFilePath;
                         newCodeEditor.luaFileName = fileName;
-                        await newCodeEditor.LoadLuaFile();
+                        await newCodeEditor.LoadLuaFileYGO();
                     }), System.Windows.Threading.DispatcherPriority.Render);
                 }
 
@@ -2439,21 +2501,17 @@ namespace CardEditor
                         dataEditor.FocusCardById(id);
                     }, DispatcherPriority.Render);
                 }
+                else if (existingTab.Content is OmegaDataEditor omegaDataEditor)
+                {
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        omegaDataEditor.FocusCardById(id);
+                    }, DispatcherPriority.Render);
+                }
             }
             else
             {
-                var dataEditor = new DataEditor(this) { };
-
-                var newTab = new TabContent { Header = System.IO.Path.GetFileName(filePath), Content = dataEditor };
-                Tabs.Add(newTab);
-                TabControlMain.SelectedItem = newTab;
-
-                await Dispatcher.Yield(DispatcherPriority.Loaded);
-                await dataEditor.LoadFileCardList(filePath);
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    dataEditor.FocusCardById(id);
-                }, DispatcherPriority.Render);
+                await OpenDataBase(filePath, archiveFilePath: null, archiveEntryName: null, cardID: id);
             }
         }
         public async Task OpenDataEditorTab(ulong id)
@@ -2489,6 +2547,9 @@ namespace CardEditor
             }
         }
 
+        /// <summary>
+        /// ///////////////////////////////
+        /// </summary>
         public async Task OpenDataEditorTab(IEnumerable<string> filePaths)
         {
             foreach (var file in filePaths)
@@ -2553,10 +2614,48 @@ namespace CardEditor
                 Tabs.Add(newTab);
                 TabControlMain.SelectedItem = newTab;
 
-                await newCodeEditor.LoadLuaFile();
+                await newCodeEditor.LoadLuaFileYGO();
             }
             await Dispatcher.Yield(DispatcherPriority.Render);
         }
+        public async Task OpenCodeEditorTab(CardOmegaScript omegaScript)
+        {
+            if(omegaScript == null)
+            {
+                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
+                    $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Data.ToText())} Card Cannot be Null",
+                    new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            var existingTab = Tabs.FirstOrDefault(t => t.Content is CodeEditor codeEditor &&
+                string.IsNullOrEmpty(codeEditor.luaFilePath) &&
+                omegaScript == codeEditor.OmegaScript);
+
+            if (existingTab != null)
+            {
+                TabControlMain.SelectedItem = existingTab;
+            }
+            else
+            {
+                var newCodeEditor = new CodeEditor(this)
+                {
+                    luaFilePath = string.Empty,
+                    luaFileName = string.Empty,
+                    archiveFilePath = string.Empty,
+                    archiveEntryName = string.Empty,
+
+                    OmegaScript = omegaScript
+                };
+                var newTab = new TabContent { Header = CMess.CodeEdit.ToText(), Content = newCodeEditor };
+                Tabs.Add(newTab);
+                TabControlMain.SelectedItem = newTab;
+
+                await newCodeEditor.LoadLuaFileOMEGA(omegaScript);
+            }
+            await Dispatcher.Yield(DispatcherPriority.Render);
+        }
+
         public async Task OpenCodeEditorTab(ulong id)
         {
             if (id == 0) return;
@@ -2625,9 +2724,10 @@ namespace CardEditor
         #region Open File Explorer
         private void BrowseFileTitle()
         {
-            if (string.IsNullOrEmpty(MainWindowTitle) || !System.IO.File.Exists(MainWindowTitle)) return;
+            if (string.IsNullOrEmpty(MainWindowTitle.PhysicalFullPath) ||
+                !System.IO.File.Exists(MainWindowTitle.PhysicalFullPath)) return;
 
-            OpenFileLocation(MainWindowTitle);
+            OpenFileLocation(MainWindowTitle.PhysicalFullPath);
         }
         private bool CanBrowseFileTitle()
         {
@@ -2770,11 +2870,29 @@ namespace CardEditor
                 }
                 else
                 {
-                    string dbFilePath = await CreateDatabase();
-                    if (string.IsNullOrEmpty(dbFilePath)) return;
-                    currentDataEditor.cdbFilePath = dbFilePath;
+                    CardListFormat currentFormat = currentDataEditor.CdbFileHasFlag ? CardListFormat.YGOHasFlag : CardListFormat.YGONoFlag;
+                    CreateCardListResult resultCreate = await CreateDatabase(currentFormat);
+                    if (!resultCreate.Result) return;
+                    currentDataEditor.cdbFilePath = resultCreate.FilePath;
                     await currentDataEditor.ModifyCard();
                     await currentDataEditor.SaveCardDBFile();
+                }
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                if (!string.IsNullOrWhiteSpace(currentOmegaDataEditor.cdbFilePath) && File.Exists(currentOmegaDataEditor.cdbFilePath))
+                {
+                    await currentOmegaDataEditor.ModifyCard();
+                    await currentOmegaDataEditor.SaveCardDBFile();
+                }
+                else
+                {
+                    CardListFormat currentFormat = CardListFormat.OMEGA;
+                    CreateCardListResult resultCreate = await CreateDatabase(currentFormat);
+                    if (!resultCreate.Result) return;
+                    currentOmegaDataEditor.cdbFilePath = resultCreate.FilePath;
+                    await currentOmegaDataEditor.ModifyCard();
+                    await currentOmegaDataEditor.SaveCardDBFile();
                 }
             }
         }
@@ -2789,11 +2907,29 @@ namespace CardEditor
                 }
                 else
                 {
-                    string excelFilePath = await CreateExcel();
-                    if (string.IsNullOrEmpty(excelFilePath)) return;
-                    currentDataEditor.xlsxFilePath = excelFilePath;
+                    CardListFormat currentFormat = currentDataEditor.XlsxFileHasFlag ? CardListFormat.YGOHasFlag : CardListFormat.YGONoFlag;
+                    CreateCardListResult resultCreate = await CreateExcel(currentFormat);
+                    if (!resultCreate.Result) return;
+                    currentDataEditor.xlsxFilePath = resultCreate.FilePath;
                     await currentDataEditor.ModifyCard();
                     await currentDataEditor.SaveExcelFile();
+                }
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                if (!string.IsNullOrWhiteSpace(currentOmegaDataEditor.xlsxFilePath) && File.Exists(currentOmegaDataEditor.xlsxFilePath))
+                {
+                    await currentOmegaDataEditor.ModifyCard();
+                    await currentOmegaDataEditor.SaveExcelFile();
+                }
+                else
+                {
+                    CardListFormat currentFormat = CardListFormat.OMEGA;
+                    CreateCardListResult resultCreate = await CreateExcel(currentFormat);
+                    if (!resultCreate.Result) return;
+                    currentOmegaDataEditor.xlsxFilePath = resultCreate.FilePath;
+                    await currentOmegaDataEditor.ModifyCard();
+                    await currentOmegaDataEditor.SaveExcelFile();
                 }
             }
         }
@@ -2808,11 +2944,29 @@ namespace CardEditor
                 }
                 else
                 {
-                    string cedsFilePath = await CreateCeds();
-                    if (string.IsNullOrEmpty(cedsFilePath)) return;
-                    currentDataEditor.cedsFilePath = cedsFilePath;
+                    CardListFormat currentFormat = currentDataEditor.CedsFileHasFlag ? CardListFormat.YGOHasFlag : CardListFormat.YGONoFlag;
+                    CreateCardListResult resultCreate = await CreateCeds(currentFormat);
+                    if (!resultCreate.Result) return;
+                    currentDataEditor.cedsFilePath = resultCreate.FilePath;
                     await currentDataEditor.ModifyCard();
                     await currentDataEditor.SaveCedsFile();
+                }
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                if (!string.IsNullOrWhiteSpace(currentOmegaDataEditor.cedsFilePath) && File.Exists(currentOmegaDataEditor.cedsFilePath))
+                {
+                    await currentOmegaDataEditor.ModifyCard();
+                    await currentOmegaDataEditor.SaveCedsFile();
+                }
+                else
+                {
+                    CardListFormat currentFormat = CardListFormat.OMEGA;
+                    CreateCardListResult resultCreate = await CreateCeds(currentFormat);
+                    if (!resultCreate.Result) return;
+                    currentOmegaDataEditor.cedsFilePath = resultCreate.FilePath;
+                    await currentOmegaDataEditor.ModifyCard();
+                    await currentOmegaDataEditor.SaveCedsFile();
                 }
             }
         }
@@ -2822,19 +2976,10 @@ namespace CardEditor
             if (currentUserControl != null)
             {
                 if (currentUserControl is DataEditor currentDataEditor) await SaveDatabase();
+                else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor) await SaveDatabase();
                 else if (currentUserControl is CodeEditor currentCodeEditor)
                 {
-                    if (!string.IsNullOrWhiteSpace(currentCodeEditor.luaFilePath) &&
-                        File.Exists(currentCodeEditor.luaFilePath))
-                    {
-                        await currentCodeEditor.SaveCodeCommand();
-                    }
-                    else
-                    {
-                        string luaFilePath = await CreateScript(false);
-                        currentCodeEditor.luaFilePath = luaFilePath;
-                        await currentCodeEditor.SaveCodeCommand();
-                    }
+                    await currentCodeEditor.SaveCodeCommand();
                 }
                 else if (currentUserControl is DeckEditor currentDeckEditor)
                 {
@@ -2844,7 +2989,11 @@ namespace CardEditor
                 {
                     await currentBanListEditor.SaveBanListFile();
                 }
-                else if (currentUserControl is ImageEditor)
+                else if (currentUserControl is ImageEditor currentImageEditor)
+                {
+                    ///
+                }
+                else if (currentUserControl is Home currentHome)
                 {
                     ///
                 }
@@ -2871,21 +3020,52 @@ namespace CardEditor
                 string dbFilePath = FileDiaLogHelper.SaveDataBase();
                 if (string.IsNullOrEmpty(dbFilePath)) return;
 
-                bool hasFlag = currentDataEditor._cdbFileHasFlag;
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateDatabaseCommand(dbFilePath, hasFlag);
-                if (!resultCreate)
+                bool hasFlag = currentDataEditor.CdbFileHasFlag;
+                CreateCardListResult resultCreate = await CreateDatabaseService.CreateDatabaseYGOCommand(dbFilePath, hasFlag);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
 
                 var (resultSaveAs, messageSaveAs) = scope switch
                 {
-                    ScopeCard.SelectedCards => await currentDataEditor.SaveAsCardDBFileSelectedData(messageCreate),
-                    ScopeCard.FiltedCards => await currentDataEditor.SaveAsCardDBFileFiltedData(messageCreate),
-                    ScopeCard.AllCards => await currentDataEditor.SaveAsCardDBFileAllData(messageCreate),
+                    ScopeCard.SelectedCards => await currentDataEditor.SaveAsCardDBFileSelectedData(resultCreate.FilePath),
+                    ScopeCard.FiltedCards => await currentDataEditor.SaveAsCardDBFileFiltedData(resultCreate.FilePath),
+                    ScopeCard.AllCards => await currentDataEditor.SaveAsCardDBFileAllData(resultCreate.FilePath),
+                    _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
+                };
+
+                if (resultSaveAs) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.SaveAs.ToText(), CMess.CardDB.ToText(), CMess.File.ToText()),
+                    new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.SaveAs.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageSaveAs}",
+                    new[] { CMess.ok.ToText() });
+
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                string dbFilePath = FileDiaLogHelper.SaveDataBase();
+                if (string.IsNullOrEmpty(dbFilePath)) return;
+
+                bool hasFlag = currentOmegaDataEditor.CdbFileHasFlag;
+                CreateCardListResult resultCreate = await CreateDatabaseService.CreateDatabaseOMEGACommand(dbFilePath);
+                if (!resultCreate.Result)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
+
+                var (resultSaveAs, messageSaveAs) = scope switch
+                {
+                    ScopeCard.SelectedCards => await currentOmegaDataEditor.SaveAsCardDBFileSelectedData(resultCreate.FilePath),
+                    ScopeCard.FiltedCards => await currentOmegaDataEditor.SaveAsCardDBFileFiltedData(resultCreate.FilePath),
+                    ScopeCard.AllCards => await currentOmegaDataEditor.SaveAsCardDBFileAllData(resultCreate.FilePath),
                     _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
                 };
 
@@ -2905,21 +3085,51 @@ namespace CardEditor
                 string xlsxFilePath = FileDiaLogHelper.SaveExcel();
                 if (string.IsNullOrEmpty(xlsxFilePath)) return;
 
-                bool hasFlag = currentDataEditor._xlsxFileHasFlag;
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateExcelCommand(xlsxFilePath, hasFlag);
-                if (!resultCreate)
+                bool hasFlag = currentDataEditor.XlsxFileHasFlag;
+                CreateCardListResult resultCreate = await CreateExcelService.CreateExcelYGOCommand(xlsxFilePath, hasFlag);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
 
                 var (resultSaveAs, messageSaveAs) = scope switch
                 {
-                    ScopeCard.SelectedCards => await currentDataEditor.SaveAsExcelFileSelectedData(messageCreate),
-                    ScopeCard.FiltedCards => await currentDataEditor.SaveAsExcelFileFiltedData(messageCreate),
-                    ScopeCard.AllCards => await currentDataEditor.SaveAsExcelFileAllData(messageCreate),
+                    ScopeCard.SelectedCards => await currentDataEditor.SaveAsExcelFileSelectedData(resultCreate.FilePath),
+                    ScopeCard.FiltedCards => await currentDataEditor.SaveAsExcelFileFiltedData(resultCreate.FilePath),
+                    ScopeCard.AllCards => await currentDataEditor.SaveAsExcelFileAllData(resultCreate.FilePath),
+                    _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
+                };
+
+                if (resultSaveAs) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.SaveAs.ToText(), CMess.Excel.ToText(), CMess.File.ToText()),
+                    new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.SaveAs.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {messageSaveAs}",
+                    new[] { CMess.ok.ToText() });
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                string xlsxFilePath = FileDiaLogHelper.SaveExcel();
+                if (string.IsNullOrEmpty(xlsxFilePath)) return;
+
+                bool hasFlag = currentOmegaDataEditor.XlsxFileHasFlag;
+                CreateCardListResult resultCreate = await CreateExcelService.CreateExcelOMEGACommand(xlsxFilePath);
+                if (!resultCreate.Result)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Excel.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
+
+                var (resultSaveAs, messageSaveAs) = scope switch
+                {
+                    ScopeCard.SelectedCards => await currentOmegaDataEditor.SaveAsExcelFileSelectedData(resultCreate.FilePath),
+                    ScopeCard.FiltedCards => await currentOmegaDataEditor.SaveAsExcelFileFiltedData(resultCreate.FilePath),
+                    ScopeCard.AllCards => await currentOmegaDataEditor.SaveAsExcelFileAllData(resultCreate.FilePath),
                     _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
                 };
 
@@ -2938,21 +3148,51 @@ namespace CardEditor
                 string cedsFilePath = FileDiaLogHelper.SaveCeds();
                 if (string.IsNullOrEmpty(cedsFilePath)) return;
 
-                bool hasFlag = currentDataEditor._cedsFileHasFlag;
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateCedsCommand(cedsFilePath);
-                if (!resultCreate)
+                bool hasFlag = currentDataEditor.CedsFileHasFlag;
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Ceds.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Ceds.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
 
                 var (resultSaveAs, messageSaveAs) = scope switch
                 {
-                    ScopeCard.SelectedCards => await currentDataEditor.SaveAsCedsFileSelectedData(messageCreate),
-                    ScopeCard.FiltedCards => await currentDataEditor.SaveAsCedsFileFiltedData(messageCreate),
-                    ScopeCard.AllCards => await currentDataEditor.SaveAsCedsFileAllData(messageCreate),
+                    ScopeCard.SelectedCards => await currentDataEditor.SaveAsCedsFileSelectedData(resultCreate.FilePath),
+                    ScopeCard.FiltedCards => await currentDataEditor.SaveAsCedsFileFiltedData(resultCreate.FilePath),
+                    ScopeCard.AllCards => await currentDataEditor.SaveAsCedsFileAllData(resultCreate.FilePath),
+                    _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
+                };
+
+                if (resultSaveAs) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), CMess.SaveAs.ToText(), CMess.Ceds.ToText(), CMess.File.ToText()),
+                    new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.SaveAs.ToText(), CMess.Ceds.ToText(), CMess.File.ToText())} {messageSaveAs}",
+                    new[] { CMess.ok.ToText() });
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                string cedsFilePath = FileDiaLogHelper.SaveCeds();
+                if (string.IsNullOrEmpty(cedsFilePath)) return;
+
+                bool hasFlag = currentOmegaDataEditor.CedsFileHasFlag;
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                if (!resultCreate.Result)
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Ceds.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
+                        new[] { CMess.ok.ToText() });
+                    return;
+                }
+
+                var (resultSaveAs, messageSaveAs) = scope switch
+                {
+                    ScopeCard.SelectedCards => await currentOmegaDataEditor.SaveAsCedsFileSelectedData(resultCreate.FilePath),
+                    ScopeCard.FiltedCards => await currentOmegaDataEditor.SaveAsCedsFileFiltedData(resultCreate.FilePath),
+                    ScopeCard.AllCards => await currentOmegaDataEditor.SaveAsCedsFileAllData(resultCreate.FilePath),
                     _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
                 };
 
@@ -3335,6 +3575,7 @@ namespace CardEditor
             await CardDataViewModel.Instance.LoadData();
             LoadConfig();
             LoadLanguage();
+            LoadBGImage();
             foreach (var tab in Tabs)
             {
                 if (tab.Content is UserControl userControl)
@@ -3378,6 +3619,10 @@ namespace CardEditor
             {
                 await currentDataEditor.CopySelectedCard();
             }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                await currentOmegaDataEditor.CopySelectedCard();
+            }
             else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
             {
                 await currentBanListEditor.CopySelectedCard();
@@ -3388,6 +3633,10 @@ namespace CardEditor
             if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
             {
                 await currentDataEditor.CopyAllFilterCard();
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                await currentOmegaDataEditor.CopyAllFilterCard();
             }
             else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
             {
@@ -3400,6 +3649,10 @@ namespace CardEditor
             {
                 await currentDataEditor.CopyAllCard();
             }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                await currentOmegaDataEditor.CopyAllCard();
+            }
             else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
             {
                 await currentBanListEditor.CopyAllCard();
@@ -3408,87 +3661,181 @@ namespace CardEditor
 
         private async Task PasteCard()
         {
-            if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
+            try
             {
-                try
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        Mouse.OverrideCursor = Cursors.Wait;
-                    });
+                Mouse.OverrideCursor = Cursors.Wait;
 
-                    var pastedCardsResult = await LoadDataServices.LoadClipboardCard();
-                    if (pastedCardsResult != null && pastedCardsResult.Result)
-                    {
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0) // Ask
-                            {
-                                int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                                    new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
-                                if (resultImport == 0) currentDataEditor.ImportOverwrite(pastedCardsResult.CardList); // Overwrite
-                                else if (resultImport == 1) currentDataEditor.ImportAppendwrite(pastedCardsResult.CardList); // Append
-                                else if (resultImport == 2) ImportDataCreateNewDataEdit(pastedCardsResult.CardList); // Create New
-                                else return;
-                            }
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 1) currentDataEditor.ImportOverwrite(pastedCardsResult.CardList); // Overwrite
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 2) currentDataEditor.ImportAppendwrite(pastedCardsResult.CardList); // Append
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 3) ImportDataCreateNewDataEdit(pastedCardsResult.CardList); // Create New
-                            else return;
-                        });
-                    }
-                    else
-                    {
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            $"{CMess.errorOcc.ToText()} {pastedCardsResult.Message}", new[] { CMess.ok.ToText() });
-                    }
-                }
-                catch (Exception ex)
+                int writeMode = ConfigViewModel.Instance.dataHandlingSetting.WriteMode;
+                LoadClipboardResult resultPaste = await PasteCardService.LoadFromClipboard();
+                if (resultPaste == null) return;
+
+                if (!resultPaste.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+                           $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Paste.ToText(), CMess.Card.ToText())} {resultPaste.Message}",
+                           new[] { CMess.ok.ToText() });
+                    return;
+                }
+
+                if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
+                {
+                    if (resultPaste.Cards.Format != CardListFormat.YGONoFlag &&
+                        resultPaste.Cards.Format != CardListFormat.YGOHasFlag)
+                    {
+                        int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{string.Format(CMess.confirmMissMatchFormat.ToText(), CMess.Paste.ToText(), resultPaste.Cards.Format.ToString())}" +
+                            $"\n - {CMess.autoConverFormat.ToText()}\n- {CMess.autoOpenCompatible.ToText()}",
+                            new[] { CMess.ConvertFormat.ToText(), CMess.OpenCompatible.ToText(), CMess.cancel.ToText() });
+                        if (resultChoose == 2) return;
+                        else if (resultChoose == 1)
+                        {
+                            await OpenCompatibilityTab(resultPaste.Cards);
+                            return;
+                        }
+                        else if (resultChoose == 0)
+                        {
+
+                            if (resultPaste.Cards.Format == CardListFormat.OMEGA)
+                                resultPaste.Cards.CardList = CardConverter.ListCardOmegaToListCard(resultPaste.Cards.CardOmegaList);
+                            else
+                            {
+                                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Format.ToText()), new[] { CMess.ok.ToText() });
+                                return;
+                            }
+                        }
+                    }
+                    // Data is ready
+                    if (writeMode == 0) //Ask
+                    {
+                        int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
+                            new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
+                        if (resultImport == 0) currentDataEditor.ImportOverwrite(resultPaste.Cards.CardList); // Overwrite
+                        else if (resultImport == 1) currentDataEditor.ImportAppendwrite(resultPaste.Cards.CardList); // Append
+                        else if (resultImport == 2) ImportDataCreateNewDataEdit(resultPaste.Cards.CardList); // Create New
+                        else return;
+                    }
+                    else if (writeMode == 1) currentDataEditor.ImportOverwrite(resultPaste.Cards.CardList); // Overwrite
+                    else if (writeMode == 2) currentDataEditor.ImportAppendwrite(resultPaste.Cards.CardList); // Append
+                    else if (writeMode == 3) ImportDataCreateNewDataEdit(resultPaste.Cards.CardList); // Create New
+                    else return;
+                }
+                else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+                {
+                    if (resultPaste.Cards.Format != CardListFormat.OMEGA)
+                    {
+                        int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{string.Format(CMess.confirmMissMatchFormat.ToText(), CMess.Paste.ToText(), resultPaste.Cards.Format.ToString())}" +
+                            $"\n - {CMess.autoConverFormat.ToText()}\n- {CMess.autoOpenCompatible.ToText()}",
+                            new[] { CMess.ConvertFormat.ToText(), CMess.OpenCompatible.ToText(), CMess.cancel.ToText() });
+                        if (resultChoose == 2) return;
+                        else if (resultChoose == 1)
+                        {
+                            await OpenCompatibilityTab(resultPaste.Cards);
+                            return;
+                        }
+                        else if (resultChoose == 0)
+                        {
+                            if (resultPaste.Cards.Format == CardListFormat.YGONoFlag || resultPaste.Cards.Format == CardListFormat.YGOHasFlag)
+                                resultPaste.Cards.CardOmegaList = CardConverter.ListCardToListCardOmega(resultPaste.Cards.CardList);
+                            else
+                            {
+                                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Format.ToText()), new[] { CMess.ok.ToText() });
+                                return;
+                            }
+                        }
+                    }
+                    // Data is ready
+                    if (writeMode == 0) //Ask
+                    {
+                        int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
+                            new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
+                        if (resultImport == 0) currentOmegaDataEditor.ImportOverwrite(resultPaste.Cards.CardOmegaList); // Overwrite
+                        else if (resultImport == 1) currentOmegaDataEditor.ImportAppendwrite(resultPaste.Cards.CardOmegaList); // Append
+                        else if (resultImport == 2) ImportDataCreateNewDataEdit(resultPaste.Cards.CardOmegaList); // Create New
+                        else return;
+                    }
+                    else if (writeMode == 1) currentOmegaDataEditor.ImportOverwrite(resultPaste.Cards.CardOmegaList); // Overwrite
+                    else if (writeMode == 2) currentOmegaDataEditor.ImportAppendwrite(resultPaste.Cards.CardOmegaList); // Append
+                    else if (writeMode == 3) ImportDataCreateNewDataEdit(resultPaste.Cards.CardOmegaList); // Create New
+                    else return;
+                }
+                else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
+                {
+                    if (resultPaste.Cards.Format != CardListFormat.BanList)
+                    {
+                        int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{string.Format(CMess.confirmMissMatchFormat.ToText(), CMess.Paste.ToText(), resultPaste.Cards.Format.ToString())}" +
+                            $"\n - {CMess.autoConverFormat.ToText()}\n- {CMess.autoOpenCompatible.ToText()}",
+                            new[] { CMess.ConvertFormat.ToText(), CMess.OpenCompatible.ToText(), CMess.cancel.ToText() });
+                        if (resultChoose == 2) return;
+                        else if (resultChoose == 1)
+                        {
+                            await OpenCompatibilityTab(resultPaste.Cards);
+                            return;
+                        }
+                        else if (resultChoose == 0)
+                        {
+                            if (resultPaste.Cards.Format == CardListFormat.YGONoFlag)
+                                resultPaste.Cards.CardBanlistList = CardConverter.ListCardToListCardBanList(resultPaste.Cards.CardList);
+                            else if (resultPaste.Cards.Format == CardListFormat.YGOHasFlag)
+                                resultPaste.Cards.CardBanlistList = CardConverter.ListCardToListCardBanList(resultPaste.Cards.CardList);
+                            else if (resultPaste.Cards.Format == CardListFormat.OMEGA)
+                                resultPaste.Cards.CardBanlistList = CardConverter.ListCardOmegaToListCardBanList(resultPaste.Cards.CardOmegaList);
+                            else
+                            {
+                                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Format.ToText()), new[] { CMess.ok.ToText() });
+                                return;
+                            }
+                        }
+                    }
+                    // Data is ready
+                    if (writeMode == 0) // Ask
+                    {
+                        int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
+                            new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
+                        if (resultImport == 0) currentBanListEditor.ImportOverwrite(resultPaste.Cards.CardBanlistList); // Overwrite
+                        else if (resultImport == 1) currentBanListEditor.ImportAppendwrite(resultPaste.Cards.CardBanlistList); // Append
+                        else if (resultImport == 2) ImportDataCreateNewBanListEdit(resultPaste.Cards.CardBanlistList); // Create New
+                        else return;
+                    }
+                    else if (writeMode == 1) currentBanListEditor.ImportOverwrite(resultPaste.Cards.CardBanlistList); // Overwrite
+                    else if (writeMode == 2) currentBanListEditor.ImportAppendwrite(resultPaste.Cards.CardBanlistList); // Append
+                    else if (writeMode == 3) ImportDataCreateNewBanListEdit(resultPaste.Cards.CardBanlistList); // Create New
+                    else return;
                 }
             }
-            else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
+            catch (Exception ex)
             {
-                try
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        Mouse.OverrideCursor = Cursors.Wait;
-                    });
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+        }
 
-                    var pastedCardsResult = await LoadDataServices.LoadClipboardCardBanList();
-                    if (pastedCardsResult != null && pastedCardsResult.Result)
-                    {
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0) // Ask
-                            {
-                                int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                                    new[] { CMess.OverwriteDupli.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
-                                if (resultImport == 0) currentBanListEditor.ImportOverwrite(pastedCardsResult.CardList); // Overwrite
-                                else if (resultImport == 1) currentBanListEditor.ImportAppendwrite(pastedCardsResult.CardList); // Append
-                                else if (resultImport == 2) ImportDataCreateNewBanListEdit(pastedCardsResult.CardList); // Create New
-                                else return;
-                            }
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 1) currentBanListEditor.ImportOverwrite(pastedCardsResult.CardList); // Overwrite
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 2) currentBanListEditor.ImportAppendwrite(pastedCardsResult.CardList); // Append
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 3) ImportDataCreateNewBanListEdit(pastedCardsResult.CardList); // Create New
-                            else return;
-                        });
-                    }
-                    else
-                    {
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            $"{CMess.errorOcc.ToText()} {pastedCardsResult.Message}", new[] { CMess.ok.ToText() });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
+        public async Task OpenCompatibilityTab(JSONCeds jsonCeds)
+        {
+            switch (jsonCeds.Format)
+            {
+                case CardListFormat.YGONoFlag:
+                case CardListFormat.YGOHasFlag:
+                    ImportDataCreateNewDataEdit(jsonCeds.CardList);
+                    break;
+
+                case CardListFormat.OMEGA:
+                    ImportDataCreateNewDataEdit(jsonCeds.CardOmegaList);
+                    break;
+
+                case CardListFormat.BanList:
+                    ImportDataCreateNewBanListEdit(jsonCeds.CardBanlistList);
+                    break;
+
+                default: return;
             }
         }
         #endregion
@@ -3508,6 +3855,10 @@ namespace CardEditor
             {
                 return await currentDataEditor.FilterCardByLanguage(languageCode, isInclude);
             }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return await currentOmegaDataEditor.FilterCardByLanguage(languageCode, isInclude);
+            }
             else
             {
                 return new ResultItem
@@ -3525,6 +3876,10 @@ namespace CardEditor
             {
                 return await currentDataEditor.FilterCardByPenLang(rule, isInclude);
             }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return await currentOmegaDataEditor.FilterCardByPenLang(rule, isInclude);
+            }
             else
             {
                 return new ResultItem
@@ -3541,6 +3896,10 @@ namespace CardEditor
             if (currentUserControl is DataEditor currentDataEditor)
             {
                 return await currentDataEditor.FilterCardByCDBFile(filePath, isDuplicate);
+            }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return await currentOmegaDataEditor.FilterCardByCDBFile(filePath, isDuplicate);
             }
             else if (currentUserControl is BanListEditor currentBanListEditor)
             {
@@ -3562,6 +3921,10 @@ namespace CardEditor
             if (currentUserControl is DataEditor currentDataEditor)
             {
                 return await currentDataEditor.FilterCardByYDKFile(filePath, isDuplicate);
+            }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return await currentOmegaDataEditor.FilterCardByYDKFile(filePath, isDuplicate);
             }
             else if (currentUserControl is BanListEditor currentBanListEditor)
             {
@@ -3604,6 +3967,11 @@ namespace CardEditor
                 var (result, message) = await currentDataEditor.CreateMultiImageDataEditor(Scope, Series, onProgress);
                 return (result, result ? message : $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText(), CMess.Card.ToText())}\n{message}");
             }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                var (result, message) = await currentOmegaDataEditor.CreateMultiImageDataEditor(Scope, Series, onProgress);
+                return (result, result ? message : $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText(), CMess.Card.ToText())}\n{message}");
+            }
             else return (false, CMess.noSelecWin.ToText());
         }
         public void CancelCreateImageMainWindow()
@@ -3611,6 +3979,10 @@ namespace CardEditor
             if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
             {
                 currentDataEditor.CancelCreateImageDataEditor();
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                currentOmegaDataEditor.CancelCreateImageDataEditor();
             }
         }
         #endregion
@@ -3634,6 +4006,25 @@ namespace CardEditor
                     ScopeCard.SelectedCards => await currentDataEditor.ExportCompressedSelectedData(zipFilePath),
                     ScopeCard.FiltedCards => await currentDataEditor.ExportCompressedFiltedData(zipFilePath),
                     ScopeCard.AllCards => await currentDataEditor.ExportCompressedAllData(zipFilePath),
+                    _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
+                };
+
+                if (resultExportZip) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    $"{CMess.expoZIPSuc.ToText()} {messageExportZip}", new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Export.ToText(), CMess.Zip.ToText(), CMess.Card.ToText())} {messageExportZip}",
+                    new[] { CMess.ok.ToText() });
+            }
+            else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                string zipFilePath = FileDiaLogHelper.SaveZip();
+                if (string.IsNullOrEmpty(zipFilePath)) return;
+
+                var (resultExportZip, messageExportZip) = scope switch
+                {
+                    ScopeCard.SelectedCards => await currentOmegaDataEditor.ExportCompressedSelectedData(zipFilePath),
+                    ScopeCard.FiltedCards => await currentOmegaDataEditor.ExportCompressedFiltedData(zipFilePath),
+                    ScopeCard.AllCards => await currentOmegaDataEditor.ExportCompressedAllData(zipFilePath),
                     _ => (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.cardLabelScope.ToText()))
                 };
 
@@ -3687,8 +4078,11 @@ namespace CardEditor
             }
             if (currentUserControl is DataEditor currentDataEditor)
             {
-                var result = await currentDataEditor.ReplaceText(findWhat, replaceWith, scope);
-                return result;
+                return await currentDataEditor.ReplaceText(findWhat, replaceWith, scope);
+            }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return await currentOmegaDataEditor.ReplaceText(findWhat, replaceWith, scope);
             }
             return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
         }
@@ -3703,6 +4097,10 @@ namespace CardEditor
                 {
                     return currentDataEditor.CheckDuplicateIds();
                 }
+                else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+                {
+                    return currentOmegaDataEditor.CheckDuplicateIds();
+                }
                 else if (currentUserControl is BanListEditor currentBanListEditor)
                 {
                     return currentBanListEditor.CheckDuplicateIds();
@@ -3712,57 +4110,106 @@ namespace CardEditor
             else return (false, null);
         }
         // Replace Card List chính bằng Card List phụ, theo từng thuộc tính được chọn. Có tùy chọn Add các Card có id không xuất hiện trong Card list chính.
-        public async Task<(bool Success, int ReplacedCard, int TotalCard, string Message)> ReplaceField(string filePath, ulong flags, bool IsAddNew)
+        public async Task<(bool Success, int ReplacedCard, int TotalCard, string Message)> ReplaceField(CardListFormat format, string filePath, ulong flags, bool IsAddNew)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
                 return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
-            //if (!CheckDatabase.IsDatabaseFile(filePath)) return (false, CMess.notDatabase.ToText());
 
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
 
-                if (currentUserControl != null)
+                if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
                 {
-                    if (currentUserControl is DataEditor currentDataEditor)
+                    if (format != CardListFormat.YGOHasFlag && format != CardListFormat.YGONoFlag && format != CardListFormat.OMEGA)
+                        return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
+
+                    LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                     {
-                        LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                        var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                        var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                        var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
+                        _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                    };
+                    if (!resultCard.Result || resultCard.CardList == null) return (false, 0, 0, resultCard.Message);
+
+                    if (resultCard.Format != CardListFormat.YGONoFlag &&
+                        resultCard.Format != CardListFormat.YGOHasFlag)
+                    {
+                        int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{string.Format(CMess.confirmMissMatchFormat.ToText(), CMess.replaceField.ToText(), resultCard.Format.ToString())}" +
+                            $"\n- {CMess.autoConverFormat.ToText()}",
+                            new[] { CMess.ConvertFormat.ToText(), CMess.cancel.ToText() });
+                        if (resultChoose == 1) return (true, 0, 0, string.Empty);
+                        else if (resultChoose == 0)
                         {
-                            var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
-                            var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
-                            var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
-                            _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                            if (resultCard.Format == CardListFormat.OMEGA)
+                                resultCard.CardList = CardConverter.ListCardOmegaToListCard(resultCard.OmegaCardList);
+                            else return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Format.ToText()));
+                        }
+                    }
+                    // Data is ready
+                    return currentDataEditor.ReplaceDataCommand(format, resultCard.CardList, flags, IsAddNew);
+                }
+                else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+                {
+                    if (format != CardListFormat.YGOHasFlag && format != CardListFormat.YGONoFlag && format != CardListFormat.OMEGA)
+                        return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
+
+                    LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                    {
+                        var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                        var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                        var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
+                        _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                    };
+                    if (!resultCard.Result || resultCard.CardList == null) return (false, 0, 0, resultCard.Message);
+
+                    if (resultCard.Format != CardListFormat.OMEGA)
+                    {
+                        int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{string.Format(CMess.confirmMissMatchFormat.ToText(), CMess.replaceField.ToText(), resultCard.Format.ToString())}" +
+                            $"\n- {CMess.autoConverFormat.ToText()}",
+                            new[] { CMess.ConvertFormat.ToText(), CMess.cancel.ToText() });
+                        if (resultChoose == 1) return (true, 0, 0, string.Empty);
+                        else if (resultChoose == 0)
+                        {
+                            if (resultCard.Format == CardListFormat.YGONoFlag)
+                                resultCard.OmegaCardList = CardConverter.ListCardToListCardOmega(resultCard.CardList);
+                            else if (resultCard.Format == CardListFormat.YGOHasFlag)
+                                resultCard.OmegaCardList = CardConverter.ListCardToListCardOmega(resultCard.CardList);
+                            else return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Format.ToText()));
+                        }
+                    }
+                    // Data is ready
+                    return currentOmegaDataEditor.ReplaceDataCommand(format, resultCard.OmegaCardList, flags, IsAddNew);
+                }
+                else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
+                {
+                    string fileName = Path.GetFileName(filePath).ToLowerInvariant();
+                    if (string.IsNullOrEmpty(fileName))
+                        return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
+
+                    if (fileName.EndsWith(".lflist.conf"))
+                    {
+                        LoadBanListResult banListResult = await LoadBanListService.LoadFileBanList(filePath);
+                        if (!banListResult.Result) return (false, 0, 0, banListResult.Message);
+
+                        return currentBanListEditor.ReplaceDataCommand(banListResult.BanList.CardList.Values, flags, IsAddNew);
+                    }
+                    else
+                    {
+                        LoadCardBanDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                        {
+                            var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadBanListService.LoadDatabaseCardBanList(filePath),
+                            var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadBanListService.LoadExcelCardBanList(filePath),
+                            var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadBanListService.LoadCedsCardBanList(filePath),
+                            _ => new LoadCardBanDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                         };
                         if (!resultCard.Result || resultCard.CardList == null) return (false, 0, 0, resultCard.Message);
 
-                        return currentDataEditor.ReplaceDataCommand(resultCard.CardList, flags, IsAddNew);
+                        return currentBanListEditor.ReplaceDataCommand(resultCard.CardList, flags, IsAddNew);
                     }
-                    else if (currentUserControl is BanListEditor currentBanListEditor)
-                    {
-                        string fileName = Path.GetFileName(filePath).ToLowerInvariant();
-                        if (string.IsNullOrEmpty(fileName)) return (false, 0, 0, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
-                        if (fileName.EndsWith(".lflist.conf"))
-                        {
-                            LoadBanListResult banListResult = await LoadDataServices.LoadFileBanList(filePath);
-                            if (!banListResult.Result) return (false, 0, 0, banListResult.Message);
-
-                            return currentBanListEditor.ReplaceDataCommand(banListResult.BanList.CardList.Values, flags, IsAddNew);
-                        }
-                        else
-                        {
-                            LoadCardBanDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
-                            {
-                                var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCardBanList(filePath),
-                                var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCardBanList(filePath),
-                                var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCardBanList(filePath),
-                                _ => new LoadCardBanDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
-                            };
-                            if (!resultCard.Result || resultCard.CardList == null) return (false, 0, 0, resultCard.Message);
-
-                            return currentBanListEditor.ReplaceDataCommand(resultCard.CardList, flags, IsAddNew);
-                        }
-                    }
-                    else return (false, 0, 0, CMess.noSelecWin.ToText());
                 }
                 else return (false, 0, 0, CMess.noSelecWin.ToText());
             }
@@ -3779,63 +4226,116 @@ namespace CardEditor
 
         #region Import Data
         // Add các Card có id không xuất hiện trong Card List phụ vào Card List chính. Tùy chọn replace thuộc tính được chọn đối với các Card trong Card List chính có id xuất hiện trong Card List phụ.
-        public async Task<(bool, string)> ImportData(string filePath, ulong flags)
+        public async Task<(bool, string)> ImportData(CardListFormat format, string filePath, ulong flags)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
-            //if (!CheckDatabase.IsDatabaseFile(filePath)) return (false, CMess.notDatabase.ToText());
+            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
+                return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
 
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
 
-                if (currentUserControl != null)
+                if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
                 {
-                    if (currentUserControl is DataEditor currentDataEditor)
-                    {
-                        LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
-                        {
-                            var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
-                            var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
-                            var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
-                            _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
-                        };
+                    if (format != CardListFormat.YGOHasFlag && format != CardListFormat.YGONoFlag && format != CardListFormat.OMEGA)
+                        return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
 
+                    LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                    {
+                        var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                        var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                        var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
+                        _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                    };
+                    if (!resultCard.Result || resultCard.CardList == null) return (false, resultCard.Message);
+
+                    if (resultCard.Format != CardListFormat.YGONoFlag &&
+                        resultCard.Format != CardListFormat.YGOHasFlag)
+                    {
+                        int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{string.Format(CMess.confirmMissMatchFormat.ToText(), CMess.Import.ToText(), resultCard.Format.ToString())}" +
+                            $"\n- {CMess.autoConverFormat.ToText()}",
+                            new[] { CMess.ConvertFormat.ToText(), CMess.cancel.ToText() });
+                        if (resultChoose == 1) return (true, string.Empty);
+                        else if (resultChoose == 0)
+                        {
+                            if (resultCard.Format == CardListFormat.OMEGA)
+                                resultCard.CardList = CardConverter.ListCardOmegaToListCard(resultCard.OmegaCardList);
+                            else return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Format.ToText()));
+                        }
+                    }
+                    // Data is ready
+                    return currentDataEditor.ImportDataCommand(format, resultCard.CardList, flags);
+                }
+                else if (currentUserControl != null && currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+                {
+                    if (format != CardListFormat.YGOHasFlag && format != CardListFormat.YGONoFlag && format != CardListFormat.OMEGA)
+                        return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
+
+                    LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                    {
+                        var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                        var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                        var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
+                        _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                    };
+                    if (!resultCard.Result || resultCard.CardList == null) return (false, resultCard.Message);
+
+                    if (resultCard.Format != CardListFormat.OMEGA)
+                    {
+                        int resultChoose = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                            $"{string.Format(CMess.confirmMissMatchFormat.ToText(), CMess.Import.ToText(), resultCard.Format.ToString())}" +
+                            $"\n- {CMess.autoConverFormat.ToText()}",
+                            new[] { CMess.ConvertFormat.ToText(), CMess.cancel.ToText() });
+                        if (resultChoose == 1) return (true, string.Empty);
+                        else if (resultChoose == 0)
+                        {
+                            if (resultCard.Format == CardListFormat.YGONoFlag)
+                                resultCard.OmegaCardList = CardConverter.ListCardToListCardOmega(resultCard.CardList);
+                            else if (resultCard.Format == CardListFormat.YGOHasFlag)
+                                resultCard.OmegaCardList = CardConverter.ListCardToListCardOmega(resultCard.CardList);
+                            else return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Format.ToText()));
+                        }
+                    }
+                    // Data is ready
+                    return currentOmegaDataEditor.ImportDataCommand(format, resultCard.OmegaCardList, flags);
+                }
+                else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
+                {
+                    string fileName = Path.GetFileName(filePath).ToLowerInvariant();
+                    if (string.IsNullOrEmpty(fileName))
+                        return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
+
+                    if (fileName.EndsWith(".lflist.conf"))
+                    {
+                        LoadBanListResult banListResult = await LoadBanListService.LoadFileBanList(filePath);
+                        if (!banListResult.Result) return (false, banListResult.Message);
+
+                        return currentBanListEditor.ImportDataCommand(banListResult.BanList.CardList.Values, flags);
+                    }
+                    else
+                    {
+                        LoadCardBanDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                        {
+                            var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadBanListService.LoadDatabaseCardBanList(filePath),
+                            var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadBanListService.LoadExcelCardBanList(filePath),
+                            var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadBanListService.LoadCedsCardBanList(filePath),
+                            _ => new LoadCardBanDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
+                        };
                         if (!resultCard.Result || resultCard.CardList == null) return (false, resultCard.Message);
 
-                        return currentDataEditor.ImportDataCommand(resultCard.CardList, flags);
+                        return currentBanListEditor.ImportDataCommand(resultCard.CardList, flags);
                     }
-                    else if (currentUserControl is BanListEditor currentBanListEditor)
-                    {
-                        string fileName = Path.GetFileName(filePath).ToLowerInvariant();
-                        if (string.IsNullOrEmpty(fileName)) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText()));
-                        if (fileName.EndsWith(".lflist.conf"))
-                        {
-                            LoadBanListResult banListResult = await LoadDataServices.LoadFileBanList(filePath);
-                            if (!banListResult.Result) return (false, banListResult.Message);
-
-                            return currentBanListEditor.ImportDataCommand(banListResult.BanList.CardList.Values, flags);
-                        }
-                        else
-                        {
-                            LoadCardBanDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
-                            {
-                                var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCardBanList(filePath),
-                                var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCardBanList(filePath),
-                                var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCardBanList(filePath),
-                                _ => new LoadCardBanDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
-                            };
-                            if (!resultCard.Result || resultCard.CardList == null) return (false, resultCard.Message);
-
-                            return currentBanListEditor.ImportDataCommand(resultCard.CardList, flags);
-                        }
-                    }
-                    else return (false, CMess.noSelecWin.ToText());
                 }
                 else return (false, CMess.noSelecWin.ToText());
             }
             catch (Exception ex)
             {
                 return (false, ex.Message);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
 
@@ -3855,6 +4355,22 @@ namespace CardEditor
                 newDataEditor.ImportCreateNew(importedCards);
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
+        public void ImportDataCreateNewDataEdit(IEnumerable<CardEditor.Models.CardOmega> importedCards)
+        {
+            var newOmegaDataEditor = new OmegaDataEditor(this);
+            var newTab = new TabContent
+            {
+                Header = CMess.DataEdit.ToText(),
+                Content = newOmegaDataEditor
+            };
+            Tabs.Add(newTab);
+            TabControlMain.SelectedItem = newTab;
+
+            newOmegaDataEditor.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                newOmegaDataEditor.ImportCreateNew(importedCards);
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
         public void ImportDataCreateNewBanListEdit(IEnumerable<CardEditor.Models.CardBanList> importedCards)
         {
             var newBanListEditor = new BanListEditor(this);
@@ -3871,151 +4387,19 @@ namespace CardEditor
                 newBanListEditor.ImportCreateNew(importedCards);
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
-
-        /*
-        private async void menuImportCeds_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
-            {
-                string filePath = FileDiaLogHelper.OpenCeds();
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return;
-
-                try
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        Mouse.OverrideCursor = Cursors.Wait;
-                    });
-
-                    var (importedCards, message) = await LoadDataServices.LoadCedsCard(filePath);
-                    if (importedCards != null)
-                    {
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0) // Ask
-                            {
-                                int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                                    new[] { CMess.Overwrite.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
-                                if (resultImport == 0) currentDataEditor.ImportOverwrite(importedCards); // Overwrite
-                                else if (resultImport == 1) currentDataEditor.ImportAppendwrite(importedCards); // Append
-                                else if (resultImport == 2) ImportDataCreateNewDataEdit(importedCards); // Create New
-                                else return;
-                            }
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 1) currentDataEditor.ImportOverwrite(importedCards); // Overwrite
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 2) currentDataEditor.ImportAppendwrite(importedCards); // Append
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 3) ImportDataCreateNewDataEdit(importedCards); // Create New
-                            else return;
-                        });
-                    }
-                    else
-                    {
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-        }
-        private async void menuImportExcel_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentUserControl != null && currentUserControl is DataEditor currentDataEditor)
-            {
-                string filePath = FileDiaLogHelper.OpenExcel();
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return;
-
-                try
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        Mouse.OverrideCursor = Cursors.Wait;
-                    });
-
-                    var (importedCards, message) = await LoadDataServices.LoadExcelCard(filePath);
-                    if (importedCards != null)
-                    {
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0) // Ask
-                            {
-                                int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                                    new[] { CMess.Overwrite.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
-                                if (resultImport == 0) currentDataEditor.ImportOverwrite(importedCards); // Overwrite
-                                else if (resultImport == 1) currentDataEditor.ImportAppendwrite(importedCards); // Append
-                                else if (resultImport == 2) ImportDataCreateNewDataEdit(importedCards); // Create New
-                                else return;
-                            }
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 1) currentDataEditor.ImportOverwrite(importedCards); // Overwrite
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 2) currentDataEditor.ImportAppendwrite(importedCards); // Append
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 3) ImportDataCreateNewDataEdit(importedCards); // Create New
-                            else return;
-                        });
-                    }
-                    else
-                    {
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
-            {
-                string filePath = FileDiaLogHelper.OpenExcel();
-                if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath)) return;
-
-                try
-                {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
-                    {
-                        Mouse.OverrideCursor = Cursors.Wait;
-                    });
-
-                    var (importedCards, message) = await LoadDataServices.LoadExcelCardBanList(filePath);
-                    if (importedCards != null)
-                    {
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 0) // Ask
-                            {
-                                int resultImport = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question, CMess.confirmWriteData.ToText(),
-                                    new[] { CMess.Overwrite.ToText(), CMess.Appendwrite.ToText(), CMess.CreateNew.ToText(), CMess.cancel.ToText() });
-                                if (resultImport == 0) currentBanListEditor.ImportOverwrite(importedCards); // Overwrite
-                                else if (resultImport == 1) currentBanListEditor.ImportAppendwrite(importedCards); // Append
-                                else if (resultImport == 2) ImportDataCreateNewBanListEdit(importedCards); // Create New
-                                else return;
-                            }
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 1) currentBanListEditor.ImportOverwrite(importedCards); // Overwrite
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 2) currentBanListEditor.ImportAppendwrite(importedCards); // Append
-                            else if (ConfigViewModel.Instance.dataHandlingSetting.WriteMode == 3) ImportDataCreateNewBanListEdit(importedCards); // Create New
-                            else return;
-                        });
-                    }
-                    else
-                    {
-                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                            $"{CMess.errorOcc.ToText()} {message}", new[] { CMess.ok.ToText() });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-        }
-        */
         #endregion
 
         #region Pendulum Language
-        public void OpenPreViewDescWindow(Card card, PendulumLanguageRule rule)
+        public void OpenPreViewDescWindowCard(Card card, PendulumLanguageRule rule)
+        {
+            PreviewDescWindow previewDescWindow = new PreviewDescWindow();
+            previewDescWindow.ShowInTaskbar = false;
+            previewDescWindow.Owner = this;
+            previewDescWindow.MainWindowReference = this;
+            previewDescWindow.InitializePartEffect(card, rule);
+            previewDescWindow.ShowDialog();
+        }
+        public void OpenPreViewDescWindowCardOmega(CardOmega card, PendulumLanguageRule rule)
         {
             PreviewDescWindow previewDescWindow = new PreviewDescWindow();
             previewDescWindow.ShowInTaskbar = false;
@@ -4041,6 +4425,11 @@ namespace CardEditor
                 var result = await currentDataEditor.PendulumLanguage(rule, scope, overwrite);
                 return result;
             }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                var result = await currentOmegaDataEditor.PendulumLanguage(rule, scope, overwrite);
+                return result;
+            }
             else return new PenDescProcessSummary { Result = false, Message = CMess.noSelecWin.ToText() };
         }
         public void ApplyPendulumLanguage(string desc)
@@ -4049,6 +4438,10 @@ namespace CardEditor
             {
                 currentDataEditor.ApplyPendulumLanguage(desc);
             }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                currentOmegaDataEditor.ApplyPendulumLanguage(desc);
+            }
         }
         public void StopApplyPenLang()
         {
@@ -4056,12 +4449,20 @@ namespace CardEditor
             {
                 currentDataEditor.StopApplyPenLang();
             }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                currentOmegaDataEditor.StopApplyPenLang();
+            }
         }
         public (bool, string) RollBackPenlang()
         {
             if (currentUserControl is DataEditor currentDataEditor)
             {
                 return currentDataEditor.RollBackPenlang();
+            }
+            if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return currentOmegaDataEditor.RollBackPenlang();
             }
             else return (false, CMess.noSelecWin.ToText());
         }
@@ -4084,8 +4485,11 @@ namespace CardEditor
 
             if (currentUserControl is DataEditor currentDataEditor)
             {
-                var result = await currentDataEditor.CreditTeam(credit, scope, writeMode);
-                return result;
+                return await currentDataEditor.CreditTeam(credit, scope, writeMode);
+            }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return await currentOmegaDataEditor.CreditTeam(credit, scope, writeMode);
             }
             else return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
         }
@@ -4105,8 +4509,11 @@ namespace CardEditor
 
             if (currentUserControl is DataEditor currentDataEditor)
             {
-                var result = await currentDataEditor.RemoveCredit(scope);
-                return result;
+                return await currentDataEditor.RemoveCredit(scope);
+            }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return await currentOmegaDataEditor.RemoveCredit(scope);
             }
             else return new ResultItem { Succeeded = false, Message = CMess.noSelecWin.ToText() };
         }
@@ -4116,6 +4523,10 @@ namespace CardEditor
             {
                 return currentDataEditor.RollbackCredits();
             }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                return currentOmegaDataEditor.RollbackCredits();
+            }
             else return (false, CMess.noSelecWin.ToText());
         }
         public void StopApplyCredits()
@@ -4123,6 +4534,10 @@ namespace CardEditor
             if (currentUserControl is DataEditor currentDataEditor)
             {
                 currentDataEditor.StopApplyCredits();
+            }
+            else if (currentUserControl is OmegaDataEditor currentOmegaDataEditor)
+            {
+                currentOmegaDataEditor.StopApplyCredits();
             }
         }
         #endregion
@@ -4255,8 +4670,8 @@ namespace CardEditor
                 int result = CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
                     $"{CMess.registrySuc.ToText()}\n{Regmessage}.\n\n" +
                     $"{CMess.registryType.ToText()}\n" +
-                    $"{CMess.openDirectly.ToText()}\n.ypk .cdb .ceds .lua .ydk\n" +
-                    $"{CMess.openWithOnly.ToText()}\n.zip .db .sqlite .xlsx .txt .md .log .yml .conf\n\n" +
+                    $"{CMess.openDirectly.ToText()}\n.ypk .db .cdb .bytes .ceds .lua .ydk\n" +
+                    $"{CMess.openWithOnly.ToText()}\n.zip .sqlite .xlsx .txt .md .log .yml .conf\n\n" +
                     $"{CMess.setRegistry.ToText()}\n" +
                     $"{CMess.QuestOpen.ToText()}",
                 new[] { CMess.yes.ToText(), CMess.no.ToText() });
@@ -4303,7 +4718,7 @@ namespace CardEditor
 
             if (result == true)
             {
-                imgmainbg.Visibility = Visibility.Hidden;
+                // imgmainbg.Visibility = Visibility.Hidden;
                 switch (chooseWindow.SelectedOption)
                 {
                     case EditorType.Image:
@@ -4389,7 +4804,7 @@ namespace CardEditor
             var tabControl = sender as TabablzControl;
             if (tabControl != null)
             {
-                imgmainbg.Visibility = Visibility.Hidden;
+                // imgmainbg.Visibility = Visibility.Hidden;
                 var selectedTabContent = tabControl.SelectedItem as TabContent;
                 string mainTitle = string.Empty;
                 if (selectedTabContent != null)
@@ -4401,6 +4816,7 @@ namespace CardEditor
                         case BanListEditor currentBanListEditor: UpdateWindowTitle(currentBanListEditor.MainWindowTitle); break;
                         case CodeEditor currentCodeEditor: UpdateWindowTitle(currentCodeEditor.MainWindowTitle); break;
                         case DataEditor currentDataEditor: UpdateWindowTitle(currentDataEditor.MainWindowTitle); break;
+                        case OmegaDataEditor currentOmegaDataEditor: UpdateWindowTitle(currentOmegaDataEditor.MainWindowTitle); break;
                         case DeckEditor currentDeckEditor: UpdateWindowTitle(currentDeckEditor.MainWindowTitle); break;
                         case ImageEditor currentImageEditor: UpdateWindowTitle(currentImageEditor.MainWindowTitle); break;
                         case Home currentHome: UpdateWindowTitle(currentHome.MainWindowTitle); break;
@@ -4441,7 +4857,7 @@ namespace CardEditor
         {
             if (currentUserControl != null)
             {
-                DataEditVisibility = (currentUserControl is DataEditor) ? Visibility.Visible : Visibility.Collapsed;
+                DataEditVisibility = (currentUserControl is DataEditor || currentUserControl is OmegaDataEditor) ? Visibility.Visible : Visibility.Collapsed;
                 ScriptEditVisibility = (currentUserControl is CodeEditor) ? Visibility.Visible : Visibility.Collapsed;
                 DeckEditVisibility = (currentUserControl is DeckEditor) ? Visibility.Visible : Visibility.Collapsed;
                 BanListEditVisibility = (currentUserControl is BanListEditor) ? Visibility.Visible : Visibility.Collapsed;
@@ -4455,7 +4871,7 @@ namespace CardEditor
             }
         }
 
-        public void UpdateWindowTitle(string title)
+        public void UpdateWindowTitle(AppTitle title)
         {
             MainWindowTitle = title;
         }
@@ -4473,6 +4889,7 @@ namespace CardEditor
                 if (currentUserControl is BanListEditor) defaultTitle = CMess.BanListEdit.ToText();
                 else if (currentUserControl is CodeEditor) defaultTitle = CMess.CodeEdit.ToText();
                 else if (currentUserControl is DataEditor) defaultTitle = CMess.DataEdit.ToText();
+                else if (currentUserControl is OmegaDataEditor) defaultTitle = $"{CMess.DataEdit.ToText()} Ω";
                 else if (currentUserControl is DeckEditor) defaultTitle = CMess.DeckEdit.ToText();
                 else if (currentUserControl is ImageEditor) defaultTitle = CMess.ImageEdit.ToText();
                 else if (currentUserControl is Home) defaultTitle = CMess.Home.ToText();

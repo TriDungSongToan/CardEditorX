@@ -51,8 +51,6 @@ namespace CardEditor.Localization
         Data = 0x45,            //Data
         Export = 0x46,          //Export
         ExpoZIP = 0x47,         //Export as zip
-        ExpoCeds = 0x48,        //Export CEDS
-        ExpoExcel = 0x49,       //Export Excel
 
         Manager = 0x55,         //Manager
 
@@ -115,6 +113,9 @@ namespace CardEditor.Localization
         noSave = 0x12e,         //Don't Save
         noAsk = 0x12f,          //Don’t ask again
         CopyInfo = 0x130,       //Copy Info
+
+        ConvertFormat = 0x135,  //Convert Format
+        OpenCompatible = 0x136,  //Open Compatibility Tab
         #endregion
 
         #endregion
@@ -128,22 +129,25 @@ namespace CardEditor.Localization
         browserPath = 0x206,        //Browser Path
 
         DisplaySetting = 0x211,     //Display Settings
-        Background = 0x212,         //Background
-        Foreground = 0x213,         //Foreground
-        Theme = 0x214,              //Theme
-        FontFamily = 0x215,         //FontFamily
-        FontSize = 0x216,           //FontSize
-        Highlight = 0x217,          //Highlight
-        FlowDirection = 0x218,      //Flow Direction
-        LeftToRight = 0x219,        //Left To Right
-        RightToLeft = 0x21a,        //Right To Left
-        TextAlignment = 0x21b,      //Text Alignment
-        AligLeft = 0x21c,           //Left
-        AligRight = 0x21d,          //Right
-        AligJustify = 0x21e,        //Justify
-        AligCenter = 0x21f,         //Center
-        WordWrap = 0x220,           //Word Wrap
-        CodeFold = 0x221,           //Code Folding
+        BackgroundImage = 0x212,    //Background Image File Path
+        UseBgImage = 0x213,         //Use Background Image
+        UseBGImageCode = 0x214,     //Use Background Code
+        Background = 0x215,         //Background
+        Foreground = 0x216,         //Foreground
+        Theme = 0x217,              //Theme
+        FontFamily = 0x218,         //FontFamily
+        FontSize = 0x219,           //FontSize
+        Highlight = 0x21a,          //Highlight
+        FlowDirection = 0x21b,      //Flow Direction
+        LeftToRight = 0x21c,        //Left To Right
+        RightToLeft = 0x21d,        //Right To Left
+        TextAlignment = 0x21e,      //Text Alignment
+        AligLeft = 0x21f,           //Left
+        AligRight = 0x220,          //Right
+        AligJustify = 0x221,        //Justify
+        AligCenter = 0x222,         //Center
+        WordWrap = 0x223,           //Word Wrap
+        CodeFold = 0x224,           //Code Folding
 
         Sort = 0x22a,           //Sort
         SortSetting = 0x22b,    //Sort Settings
@@ -386,6 +390,7 @@ namespace CardEditor.Localization
         toolOpenYGOResources = 0x541,   //Open Card in YGO Resources Website
 
         selectOpenFile = 0x545,         //Select File to Open:
+        selectFileFormat = 0x546,       //Select {0} File Format
 
         toolPureAND = 0x54a,        //The card must satisfy all filter conditions.
         toolPureOR = 0x54b,         //The card only needs to satisfy any one of the filter conditions.
@@ -454,6 +459,7 @@ namespace CardEditor.Localization
         cardlabelSetCode = 0x5dc,   //SetCode/Archetype
         cardLabelCategory = 0x5dd,  //Category
         cardLabelFlag = 0x5de,      //Flag
+        cardLabelGenre = 0x5df,     //Genre
 
         Level = 0x5e1,          //Level
         minuLv = 0x5e2,         //Minus Level
@@ -606,6 +612,9 @@ namespace CardEditor.Localization
         originaData = 0x6e6,            //Original Data
         unSavedData = 0x6e7,            //Unsaved Data
 
+        autoConverFormat = 0x6ea,       //Automatically convert the format (some data may be lost)
+        autoOpenCompatible = 0x6eb,     //Open a new tab compatible with this format
+
         NumberCloseTab = 0x700,         //You are closing {0} tabs.
         HasUnSaveData = 0x701,          //There is unsaved data.
         HasSnapshot = 0x702,            //There is one snapshot that hasn't been rolled back from the previous run.
@@ -623,11 +632,12 @@ namespace CardEditor.Localization
         confirmClearHistory = 0x70d,    //Are you sure you want to clear the recently opened {0} history?
         confirmSaveBlank = 0x70e,       //Are you sure you want to save a blank file?
         confirmUnregisterReg = 0x70f,   //Are you sure you want to unregister the CardEditorX file types from the Windows Registry?
-        quesDownloadUpdate = 0x710,     //Update Available, dowload it now?
-        quesDownloadCardImage = 0x711,  //Download Card Resource Pack now?
-        confirmWriteData = 0x712,       //How would you like to handle the selected data?
-        noUpdate = 0x713,               //No updates found.
-        updateCompe = 0x714,            //Update Complete!
+        confirmMissMatchFormat = 0x710, //Data you are about to {0} is in the {1} format, which is not compatible with the current Tab. How would you like to proceed?
+        quesDownloadUpdate = 0x711,     //Update Available, dowload it now?
+        quesDownloadCardImage = 0x712,  //Download Card Resource Pack now?
+        confirmWriteData = 0x713,       //How would you like to handle the selected data?
+        noUpdate = 0x714,               //No updates found.
+        updateCompe = 0x715,            //Update Complete!
 
         unableDelete = 0x725,           //Unable to delete existing file after multiple attempts.
         gitNotFound = 0x726,            //git.exe path not found, make sure Git is installed and using correct path in application configuration.

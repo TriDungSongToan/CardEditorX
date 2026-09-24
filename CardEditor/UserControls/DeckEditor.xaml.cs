@@ -37,8 +37,8 @@ namespace CardEditor.UserControls
     {
         #region Variable
         private IMainWindowService MainWindowService;
-        private string _mainWindowTitle = string.Empty;
-        public string MainWindowTitle
+        private AppTitle _mainWindowTitle = new();
+        public AppTitle MainWindowTitle
         {
             get => _mainWindowTitle;
             set
@@ -47,9 +47,23 @@ namespace CardEditor.UserControls
                 {
                     _mainWindowTitle = value;
                     OnPropertyChanged(nameof(MainWindowTitle));
-                    UpdateWindowTitle();
+
+                    if (MainWindowService == null) return;
+                    MainWindowService.UpdateWindowTitle(MainWindowTitle);
+                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
                 }
             }
+        }
+        private void RebuildWindowTitle()
+        {
+            if (CurrentDeck == null) return;
+
+            if (string.IsNullOrWhiteSpace(CurrentDeck.archiveFilePath))
+            {
+                if (!string.IsNullOrEmpty(CurrentDeckPath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(CurrentDeckPath);
+                else MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(string.Empty);
+            }
+            else MainWindowTitle = FileLocationService.BuildTitleZipEntry(CurrentDeck.archiveFilePath, CurrentDeck.archiveEntryName);
         }
 
         private bool _isSaved = true;
@@ -249,7 +263,9 @@ namespace CardEditor.UserControls
                     NewFolderPath = (string.IsNullOrEmpty(CurrentDeckPath) || !System.IO.File.Exists(CurrentDeckPath))
                         ? string.Empty : System.IO.Path.GetDirectoryName(CurrentDeckPath);
                     NewNameDeck = CurrentDeckName;
-                    MainWindowTitle = CurrentDeckPath;
+
+                    RebuildWindowTitle();
+
                     IsSaved = true;
                     DeleteDeckCommand.RaiseCanExecuteChanged();
                     ReNameDeckCommand.RaiseCanExecuteChanged();
@@ -1341,14 +1357,6 @@ namespace CardEditor.UserControls
         }
         #endregion
 
-        public void UpdateWindowTitle()
-        {
-            if (MainWindowService != null)
-            {
-                MainWindowService.UpdateWindowTitle(CurrentDeckPath);
-                MainWindowService.UpdateTabItemHeader(CurrentDeckName);
-            }
-        }
         private void UpdateWindowSavedFlag()
         {
             if (MainWindowService != null)

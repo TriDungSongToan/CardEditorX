@@ -12,9 +12,11 @@ However, **DataEditor** is not limited to `.cdb` files. It can load and process 
 
 CardEditorX currently supports the following Card Database formats:
 
-- SQLite — `*.db`, `*.cdb`, `*.sqlite`
-- Excel — `*.xlsx`
-- Text / JSON — `*.txt`, `*.ceds`
+|Format|Extension|
+|------|---------|
+|SQLite|`*.cdb`, `*.db`, `*.bytes`, `*.sqlite`|
+|Excel |`*.xlsx`, `*.xlsm`, `*.xltx`, `*.xltm`|
+|JSON  |`*.ceds`, `*.json`, `*.txt`|
 
 The file format itself is not the primary requirement. As long as the file can provide a **compatible Card List structure**, DataEditor can use it as a card data source.
 

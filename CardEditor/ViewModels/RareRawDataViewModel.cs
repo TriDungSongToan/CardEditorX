@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using SkiaSharp;
 using CardEditor.Models;
 using CardEditor.Constants;
-using CardEditor.Services;
+using CardEditor.Services.CreateFile;
+using CardEditor.Services.LoadData;
 using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -70,7 +71,7 @@ namespace CardEditor.ViewModels
                         $"{CMess.filealreadyExit.ToText()} {CMess.QuestOverwrite.ToText()}", new[] { CMess.yes.ToText(), CMess.no.ToText() });
                     if (result != 0) return;
                 }
-                var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateRaresListDatabase(CardAppContext.Instance.RaresFolderPath, "RaresListDB.cdb"));
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateRareService.CreateRaresListDatabase(CardAppContext.Instance.RaresFolderPath, "RaresListDB.cdb"));
                 if (!resultCreate)
                 {
                     OnErrorOccurred?.Invoke($"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.ListRareDB.ToText(), CMess.File.ToText())} {messageCreate}");
@@ -291,7 +292,7 @@ namespace CardEditor.ViewModels
         {
             if (!File.Exists(CardAppContext.Instance.RareCardDBPath))
             {
-                var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateRareCardsDatabase(CardAppContext.Instance.RaresFolderPath, "RareCardsDB.cdb"));
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateRareService.CreateRareCardsDatabase(CardAppContext.Instance.RaresFolderPath, "RareCardsDB.cdb"));
                 if (!resultCreate)
                 {
                     OnErrorOccurred?.Invoke($"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardRareDB.ToText(), CMess.File.ToText())} {messageCreate}");
@@ -772,10 +773,10 @@ namespace CardEditor.ViewModels
             {
                 LoadCardRareDataResult resultBrowse = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
-                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCardRare(filePath),
-                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCardRare(filePath),
-                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCardRare(filePath),
-                    var ext when ConstantExtension.DeckExtensions.Contains(ext) => await LoadDataServices.LoadYdkCardRare(filePath),
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadRarityService.LoadDatabaseCardRare(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadRarityService.LoadExcelCardRare(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadRarityService.LoadCedsCardRare(filePath),
+                    var ext when ConstantExtension.DeckExtensions.Contains(ext) => await LoadRarityService.LoadYdkCardRare(filePath),
                     _ => new LoadCardRareDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
 

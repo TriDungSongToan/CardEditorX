@@ -50,14 +50,19 @@ namespace CardEditor.ViewModels
             MonsterHeaders = new()
         };
 
-        private Dictionary<Card, string>? _lastSnapshot;
+        private Dictionary<Card, string>? _lastSnapshotCard;
+        private Dictionary<CardOmega, string>? _lastSnapshotCardOmega;
         private readonly object _snapshotLock = new object();
         /// <summary>
         /// True nếu đang có 1 snapshot chưa được rollback (do lần chạy trước để lại).
         /// </summary>
-        public bool HasPendingRollback
+        public bool HasPendingRollbackCard
         {
-            get { lock (_snapshotLock) return _lastSnapshot != null; }
+            get { lock (_snapshotLock) return _lastSnapshotCard != null; }
+        }
+        public bool HasPendingRollbackCardOmega
+        {
+            get { lock (_snapshotLock) return _lastSnapshotCardOmega != null; }
         }
         #endregion
 
@@ -136,7 +141,7 @@ namespace CardEditor.ViewModels
         #endregion
 
         #region Process Desc
-        public PenDescProcessSummary ProcessPenDesc(IEnumerable<Card>? cards)
+        public PenDescProcessSummary ProcessPenDescCard(IEnumerable<Card>? cards)
         {
             var summary = new PenDescProcessSummary();
             if (cards == null) return summary;
@@ -172,7 +177,90 @@ namespace CardEditor.ViewModels
             }
             return summary;
         }
-        public Task<PenDescProcessSummary> ProcessPenDesc(IEnumerable<Card>? cards, PendulumLanguageRule newRule)
+        public PenDescProcessSummary ProcessPenDescCardOmega(IEnumerable<CardOmega>? cards)
+        {
+            var summary = new PenDescProcessSummary();
+            if (cards == null) return summary;
+
+            foreach (var card in cards)
+            {
+                if ((card.type & (ulong)CardType.Pendulum) == 0) continue;
+                summary.Total++;
+
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(card.desc))
+                    {
+                        summary.EmptyDesc++;
+                        continue;
+                    }
+
+                    var analysisResult = Analyze(card.desc);
+
+                    if (analysisResult.RuleResult.Locale == EdoProNoPenRule.Locale)
+                    {
+                        summary.EdoProFallback++;
+                        // Vẫn build lại desc bình thường nếu cần, chỉ tách riêng để theo dõi tỷ lệ fallback
+                    }
+
+                    card.desc = BuildDesc(analysisResult.RuleResult, analysisResult.DescResult, card.level, card.type);
+                    summary.Success++;
+                }
+                catch (Exception)
+                {
+                    summary.Error++;
+                }
+            }
+            return summary;
+        }
+
+        public Task<PenDescProcessSummary> ProcessPenDescCard(IEnumerable<Card>? cards, PendulumLanguageRule newRule)
+        {
+            return Task.Run(() =>
+            {
+                var summary = new PenDescProcessSummary();
+                if (cards == null) return summary;
+
+                var options = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2)
+                };
+
+                Parallel.ForEach(cards, options, card =>
+                {
+                    if ((card.type & (ulong)CardType.Pendulum) == 0)
+                        return;
+
+                    Interlocked.Increment(ref summary.Total);
+
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(card.desc))
+                        {
+                            Interlocked.Increment(ref summary.EmptyDesc);
+                            return;
+                        }
+
+                        var analysisResult = Analyze(card.desc);
+
+                        if (analysisResult.RuleResult.Locale == EdoProNoPenRule.Locale)
+                        {
+                            Interlocked.Increment(ref summary.EdoProFallback);
+                        }
+
+                        card.desc = BuildDesc(newRule, analysisResult.DescResult, card.level, card.type);
+                        Interlocked.Increment(ref summary.Success);
+                    }
+                    catch (Exception)
+                    {
+                        Interlocked.Increment(ref summary.Error);
+                    }
+                });
+
+                return summary;
+            });
+        }
+        public Task<PenDescProcessSummary> ProcessPenDescCardOmega(IEnumerable<CardOmega>? cards, PendulumLanguageRule newRule)
         {
             return Task.Run(() =>
             {
@@ -219,7 +307,7 @@ namespace CardEditor.ViewModels
             });
         }
 
-        public Task<PenDescProcessSummary> ProcessPenDesc(IEnumerable<Card> cards, PendulumLanguageRule newRule,
+        public Task<PenDescProcessSummary> ProcessPenDescCard(IEnumerable<Card> cards, PendulumLanguageRule newRule,
             CancellationToken token, bool allowOverwritePendingSnapshot = false)
         {
             return Task.Run(() =>
@@ -229,7 +317,7 @@ namespace CardEditor.ViewModels
 
                 lock (_snapshotLock)
                 {
-                    if (_lastSnapshot != null && !allowOverwritePendingSnapshot)
+                    if (_lastSnapshotCard != null && !allowOverwritePendingSnapshot)
                     {
                         throw new InvalidOperationException(
                             "There is one snapshot that hasn't been rolled back from the previous run." +
@@ -290,7 +378,7 @@ namespace CardEditor.ViewModels
                 }
                 catch (OperationCanceledException)
                 {
-                    RollbackFromDictionary(snapshot);
+                    RollbackFromDictionaryCard(snapshot);
                     summary.Cancelled = true;
                     summary.RolledBack = true;
                     summary.Message = summary.BuildMessage();
@@ -298,7 +386,7 @@ namespace CardEditor.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    RollbackFromDictionary(snapshot);
+                    RollbackFromDictionaryCard(snapshot);
                     summary.RolledBack = true;
                     summary.Result = false;
                     summary.Message = ex.Message;
@@ -307,7 +395,103 @@ namespace CardEditor.ViewModels
 
                 lock (_snapshotLock)
                 {
-                    _lastSnapshot = snapshot;
+                    _lastSnapshotCard = snapshot;
+                }
+
+                summary.Result = true;
+                summary.Message = summary.BuildMessage();
+                return summary;
+            }, token);
+        }
+        public Task<PenDescProcessSummary> ProcessPenDescCardOmega(IEnumerable<CardOmega> cards, PendulumLanguageRule newRule,
+            CancellationToken token, bool allowOverwritePendingSnapshot = false)
+        {
+            return Task.Run(() =>
+            {
+                var summary = new PenDescProcessSummary();
+                if (cards == null) return summary;
+
+                lock (_snapshotLock)
+                {
+                    if (_lastSnapshotCardOmega != null && !allowOverwritePendingSnapshot)
+                    {
+                        throw new InvalidOperationException(
+                            "There is one snapshot that hasn't been rolled back from the previous run." +
+                            "Call Rollback() first, or pass allowOverwritePendingSnapshot: true if you accept losing the ability to roll back the previous time.");
+                    }
+                }
+
+                var cardList = cards.ToList();
+
+                var snapshot = new Dictionary<CardOmega, string>();
+                foreach (var card in cardList)
+                {
+                    snapshot[card] = card.desc;
+                }
+
+                var errorIdsLock = new object();
+
+                var options = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2),
+                    CancellationToken = token
+                };
+
+                try
+                {
+                    Parallel.ForEach(cardList, options, card =>
+                    {
+                        if ((card.type & (ulong)CardType.Pendulum) == 0) return;
+                        Interlocked.Increment(ref summary.Total);
+
+                        try
+                        {
+                            if (string.IsNullOrWhiteSpace(card.desc))
+                            {
+                                Interlocked.Increment(ref summary.EmptyDesc);
+                                return;
+                            }
+
+                            var analysisResult = Analyze(card.desc);
+
+                            if (analysisResult.RuleResult.Locale == EdoProNoPenRule.Locale)
+                            {
+                                Interlocked.Increment(ref summary.EdoProFallback);
+                            }
+
+                            card.desc = BuildDesc(newRule, analysisResult.DescResult, card.level, card.type);
+                            Interlocked.Increment(ref summary.Success);
+                        }
+                        catch (Exception)
+                        {
+                            Interlocked.Increment(ref summary.Error);
+                            lock (errorIdsLock)
+                            {
+                                summary.ErrorCardIds.Add(card.id);
+                            }
+                        }
+                    });
+                }
+                catch (OperationCanceledException)
+                {
+                    RollbackFromDictionaryCardOmega(snapshot);
+                    summary.Cancelled = true;
+                    summary.RolledBack = true;
+                    summary.Message = summary.BuildMessage();
+                    return summary;
+                }
+                catch (Exception ex)
+                {
+                    RollbackFromDictionaryCardOmega(snapshot);
+                    summary.RolledBack = true;
+                    summary.Result = false;
+                    summary.Message = ex.Message;
+                    return summary;
+                }
+
+                lock (_snapshotLock)
+                {
+                    _lastSnapshotCardOmega = snapshot;
                 }
 
                 summary.Result = true;
@@ -319,15 +503,15 @@ namespace CardEditor.ViewModels
         /// <summary>
         /// Rollback thủ công, gọi sau khi ProcessPenDesc đã chạy xong (thành công hoặc không).
         /// </summary>
-        public (bool, string) PerformManualRollback()
+        public (bool, string) PerformManualRollbackCard()
         {
             try
             {
                 lock (_snapshotLock)
                 {
-                    if (_lastSnapshot == null) return (false, CMess.noValiDataFound.ToText());
-                    RollbackFromDictionary(_lastSnapshot);
-                    _lastSnapshot = null;
+                    if (_lastSnapshotCard == null) return (false, CMess.noValiDataFound.ToText());
+                    RollbackFromDictionaryCard(_lastSnapshotCard);
+                    _lastSnapshotCard = null;
                     return (true, string.Empty);
                 }
             }
@@ -336,7 +520,32 @@ namespace CardEditor.ViewModels
                 return (false, ex.Message);
             }
         }
-        private static void RollbackFromDictionary(Dictionary<Card, string> snapshot)
+        public (bool, string) PerformManualRollbackCardOmega()
+        {
+            try
+            {
+                lock (_snapshotLock)
+                {
+                    if (_lastSnapshotCardOmega == null) return (false, CMess.noValiDataFound.ToText());
+                    RollbackFromDictionaryCardOmega(_lastSnapshotCardOmega);
+                    _lastSnapshotCardOmega = null;
+                    return (true, string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+
+        private static void RollbackFromDictionaryCard(Dictionary<Card, string> snapshot)
+        {
+            foreach (var kvp in snapshot)
+            {
+                kvp.Key.desc = kvp.Value;
+            }
+        }
+        private static void RollbackFromDictionaryCardOmega(Dictionary<CardOmega, string> snapshot)
         {
             foreach (var kvp in snapshot)
             {
@@ -607,9 +816,13 @@ namespace CardEditor.ViewModels
         #endregion
 
         #region Helper
-        public bool HasLastSnapshot()
+        public bool HasLastSnapshotCard()
         {
-            return _lastSnapshot != null && _lastSnapshot.Count > 0;
+            return _lastSnapshotCard != null && _lastSnapshotCard.Count > 0;
+        }
+        public bool HasLastSnapshotCardOmega()
+        {
+            return _lastSnapshotCardOmega != null && _lastSnapshotCardOmega.Count > 0;
         }
         #endregion
 

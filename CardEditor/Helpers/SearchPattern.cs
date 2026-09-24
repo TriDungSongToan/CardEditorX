@@ -49,7 +49,31 @@ namespace CardEditor.Helpers
             return pattern;
         }
 
-        public static int Replace(List<Card> cards, string findWhat, string replaceWith, SearchOptions opt, RegexOptions regexOpt)
+        public static int ReplaceCard(List<Card> cards, string findWhat, string replaceWith, SearchOptions opt, RegexOptions regexOpt)
+        {
+            string pattern = SearchPattern.Build(findWhat, opt);
+
+            var regex = new Regex(pattern, regexOpt);
+
+            int modified = 0;
+
+            foreach (var card in cards)
+            {
+                if (string.IsNullOrEmpty(card.desc))
+                    continue;
+
+                string newText = regex.Replace(card.desc, replaceWith);
+
+                if (newText != card.desc)
+                {
+                    card.desc = newText;
+                    modified++;
+                }
+            }
+
+            return modified;
+        }
+        public static int ReplaceCardOmega(List<CardOmega> cards, string findWhat, string replaceWith, SearchOptions opt, RegexOptions regexOpt)
         {
             string pattern = SearchPattern.Build(findWhat, opt);
 

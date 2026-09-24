@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
 using CardEditor.Models;
-using CardEditor.Services;
+using CardEditor.Services.CreateFile;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
@@ -34,7 +34,7 @@ namespace CardEditor.ViewModels
         {
             if (!File.Exists(CardAppContext.Instance.GenesysDBPath))
             {
-                var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateGenesysCardsDatabase(CardAppContext.Instance.GenesysFolderPath, "GenesysCardsDB.cdb"));
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateGenesysService.CreateGenesysCardsDatabase(CardAppContext.Instance.GenesysFolderPath, "GenesysCardsDB.cdb"));
                 if (!resultCreate)
                 {
                     OnErrorOccurred?.Invoke($"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.GenesysDB.ToText(), CMess.File.ToText())} {messageCreate}");

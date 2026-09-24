@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls.Primitives;
@@ -132,7 +133,46 @@ namespace CardEditor.Views
         public RelayCommand ReplaceDescCommand { get; set; }
         #endregion
 
+        private const int LeftCount = 18;
+        public BulkObservableCollection<CardListFormat> CardListFormats { get; set; }
+
         #region Replace Field
+        private CardListFormat? _selectedReplaceFieldCardListFormat;
+        public CardListFormat? SelectedReplaceFieldCardListFormat
+        {
+            get => _selectedReplaceFieldCardListFormat;
+            set
+            {
+                if (_selectedReplaceFieldCardListFormat != value)
+                {
+                    _selectedReplaceFieldCardListFormat = value;
+                    OnPropertyChanged(nameof(SelectedReplaceFieldCardListFormat));
+
+                    switch (value)
+                    {
+                        case CardListFormat.YGONoFlag:
+                            ReplaceFieldToggleItems.ReplaceAll(InitializeListYGONoFlagToggle());
+                            break;
+                        case CardListFormat.YGOHasFlag:
+                            ReplaceFieldToggleItems.ReplaceAll(InitializeListYGOHasFlagToggle());
+                            break;
+                        case CardListFormat.OMEGA:
+                            ReplaceFieldToggleItems.ReplaceAll(InitializeListOMEGAToggle());
+                            break;
+                        case CardListFormat.BanList:
+                            ReplaceFieldToggleItems.ReplaceAll(InitializeListBanlistToggle());
+                            break;
+                        default:
+                            ReplaceFieldToggleItems.Clear();
+                            break;
+                    }
+
+                    OnPropertyChanged(nameof(ReplaceFieldLeftToggles));
+                    OnPropertyChanged(nameof(ReplaceFieldRightToggles));
+                    ReplaceFieldCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
         private string _replaceFieldFilePath = string.Empty;
         public string ReplaceFieldFilePath
         {
@@ -173,9 +213,43 @@ namespace CardEditor.Views
         public RelayCommand BrowseReplaceFieldFilePathCommand { get; set; }
         #endregion
 
-        private const int LeftCount = 18;
-
         #region Import Data
+        private CardListFormat? _selectedImportDataCardListFormat;
+        public CardListFormat? SelectedImportDataCardListFormat
+        {
+            get => _selectedImportDataCardListFormat;
+            set
+            {
+                if (_selectedImportDataCardListFormat != value)
+                {
+                    _selectedImportDataCardListFormat = value;
+                    OnPropertyChanged(nameof(SelectedImportDataCardListFormat));
+
+                    switch (value)
+                    {
+                        case CardListFormat.YGONoFlag:
+                            ImportDataToggleItems.ReplaceAll(InitializeListYGONoFlagToggle());
+                            break;
+                        case CardListFormat.YGOHasFlag:
+                            ImportDataToggleItems.ReplaceAll(InitializeListYGOHasFlagToggle());
+                            break;
+                        case CardListFormat.OMEGA:
+                            ImportDataToggleItems.ReplaceAll(InitializeListOMEGAToggle());
+                            break;
+                        case CardListFormat.BanList:
+                            ImportDataToggleItems.ReplaceAll(InitializeListBanlistToggle());
+                            break;
+                        default:
+                            ImportDataToggleItems.Clear();
+                            break;
+                    }
+
+                    OnPropertyChanged(nameof(ImportDataLeftToggles));
+                    OnPropertyChanged(nameof(ImportDataRightToggles));
+                    ImportDataCommand?.RaiseCanExecuteChanged();
+                }
+            }
+        }
         private string _importDataFilePath = string.Empty;
         public string ImportDataFilePath
         {
@@ -466,56 +540,12 @@ namespace CardEditor.Views
         #region Constructor
         public ItemsEditor(ItemsEdit tabIndex = ItemsEdit.Setting)
         {
-
+            CardListFormats = new BulkObservableCollection<CardListFormat>(Enum.GetValues(typeof(CardListFormat)).Cast<CardListFormat>());
             ReplaceFieldToggleItems = new BulkObservableCollection<ToggleMeta>();
             ImportDataToggleItems = new BulkObservableCollection<ToggleMeta>();
 
-            int ReplaceFieldIndex = 0;
-            int ImportDataIndex = 0;
-            /////////////////////
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardName.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardDesc.ToText() });
-            for (int i = 0; i < 16; i++)
-            {
-                ReplaceFieldToggleItems.Add(new ToggleMeta
-                {
-                    Index = ReplaceFieldIndex++,
-                    Label = $"{CMess.cardStr.ToText()} {i + 1}"
-                });
-            }
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardLabelScope.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardAlias.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardlabelSetCode.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardLabelType.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardatk.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.carddef.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.Level.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardLabelRace.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardLabelAttri.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardLabelCategory.ToText() });
-            ReplaceFieldToggleItems.Add(new ToggleMeta { Index = ReplaceFieldIndex++, Label = CMess.cardLabelFlag.ToText() });
-            /////////////////////
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardName.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardDesc.ToText() });
-            for (int i = 0; i < 16; i++)
-            {
-                ImportDataToggleItems.Add(new ToggleMeta
-                {
-                    Index = ImportDataIndex++,
-                    Label = $"{CMess.cardStr.ToText()} {i + 1}"
-                });
-            }
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardLabelScope.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardAlias.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardlabelSetCode.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardLabelType.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardatk.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.carddef.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.Level.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardLabelRace.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardLabelAttri.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardLabelCategory.ToText() });
-            ImportDataToggleItems.Add(new ToggleMeta { Index = ImportDataIndex++, Label = CMess.cardLabelFlag.ToText() });
+            SelectedReplaceFieldCardListFormat = null;
+            SelectedImportDataCardListFormat = null;
 
             InitializeCommand();
             InitializeComponent();
@@ -553,6 +583,108 @@ namespace CardEditor.Views
             SortCreditCommand = new CardEditor.Commands.RelayCommand(_ => SortCredit());
             DeleteCreditCommand = new CardEditor.Commands.RelayCommand(async _ => await DeleteCredit(), _ => SelectedCreditNotNull());
             
+        }
+
+        private List<ToggleMeta> InitializeListYGONoFlagToggle()
+        {
+            List<ToggleMeta> ToggleList = new List<ToggleMeta>();
+            int ToggleIndex = 0;
+
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardName.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardDesc.ToText() });
+            for (int i = 0; i < 16; i++)
+            {
+                ToggleList.Add(new ToggleMeta
+                {
+                    Index = ToggleIndex++,
+                    Label = $"{CMess.cardStr.ToText()} {i + 1}"
+                });
+            }
+
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelScope.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardAlias.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardlabelSetCode.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelType.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardatk.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.carddef.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.Level.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelRace.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelAttri.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelCategory.ToText() });
+
+            return ToggleList;
+        }
+        private List<ToggleMeta> InitializeListYGOHasFlagToggle()
+        {
+            List<ToggleMeta> ToggleList = new List<ToggleMeta>();
+            int ToggleIndex = 0;
+
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardName.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardDesc.ToText() });
+            for (int i = 0; i < 16; i++)
+            {
+                ToggleList.Add(new ToggleMeta
+                {
+                    Index = ToggleIndex++,
+                    Label = $"{CMess.cardStr.ToText()} {i + 1}"
+                });
+            }
+
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelScope.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardAlias.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardlabelSetCode.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelType.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardatk.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.carddef.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.Level.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelRace.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelAttri.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelCategory.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelFlag.ToText() });
+
+            return ToggleList;
+        }
+        private List<ToggleMeta> InitializeListOMEGAToggle()
+        {
+            List<ToggleMeta> ToggleList = new List<ToggleMeta>();
+            int ToggleIndex = 0;
+
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardName.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardDesc.ToText() });
+            for (int i = 0; i < 16; i++)
+            {
+                ToggleList.Add(new ToggleMeta
+                {
+                    Index = ToggleIndex++,
+                    Label = $"{CMess.cardStr.ToText()} {i + 1}"
+                });
+            }
+
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelScope.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardAlias.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardlabelSetCode.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelType.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardatk.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.carddef.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.Level.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelRace.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelAttri.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelCategory.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardLabelGenre.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.Script.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.Support.ToText() });
+
+            return ToggleList;
+        }
+        private List<ToggleMeta> InitializeListBanlistToggle()
+        {
+            List<ToggleMeta> ToggleList = new List<ToggleMeta>();
+            int ToggleIndex = 0;
+
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardName.ToText() });
+            ToggleList.Add(new ToggleMeta { Index = ToggleIndex++, Label = CMess.cardDesc.ToText() });
+
+            return ToggleList;
         }
         #endregion
 
@@ -652,11 +784,11 @@ namespace CardEditor.Views
         }
         private async Task ReplaceField()
         {
-            if (MainWindowReference != null)
+            if (MainWindowReference != null && SelectedReplaceFieldCardListFormat != null)
             {
                 if (!CheckDuplicateIds()) return;
 
-                var resultReplaceField = await MainWindowReference.ReplaceField(ReplaceFieldFilePath, ReplaceFieldFlags, IsAddNew);
+                var resultReplaceField = await MainWindowReference.ReplaceField(SelectedReplaceFieldCardListFormat.Value, ReplaceFieldFilePath, ReplaceFieldFlags, IsAddNew);
 
                 if (resultReplaceField.Success) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
                     string.Format(CMess.replaceSuc.ToText(), resultReplaceField.ReplacedCard.ToString(), resultReplaceField.TotalCard.ToString()),
@@ -667,7 +799,13 @@ namespace CardEditor.Views
         }
         private bool CanReplaceField()
         {
-            return (!string.IsNullOrWhiteSpace(ReplaceFieldFilePath) && System.IO.File.Exists(ReplaceFieldFilePath) && ReplaceFieldFlags != 0);
+            if (MainWindowReference == null) return false;
+            if (SelectedReplaceFieldCardListFormat == null) return false;
+            if (string.IsNullOrWhiteSpace(ReplaceFieldFilePath)) return false;
+            if (!System.IO.File.Exists(ReplaceFieldFilePath)) return false;
+            if (ReplaceFieldFlags == 0) return false;
+
+            return true;
         }
         private void BrowseReplaceFieldFilePath()
         {
@@ -680,11 +818,11 @@ namespace CardEditor.Views
         #region Import Data
         private async Task ImportData()
         {
-            if (MainWindowReference != null)
+            if (MainWindowReference != null && SelectedImportDataCardListFormat != null)
             {
                 if (!CheckDuplicateIds()) return;
 
-                var (resultReplace, messageReplace) = await MainWindowReference.ImportData(ImportDataFilePath, ImportDataFlags);
+                var (resultReplace, messageReplace) = await MainWindowReference.ImportData(SelectedImportDataCardListFormat.Value, ImportDataFilePath, ImportDataFlags);
                 if (resultReplace) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
                     string.Format(CMess.replaceSuc.ToText(), messageReplace, CMess.Card.ToText()), new[] { CMess.ok.ToText() });
                 else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
@@ -693,7 +831,12 @@ namespace CardEditor.Views
         }
         private bool CanImportData()
         {
-            return (!string.IsNullOrWhiteSpace(ImportDataFilePath) && System.IO.File.Exists(ImportDataFilePath));
+            if (MainWindowReference == null) return false;
+            if (SelectedImportDataCardListFormat == null) return false;
+            if (string.IsNullOrWhiteSpace(ImportDataFilePath)) return false;
+            if (!System.IO.File.Exists(ImportDataFilePath)) return false;
+
+            return true;
         }
         private void BrowseImportDataFilePath()
         {
@@ -733,7 +876,7 @@ namespace CardEditor.Views
 
                 if (MainWindowReference != null)
                 {
-                    if (PenLanguageViewModel.Instance.HasLastSnapshot())
+                    if (PenLanguageViewModel.Instance.HasLastSnapshotCard() || PenLanguageViewModel.Instance.HasLastSnapshotCardOmega())
                     {
                         int confirm = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
                             $"{CMess.HasSnapshot.ToText()} {CMess.QuestContinue.ToText()}",

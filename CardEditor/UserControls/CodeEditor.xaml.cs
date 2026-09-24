@@ -3,19 +3,22 @@ using System.IO;
 using System.Web.UI.WebControls;
 using System.Linq;
 using System.Text;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.ComponentModel;
 using ICSharpCode.AvalonEdit.Document;
+using CardEditor.Enums;
 using CardEditor.Tools;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Services;
+using CardEditor.Services.LoadData;
+using CardEditor.Services.SaveData;
 using CardEditor.ViewModels;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -29,8 +32,8 @@ namespace CardEditor.UserControls
     {
         #region Variable
         private IMainWindowService MainWindowService;
-        private string _mainWindowTitle = string.Empty;
-        public string MainWindowTitle
+        private AppTitle _mainWindowTitle = new();
+        public AppTitle MainWindowTitle
         {
             get => _mainWindowTitle;
             set
@@ -39,25 +42,40 @@ namespace CardEditor.UserControls
                 {
                     _mainWindowTitle = value;
                     OnPropertyChanged(nameof(MainWindowTitle));
+
                     if (MainWindowService == null) return;
                     MainWindowService.UpdateWindowTitle(MainWindowTitle);
-                    string header = string.IsNullOrWhiteSpace(archiveFilePath)
-                        ? System.IO.Path.GetFileName(MainWindowTitle)
-                        : archiveEntryName;
-                    MainWindowService.UpdateTabItemHeader(header);
+                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
                 }
             }
         }
-        private void RebuildWindowTitle()
+        private void RebuildWindowTitleYGO()
         {
-            string display = string.Empty;
             if (string.IsNullOrWhiteSpace(archiveFilePath))
             {
-                if (!string.IsNullOrEmpty(luaFilePath)) display = luaFilePath;
+                if (!string.IsNullOrEmpty(luaFilePath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(luaFilePath);
+                else MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(string.Empty);
             }
-            else display = Path.Combine(archiveFilePath, archiveEntryName.Replace('/', Path.DirectorySeparatorChar));
+            else MainWindowTitle = FileLocationService.BuildTitleZipEntry(archiveFilePath, archiveEntryName);
+        }
+        private void RebuildWindowTitleOMEGA(CardOmegaScript omegaScript)
+        {
+            if (omegaScript == null)
+            {
+                RebuildWindowTitleYGO();
+                return;
+            }
+            string physicalFullPath =
+                omegaScript.cdbFilePath ??
+                omegaScript.xlsxFilePath ??
+                omegaScript.cedsFilePath ??
+                string.Empty;
 
-            MainWindowTitle = display;
+            if (string.IsNullOrWhiteSpace(archiveFilePath))
+                MainWindowTitle = FileLocationService.BuildTitleDBCell(physicalFullPath, "datas", "script", omegaScript.id);
+            else
+                MainWindowTitle = FileLocationService.BuildTitleDBCellZipEntry(physicalFullPath, "datas", "script", omegaScript.id,
+                    omegaScript.archiveFilePath, omegaScript.archiveEntryName);
         }
 
         private bool _isSaved = true;
@@ -140,6 +158,9 @@ namespace CardEditor.UserControls
         }
 
         private LuaFoldingManager foldingManager;
+
+        public CardOmegaScript OmegaScript { get; set; } = null;
+        public CardListFormat CurrentFormat { get; set; } = CardListFormat.YGONoFlag;
         #endregion
 
         #region Constructor
@@ -209,12 +230,15 @@ namespace CardEditor.UserControls
                 }
             }
         }
-        public async Task LoadLuaFile()
+        public async Task LoadLuaFileYGO()
         {
             if (string.IsNullOrWhiteSpace(luaFilePath) || !System.IO.File.Exists(luaFilePath)) return;
-            Debug.WriteLine($"Lua File path: {luaFilePath}");
+            if (OmegaScript != null) return;
+
             try
             {
+                CurrentFormat = CardListFormat.YGONoFlag;
+
                 string text = string.Empty;
                 using (var stream = new FileStream(luaFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8192, useAsync: true))
                 using (var reader = new StreamReader(stream, Encoding.UTF8))
@@ -228,7 +252,36 @@ namespace CardEditor.UserControls
                 codePaneTop.ResetSavedMarker();
                 codePaneBottom.ResetSavedMarker();
 
-                RebuildWindowTitle();
+                RebuildWindowTitleYGO();
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Read.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+            }
+            finally
+            {
+                IsSaved = true;
+            }
+        }
+        public async Task LoadLuaFileOMEGA(CardOmegaScript omegaScript)
+        {
+            if (omegaScript == null) return;
+            if (!string.IsNullOrEmpty(luaFilePath)) return;
+
+            try
+            {
+                OmegaScript = omegaScript;
+                CurrentFormat = CardListFormat.OMEGA;
+
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    SharedDocument.Text = OmegaScript.BaseCard.script;
+                });
+                codePaneTop.ResetSavedMarker();
+                codePaneBottom.ResetSavedMarker();
+
+                RebuildWindowTitleOMEGA(OmegaScript);
             }
             catch (Exception ex)
             {
@@ -247,18 +300,7 @@ namespace CardEditor.UserControls
         {
             try
             {
-                string tempPath = string.Empty;
-                if(string.IsNullOrWhiteSpace(luaFilePath) || !System.IO.File.Exists(luaFilePath))
-                {
-                    string filePath = FileDiaLogHelper.SaveScript();
-
-                    if (!string.IsNullOrEmpty(filePath)) tempPath = filePath;
-                    else return false;
-
-                    UpdateWindowTitle(filePath);
-                }
-                else tempPath = luaFilePath;
-                return await SaveCodeCommand(tempPath);
+                return await SaveCodeCommand();
             }
             catch
             {
@@ -267,43 +309,62 @@ namespace CardEditor.UserControls
         }
         public async Task<bool> SaveCodeCommand(string targetedPath = null)
         {
+            if (CurrentFormat == CardListFormat.OMEGA) return await SaveCodeOMEGACommand();
+            else return await SaveCodeYGOCommand(targetedPath);
+        }
+        public async Task<bool> SaveCodeYGOCommand(string targetedPath = null)
+        {
             if (string.IsNullOrWhiteSpace(SharedDocument.Text))
             {
                 var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                CMess.confirmSaveBlank.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText() }, 1);
+                    CMess.confirmSaveBlank.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText() }, 1);
                 if (result != 0) return false;
-            }
-                
-            string filePath = targetedPath ?? luaFilePath;
-
-            if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    CMess.noFileFound.ToText(), new[] { CMess.ok.ToText() });
-                return false;
             }
 
             try
             {
-                string textToSave = ConvertLineEndings(SharedDocument.Text, SelectedNewLineOption);
+                string directory = Path.GetDirectoryName(targetedPath);
+                if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
 
-                using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true))
+                // Không truyền TargerPath => Save vào file hiện tại.
+                if (string.IsNullOrWhiteSpace(targetedPath))
+                {
+                    if (!string.IsNullOrWhiteSpace(luaFilePath)) targetedPath = luaFilePath;
+                    else
+                    {
+                        string newFilePath = FileDiaLogHelper.SaveScript();
+                        if (string.IsNullOrWhiteSpace(newFilePath)) return false;
+
+                        luaFilePath = newFilePath;
+                        luaFileName = Path.GetFileName(newFilePath);
+                        targetedPath = newFilePath;
+                    }
+                }
+                // Có truyền TargerPath => Save As
+                else
+                {
+                    luaFilePath = targetedPath;
+                    luaFileName = Path.GetFileName(targetedPath);
+                }
+
+                string textToSave = ConvertLineEndings(SharedDocument.Text, SelectedNewLineOption);
+                using (var stream = new FileStream(targetedPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true))
                 using (var writer = new StreamWriter(stream, Encoding.UTF8))
                 {
                     writer.NewLine = GetNewLineString(SelectedNewLineOption);
-                    await writer.WriteAsync(SharedDocument.Text);
+                    await writer.WriteAsync(textToSave);
                 }
-                var (resultArchi, messArchi) = await SaveToArchive(filePath);
+                var (resultArchi, messArchi) = await SaveToArchive(targetedPath);
                 if (!resultArchi)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
                     return false;
                 }
-
                 IsSaved = true;
                 codePaneTop.MarkAsSaved();
                 codePaneBottom.MarkAsSaved();
-                RebuildWindowTitle();
+                RebuildWindowTitleYGO();
+
                 return true;
             }
             catch (Exception ex)
@@ -313,17 +374,134 @@ namespace CardEditor.UserControls
                 return false;
             }
         }
+        public async Task<bool> SaveCodeOMEGACommand()
+        {
+            if (OmegaScript == null)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Data.ToText())} Card Cannot be Null",
+                    new[] { CMess.ok.ToText() });
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(SharedDocument.Text))
+            {
+                var result = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                    CMess.confirmSaveBlank.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText() }, 1);
+                if (result != 0) return false;
+            }
+
+            OmegaScript.BaseCard.script = SharedDocument.Text;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(OmegaScript.cdbFilePath))
+                {
+                    WriteResult resultModify = await SaveDatabaseOMEGAService.ModifyCurrentCard(OmegaScript.BaseCard, OmegaScript.cdbFilePath, hasFlag: true);
+                    if (!resultModify.Result)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                            $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardScript.ToText())} {resultModify.Messenger}",
+                            new[] { CMess.ok.ToText() });
+                        return false;
+                    }
+                    var (resultArchi, messArchi) = await SaveToArchive(OmegaScript, OmegaScript.cdbFilePath);
+                    if (!resultArchi)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
+                        return false;
+                    }
+                    IsSaved = true;
+                    codePaneTop.MarkAsSaved();
+                    codePaneBottom.MarkAsSaved();
+
+                    RebuildWindowTitleOMEGA(OmegaScript);
+                }
+                else if (!string.IsNullOrEmpty(OmegaScript.xlsxFilePath))
+                {
+                    WriteResult resultModify = await SaveExcelOMEGAService.ModifyCurrentCard(OmegaScript.BaseCard, OmegaScript.xlsxFilePath, hasFlagHint: true);
+                    if (!resultModify.Result)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                            $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardScript.ToText())} {resultModify.Messenger}",
+                            new[] { CMess.ok.ToText() });
+                        return false;
+                    }
+                    var (resultArchi, messArchi) = await SaveToArchive(OmegaScript, OmegaScript.xlsxFilePath);
+                    if (!resultArchi)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
+                        return false;
+                    }
+                    IsSaved = true;
+                    codePaneTop.MarkAsSaved();
+                    codePaneBottom.MarkAsSaved();
+
+                    RebuildWindowTitleOMEGA(OmegaScript);
+                }
+                else if (!string.IsNullOrEmpty(OmegaScript.cedsFilePath))
+                {
+                    WriteResult resultModify = await SaveCedsOMEGAService.ModifyCurrentCard(OmegaScript.BaseCard, OmegaScript.cedsFilePath, hasFlag: true);
+                    if (!resultModify.Result)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                            $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardScript.ToText())} {resultModify.Messenger}",
+                            new[] { CMess.ok.ToText() });
+                        return false;
+                    }
+                    var (resultArchi, messArchi) = await SaveToArchive(OmegaScript, OmegaScript.cedsFilePath);
+                    if (!resultArchi)
+                    {
+                        CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, messArchi, new[] { CMess.ok.ToText() });
+                        return false;
+                    }
+                    IsSaved = true;
+                    codePaneTop.MarkAsSaved();
+                    codePaneBottom.MarkAsSaved();
+
+                    RebuildWindowTitleOMEGA(OmegaScript);
+                }
+                else
+                {
+                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                       $"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Path.ToText())} Card Cannot be Null",
+                       new[] { CMess.ok.ToText() });
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardScript.ToText())} {ex.Message}",
+                    new[] { CMess.ok.ToText() });
+                return false;
+            }
+        }
         public async Task<(bool, string)> SaveToArchive(string targetSourcePath)
         {
-            if (string.IsNullOrEmpty(archiveFilePath) || !System.IO.File.Exists(archiveFilePath) || string.IsNullOrEmpty(archiveEntryName))
+            if (string.IsNullOrEmpty(archiveFilePath) ||
+                !System.IO.File.Exists(archiveFilePath) ||
+                string.IsNullOrEmpty(archiveEntryName))
                 return (true, string.Empty);
 
             if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
                 return (false, CMess.fileNotExit.ToText());
 
-            return await LoadDataServices.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
+            return await LoadArchiveService.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
         }
+        public async Task<(bool, string)> SaveToArchive(CardOmegaScript cardScript, string targetSourcePath)
+        {
+            if (string.IsNullOrEmpty(cardScript.archiveFilePath) ||
+                !System.IO.File.Exists(cardScript.archiveFilePath) ||
+                string.IsNullOrEmpty(cardScript.archiveEntryName))
+                return (true, string.Empty);
 
+            if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
+                return (false, CMess.fileNotExit.ToText());
+
+            return await LoadArchiveService.SaveEntryToZip(cardScript.archiveFilePath, cardScript.archiveEntryName, targetSourcePath);
+        }
         private string ConvertLineEndings(string text, int newLineOption)
         {
             string normalized = text.Replace("\r\n", "\n").Replace("\r", "\n");
@@ -521,15 +699,6 @@ namespace CardEditor.UserControls
             }
         }
 
-        private void UpdateWindowTitle(string tempPath = null)
-        {
-            if (MainWindowService != null)
-            {
-                MainWindowService.UpdateWindowTitle(string.IsNullOrEmpty(tempPath) ? luaFilePath : tempPath);
-                MainWindowService.UpdateTabItemHeader(string.IsNullOrEmpty(tempPath) ? luaFileName : System.IO.Path.GetFileName(tempPath));
-                MainWindowTitle = string.IsNullOrEmpty(tempPath) ? luaFilePath : tempPath;
-            }
-        }
         private void UpdateWindowSavedFlag()
         {
             if (MainWindowService != null)

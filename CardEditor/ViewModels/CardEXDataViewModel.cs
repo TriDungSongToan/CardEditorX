@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using CardEditor.Models;
-using CardEditor.Services;
+using CardEditor.Services.LoadData;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 
@@ -39,7 +39,7 @@ namespace CardEditor.ViewModels
         {
             if (IsLoadedCard) return (true, string.Empty);
 
-            LoadAllCdbFilesResult resultLoad = await LoadDataServices.LoadAllDatabaseFiles();
+            LoadAllCdbFilesResult resultLoad = await LoadDatabaseService.LoadAllDatabaseFiles();
             if (!resultLoad.Result) return (false, resultLoad.Message);
 
             _idToAlias = new Dictionary<ulong, List<ulong>>();
@@ -85,7 +85,7 @@ namespace CardEditor.ViewModels
 
             await Task.Run(async () =>
             {
-                LoadScriptPathsResult loadedScripts = await LoadDataServices.LoadAllScriptPaths();
+                LoadScriptPathsResult loadedScripts = await LoadScriptService.LoadAllScriptPaths();
                 if (!loadedScripts.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,

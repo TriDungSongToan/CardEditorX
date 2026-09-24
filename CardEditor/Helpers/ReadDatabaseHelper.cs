@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Data.SQLite;
 
 namespace CardEditor.Helpers
@@ -23,20 +24,87 @@ namespace CardEditor.Helpers
                 ? value
                 : 0L;
         }
-        public static byte[]? ReadBlob(SQLiteDataReader reader, int ordinal, bool allowText = false)
+        public static ulong ReadSetCodeFromBlob(SQLiteDataReader reader, int ordinal)
         {
-            if (reader.IsDBNull(ordinal)) return null;
-            object value = reader.GetValue(ordinal);
-            if (value is byte[] bytes) return bytes;
+            if (reader.IsDBNull(ordinal))
+                return 0UL;
 
-            // script có thể được SQLite lưu dưới dạng TEXT
-            // dù schema khai báo cột là BLOB.
-            if (allowText && value is string text)
-                return System.Text.Encoding.UTF8.GetBytes(text);
+            try
+            {
+                // Lấy BLOB dưới dạng byte array
+                byte[] blobData = (byte[])reader.GetValue(ordinal);
 
-            throw new InvalidOperationException(
-                $"Column {reader.GetName(ordinal)} is not a valid BLOB.");
+                if (blobData == null || blobData.Length == 0) return 0UL;
+
+                // Convert byte array → ulong
+                // Byte thứ 0 = LSB (Least Significant Byte)
+                ulong result = 0UL;
+                for (int i = 0; i < blobData.Length && i < 8; i++)
+                {
+                    result |= (ulong)blobData[i] << (i * 8);
+                }
+
+                return result;
+            }
+            catch
+            {
+                // Fallback: cố gắng parse nếu là string hoặc text
+                try
+                {
+                    return ulong.TryParse(reader.GetValue(ordinal)?.ToString(), out ulong value)
+                        ? value
+                        : 0UL;
+                }
+                catch
+                {
+                    return 0UL;
+                }
+            }
         }
+        public static string ReadScriptFromBlob(SQLiteDataReader reader, int ordinal)
+        {
+            if (reader.IsDBNull(ordinal))
+                return string.Empty;
 
+            try
+            {
+                // Script lưu dưới dạng TEXT trong BLOB
+                return reader.GetString(ordinal);
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+        public static ulong ReadSupportFromBlob(SQLiteDataReader reader, int ordinal)
+        {
+            if (reader.IsDBNull(ordinal))
+                return 0UL;
+
+            try
+            {
+                // Support lưu dưới dạng hex string hoặc binary
+                string supportStr = reader.GetString(ordinal);
+
+                if (string.IsNullOrEmpty(supportStr) || supportStr == "\0")
+                    return 0UL;
+
+                // Convert string bytes → ulong
+                ulong result = 0UL;
+                int byteCount = 0;
+
+                foreach (char c in supportStr.Reverse())
+                {
+                    result |= (ulong)(byte)c << (byteCount * 8);
+                    byteCount++;
+                }
+
+                return result;
+            }
+            catch
+            {
+                return 0UL;
+            }
+        }
     }
 }

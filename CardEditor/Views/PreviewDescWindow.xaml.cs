@@ -281,6 +281,37 @@ namespace CardEditor.Views
 
             CardDescription = BuildCardDesc();
         }
+        public void InitializePartEffect(CardEditor.Models.CardOmega card, PendulumLanguageRule rule)
+        {
+            SelectedLanguage = rule;
+
+            if (card == null)
+            {
+                PendulumEffect = string.Empty;
+                MonsterEffect = string.Empty;
+                CardDescription = string.Empty;
+
+                LeftScale = null;
+                RightScale = null;
+
+                IsNormalCard = false;
+                return;
+            }
+
+            PenAnalysisResult result = PenLanguageViewModel.Instance.Analyze(card.desc);
+            PenDescResult effect = result.DescResult;
+            PendulumEffect = effect.PendulumEffect;
+            MonsterEffect = effect.MonsterEffect;
+
+            IsNormalCard = (card.type & (ulong)CardType.Normal) != 0;
+
+            PenScale scale = GetPenScaleHelp.GetPenScale(card.level);
+
+            LeftScale = scale.LeftScale;
+            RightScale = scale.RightScale;
+
+            CardDescription = BuildCardDesc();
+        }
         #endregion
 
         #region Load

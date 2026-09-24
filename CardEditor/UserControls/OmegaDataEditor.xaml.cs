@@ -5,15 +5,15 @@ using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Threading;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -24,10 +24,15 @@ using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Manager;
-using CardEditor.Constants;
 using CardEditor.Commands;
 using CardEditor.Services;
+using CardEditor.Services.LoadData;
+using CardEditor.Services.SaveData;
+using CardEditor.Services.CreateFile;
+using CardEditor.Services.ClipboardData;
 using CardEditor.ImageGene;
+using CardEditor.Constants;
+using CardEditor.Converter;
 using CardEditor.ViewModels;
 using CardEditor.Collections;
 using CardEditor.Localization;
@@ -42,8 +47,8 @@ namespace CardEditor.UserControls
     {
         #region Variable
         private IMainWindowService MainWindowService;
-        private string _mainWindowTitle = string.Empty;
-        public string MainWindowTitle
+        private AppTitle _mainWindowTitle = new();
+        public AppTitle MainWindowTitle
         {
             get => _mainWindowTitle;
             set
@@ -52,27 +57,23 @@ namespace CardEditor.UserControls
                 {
                     _mainWindowTitle = value;
                     OnPropertyChanged(nameof(MainWindowTitle));
+
                     if (MainWindowService == null) return;
                     MainWindowService.UpdateWindowTitle(MainWindowTitle);
-                    string header = string.IsNullOrWhiteSpace(archiveFilePath)
-                        ? System.IO.Path.GetFileName(MainWindowTitle)
-                        : archiveEntryName;
-                    MainWindowService.UpdateTabItemHeader(header);
+                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
                 }
             }
         }
         private void RebuildWindowTitle()
         {
-            string display = string.Empty;
             if (string.IsNullOrWhiteSpace(archiveFilePath))
             {
-                if (!string.IsNullOrEmpty(cdbFilePath)) display = cdbFilePath;
-                else if (!string.IsNullOrEmpty(xlsxFilePath)) display = xlsxFilePath;
-                else if (!string.IsNullOrEmpty(cedsFilePath)) display = cedsFilePath;
+                if (!string.IsNullOrEmpty(cdbFilePath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(cdbFilePath);
+                else if (!string.IsNullOrEmpty(xlsxFilePath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(xlsxFilePath);
+                else if (!string.IsNullOrEmpty(cedsFilePath)) MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(cedsFilePath);
+                else MainWindowTitle = FileLocationService.BuildTitlePhysicalFile(string.Empty);
             }
-            else display = Path.Combine(archiveFilePath, archiveEntryName.Replace('/', Path.DirectorySeparatorChar));
-
-            MainWindowTitle = display;
+            else MainWindowTitle = FileLocationService.BuildTitleZipEntry(archiveFilePath, archiveEntryName);
         }
 
         private bool _isSaved { get; set; } = true;
@@ -102,9 +103,48 @@ namespace CardEditor.UserControls
         public string archiveFilePath;
         public string archiveEntryName;
 
-        public bool _cdbFileHasFlag = false;
-        public bool _cedsFileHasFlag = false;
-        public bool _xlsxFileHasFlag = false;
+        private bool _cdbFileHasFlag = true;
+        public bool CdbFileHasFlag
+        {
+            get => _cdbFileHasFlag;
+            set
+            {
+                if (_cdbFileHasFlag != value)
+                {
+                    _cdbFileHasFlag = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasFlag));
+                }
+            }
+        }
+        private bool _xlsxFileHasFlag = true;
+        public bool XlsxFileHasFlag
+        {
+            get => _xlsxFileHasFlag;
+            set
+            {
+                if (_xlsxFileHasFlag != value)
+                {
+                    _xlsxFileHasFlag = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasFlag));
+                }
+            }
+        }
+        private bool _cedsFileHasFlag = true;
+        public bool CedsFileHasFlag
+        {
+            get => _cedsFileHasFlag;
+            set
+            {
+                if (_cedsFileHasFlag != value)
+                {
+                    _cedsFileHasFlag = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(HasFlag));
+                }
+            }
+        }
 
         private SnackbarMessageQueue MessageNotifi = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
         private SnackbarMessageQueue MessageDelete = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
@@ -112,10 +152,10 @@ namespace CardEditor.UserControls
         private const double DOUBLE_CLICK_TIME = 500;
         private CancellationTokenSource _ctsCreateImg;
 
-        public BulkObservableCollection<CardEditor.Models.Card> Cards { get; set; }
+        public BulkObservableCollection<CardEditor.Models.CardOmega> Cards { get; set; }
         public ICollectionView CollectionViewCollection { get; set; }
-        private CardEditor.Models.Card _currentCard;
-        public CardEditor.Models.Card CurrentCard
+        private CardEditor.Models.CardOmega _currentCard;
+        public CardEditor.Models.CardOmega CurrentCard
         {
             get => _currentCard;
             set
@@ -170,6 +210,10 @@ namespace CardEditor.UserControls
                 }
             }
         }
+        public bool HasFlag =>
+            CdbFileHasFlag ||
+            CedsFileHasFlag ||
+            XlsxFileHasFlag;
 
         private PendulumLanguageRule _selectedPenLangRule;
         public PendulumLanguageRule SelectedPenLangRule
@@ -232,7 +276,7 @@ namespace CardEditor.UserControls
             InitializeCommands();
             InitializeComponent();
 
-            Cards = new BulkObservableCollection<CardEditor.Models.Card>();
+            Cards = new BulkObservableCollection<CardEditor.Models.CardOmega>();
             CollectionViewCollection = CollectionViewSource.GetDefaultView(Cards);
 
             datagrMain.ItemsSource = CollectionViewCollection;
@@ -341,6 +385,9 @@ namespace CardEditor.UserControls
             LoadConfig();
 
             InitializeContentMenu();
+
+            if (MainWindowService == null) Debug.WriteLine("DataEditor.MainWindowService Null");
+            else Debug.WriteLine("DataEditor.MainWindowService Not Null");
         }
         public void LoadDataViewMode()
         {
@@ -460,9 +507,9 @@ namespace CardEditor.UserControls
                 Mouse.OverrideCursor = Cursors.Wait;
                 LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
-                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
-                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
-                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
                     _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
 
@@ -489,10 +536,10 @@ namespace CardEditor.UserControls
                     if (Cards == null) Cards = new();
                     if (Cards.Count() == 0)
                     {
-                        ImportCreateNew(resultCard.CardList);
+                        ImportCreateNew(resultCard.OmegaCardList);
                         IsSaved = true;
                     }
-                    else ImportCardList(resultCard.CardList);
+                    else ImportCardList(resultCard.OmegaCardList);
                     RebuildWindowTitle();
                 }
                 else
@@ -521,9 +568,9 @@ namespace CardEditor.UserControls
                 Mouse.OverrideCursor = Cursors.Wait;
                 LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
-                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDataServices.LoadDatabaseCard(filePath),
-                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadDataServices.LoadExcelCard(filePath),
-                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadDataServices.LoadCedsCard(filePath),
+                    var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
+                    var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
+                    var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
                     _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
 
@@ -550,10 +597,10 @@ namespace CardEditor.UserControls
                     if (Cards == null) Cards = new();
                     if (Cards.Count() == 0)
                     {
-                        ImportCreateNew(resultCard.CardList);
+                        ImportCreateNew(resultCard.OmegaCardList);
                         IsSaved = true;
                     }
-                    else ImportCardList(resultCard.CardList);
+                    else ImportCardList(resultCard.OmegaCardList);
 
                     archiveFilePath = sourceArchivePath;
                     archiveEntryName = sourceEntryName;
@@ -577,7 +624,7 @@ namespace CardEditor.UserControls
             }
         }
 
-        private void ImportCardList(IEnumerable<CardEditor.Models.Card> CardList)
+        private void ImportCardList(IEnumerable<CardEditor.Models.CardOmega> CardList)
         {
             try
             {
@@ -711,23 +758,23 @@ namespace CardEditor.UserControls
             }
             #endregion
 
-            #region Category
-            ulong category = CurrentCard.category;
-            var selectedCategory = CardDataViewModel.Instance.CategoryItems.Where(item => (category & item.CategoryCode) != 0).ToList();
-            cmbcategory?.SelectedItems?.Clear();
-            foreach (var categoryItem in selectedCategory)
+            #region Genre
+            ulong genre = CurrentCard.genre;
+            var selectedGenre = CardDataViewModel.Instance.CategoryItems.Where(item => (genre & item.CategoryCode) != 0).ToList();
+            cmbgenre?.SelectedItems?.Clear();
+            foreach (var genreItem in selectedGenre)
             {
-                cmbcategory?.SelectedItems?.Add(categoryItem);
+                cmbgenre?.SelectedItems?.Add(genreItem);
             }
             #endregion
 
-            #region Flag
-            ulong flag = CurrentCard.flag;
-            var selectedFlag = CardDataViewModel.Instance.FlagItems.Where(item => (flag & item.FlagCode) != 0).ToList();
-            cmbflag?.SelectedItems?.Clear();
-            foreach (var flagItem in selectedFlag)
+            #region Category
+            ulong category = CurrentCard.category;
+            var selectedCategory = CardDataViewModel.Instance.FlagItems.Where(item => (category & item.FlagCode) != 0).ToList();
+            cmbcategoryOmega?.SelectedItems?.Clear();
+            foreach (var categoryItem in selectedCategory)
             {
-                cmbflag?.SelectedItems?.Add(flagItem);
+                cmbcategoryOmega?.SelectedItems?.Add(categoryItem);
             }
             #endregion
 
@@ -736,6 +783,7 @@ namespace CardEditor.UserControls
 
             txtid.Text = CurrentCard.id.ToString();
             txtalias.Text = CurrentCard.alias.ToString();
+            txtSupport.Text = CurrentCard.support.ToString();
 
             txtcarddesc.AppendText(CurrentCard.desc);
             txtcarddesc.ScrollToHome();
@@ -1318,28 +1366,48 @@ namespace CardEditor.UserControls
                 }
             return attribute;
         }
-        private ulong GetCardCategory()
+        private ulong GetCardGenre()
+        {
+            ulong genre = 0;
+            var selectedGenres = cmbgenre.SelectedItems?.Cast<CategoryItem>().ToList();
+            if (selectedGenres != null && selectedGenres.Any())
+                foreach (var genreItem in selectedGenres)
+                {
+                    genre |= genreItem.CategoryCode;
+                }
+            return genre;
+        }
+        private ulong GetCardCategoryOmega()
         {
             ulong category = 0;
-            var selectedCategorys = cmbcategory.SelectedItems?.Cast<CategoryItem>().ToList();
+            var selectedCategorys = cmbcategoryOmega.SelectedItems?.Cast<FlagItem>().ToList();
             if (selectedCategorys != null && selectedCategorys.Any())
                 foreach (var categoryItem in selectedCategorys)
                 {
-                    category |= categoryItem.CategoryCode;
+                    category |= categoryItem.FlagCode;
                 }
             return category;
         }
-        private ulong GetCardFlag()
+        private ulong GetCardSupport()
         {
-            ulong flag = 0;
-            var selectedFlags = cmbflag.SelectedItems?.Cast<FlagItem>().ToList();
-            if (selectedFlags != null && selectedFlags.Any())
-                foreach (var flagItem in selectedFlags)
-                {
-                    flag |= flagItem.FlagCode;
-                }
-            return flag;
+            var input = txtSupport.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(input))
+                return 0;
+            if (!ulong.TryParse(input, out ulong support))
+                throw new FormatException(string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Support.ToText()));
+            if (support > uint.MaxValue || support < 0)
+                throw new ArgumentOutOfRangeException($"{string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.Support.ToText())} {CMess.Support.ToText()} {CMess.outofrange.ToText()}");
+            return support;
         }
+        private ulong? GetCardSupportNull()
+        {
+            if (string.IsNullOrWhiteSpace(txtSupport.Text))
+                return null;
+            if (!ulong.TryParse(txtSupport.Text, out ulong support))
+                return null;
+            return support;
+        }
+
         private long GetCardRare()
         {
             long rare = 0;
@@ -1360,13 +1428,14 @@ namespace CardEditor.UserControls
             else return genesysPoint;
         }
 
-        private CardEditor.Models.Card ExtractCardFromForm()
+        private CardEditor.Models.CardOmega ExtractCardFromForm()
         {
             try
             {
-                return new CardEditor.Models.Card
+                return new CardEditor.Models.CardOmega
                 {
                     id = GetCardID(),
+
                     name = GetCardname(),
                     desc = GetCardDesc(),
                     str1 = GetSTR1(),
@@ -1395,8 +1464,9 @@ namespace CardEditor.UserControls
                     level = GetLevel(),
                     race = GetCardRace(),
                     attribute = GetCardAttribue(),
-                    category = GetCardCategory(),
-                    flag = GetCardFlag()
+                    category = GetCardCategoryOmega(),
+                    genre = GetCardGenre(),
+                    support = GetCardSupport()
                 };
             }
             catch
@@ -1413,7 +1483,7 @@ namespace CardEditor.UserControls
             isChangedGrid = true;
             try
             {
-                if (datagrMain.SelectedItem is CardEditor.Models.Card selectedCard)
+                if (datagrMain.SelectedItem is CardEditor.Models.CardOmega selectedCard)
                 {
                     CurrentCard = selectedCard;
                     LoadCardData();
@@ -1537,17 +1607,17 @@ namespace CardEditor.UserControls
                 tbsetcode.Visibility = Visibility.Collapsed;
             else tbsetcode.Visibility = Visibility.Visible;
         }
+        private void cmbgenre_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
+        {
+            if (cmbgenre.SelectedItems != null && cmbgenre.SelectedItems.Count > 0)
+                tbgenre.Visibility = Visibility.Collapsed;
+            else tbgenre.Visibility = Visibility.Visible;
+        }
         private void cmbcategory_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
         {
-            if (cmbcategory.SelectedItems != null && cmbcategory.SelectedItems.Count > 0)
-                tbcategory.Visibility = Visibility.Collapsed;
-            else tbcategory.Visibility = Visibility.Visible;
-        }
-        private void cmbflag_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
-        {
-            if (cmbflag.SelectedItems != null && cmbflag.SelectedItems.Count > 0)
-                tbflag.Visibility = Visibility.Collapsed;
-            else tbflag.Visibility = Visibility.Visible;
+            if (cmbcategoryOmega.SelectedItems != null && cmbcategoryOmega.SelectedItems.Count > 0)
+                tbcategoryOmega.Visibility = Visibility.Collapsed;
+            else tbcategoryOmega.Visibility = Visibility.Visible;
         }
         private void cmbrarity_SelectedItemsChanged(object sender, Sdl.MultiSelectComboBox.EventArgs.SelectedItemsChangedEventArgs e)
         {
@@ -1578,37 +1648,38 @@ namespace CardEditor.UserControls
         #region Save
         public async Task<bool> Save()
         {
-            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+            WriteResult? saveResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                saveResult = await SaveDatabaseServices.SaveCardList(Cards.ToList(), cdbFilePath);
+                saveResult = await SaveDatabaseOMEGAService.SaveCardList(Cards.ToList(), cdbFilePath, CdbFileHasFlag);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                saveResult = await SaveExcelService.SaveCardList(Cards.ToList(), xlsxFilePath);
+                saveResult = await SaveExcelOMEGAService.SaveCardList(Cards.ToList(), xlsxFilePath, XlsxFileHasFlag);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                saveResult = await SaveCedsService.SaveCardList(Cards.ToList(), cedsFilePath);
+                saveResult = await SaveCedsOMEGAService.SaveCardList(Cards.ToList(), cedsFilePath, CedsFileHasFlag);
             else
             {
                 string dbFilePath = FileDiaLogHelper.SaveDataBase();
                 if (string.IsNullOrEmpty(dbFilePath) || !System.IO.File.Exists(dbFilePath)) return false;
                 string folderPath = System.IO.Path.GetDirectoryName(dbFilePath);
                 string cdbFileName = System.IO.Path.GetFileName(dbFilePath);
-                var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateDatabase(folderPath, cdbFileName));
-                if (!resultCreate)
+
+                CreateCardListResult resultCreate = await Task.Run(() => CreateDatabaseService.CreateDatabaseOMEGA(folderPath, cdbFileName));
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return false;
                 }
-                cdbFilePath = messageCreate;
-                saveResult = await SaveDatabaseServices.SaveCardList(Cards.ToList(), cdbFilePath);
+                cdbFilePath = resultCreate.FilePath;
+                saveResult = await SaveDatabaseOMEGAService.SaveCardList(Cards.ToList(), cdbFilePath);
             }
 
             if (saveResult == null) return false;
-            if (!saveResult.Value.resultSaveDB)
+            if (!saveResult.Result)
             {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText())} {saveResult.Value.messageSaveDB}",
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.CardDB.ToText())} {saveResult.Messenger}",
                     new[] { CMess.ok.ToText() });
                 return false;
             }
@@ -1642,7 +1713,7 @@ namespace CardEditor.UserControls
             if (string.IsNullOrEmpty(targetSourcePath) || !System.IO.File.Exists(targetSourcePath))
                 return (false, CMess.fileNotExit.ToText());
 
-            return await LoadDataServices.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
+            return await LoadArchiveService.SaveEntryToZip(archiveFilePath, archiveEntryName, targetSourcePath);
         }
         #endregion
 
@@ -1662,24 +1733,15 @@ namespace CardEditor.UserControls
                 string dbFilePath = FileDiaLogHelper.SaveDataBase();
                 if (string.IsNullOrEmpty(dbFilePath)) return;
 
-                bool hasFlag;
-                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
-                if (chooseFlag == 0) hasFlag = true;
-                else if (chooseFlag == 1) hasFlag = false;
-                else return;
-
-                _cdbFileHasFlag = hasFlag;
-
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateDatabaseCommand(dbFilePath, hasFlag);
-                if (!resultCreate)
+                CreateCardListResult resultCreate = await CreateDatabaseService.CreateDatabaseOMEGACommand(dbFilePath);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
-                cdbFilePath = messageCreate;
+                cdbFilePath = resultCreate.FilePath;
             }
 
             var (resultSave, messageSave) = await SaveAsCardDBFileAllData(cdbFilePath);
@@ -1698,7 +1760,7 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await SaveCardDBFileCommand(selectedItems, filePath);
@@ -1715,12 +1777,12 @@ namespace CardEditor.UserControls
         public async Task<(bool, string)> SaveAsCardDBFileFiltedData(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
-            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().Any()) return (false, CMess.noCardFound.ToText());
 
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await SaveCardDBFileCommand(filteredItems, filePath);
@@ -1754,14 +1816,14 @@ namespace CardEditor.UserControls
             }
         }
 
-        private async Task<(bool, string)> SaveCardDBFileCommand(List<CardEditor.Models.Card> cardList, string filePath)
+        private async Task<(bool, string)> SaveCardDBFileCommand(List<CardEditor.Models.CardOmega> cardList, string filePath)
         {
             if (cardList == null) return (false, CMess.noCardExport.ToText());
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
 
-            var (resultSave, messageSave) = await Task.Run(() => SaveDatabaseServices.SaveCardList(cardList, filePath, _cdbFileHasFlag));
-            if (resultSave) return await SaveToArchive();
-            else return (false, messageSave);
+            WriteResult resultSave = await Task.Run(() => SaveDatabaseOMEGAService.SaveCardList(cardList, filePath, CdbFileHasFlag));
+            if (resultSave.Result) return await SaveToArchive();
+            else return (false, resultSave.Messenger);
         }
         #endregion
 
@@ -1781,24 +1843,15 @@ namespace CardEditor.UserControls
                 string excelFilepath = FileDiaLogHelper.SaveExcel();
                 if (string.IsNullOrEmpty(excelFilepath)) return;
 
-                bool hasFlag;
-                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
-                if (chooseFlag == 0) hasFlag = true;
-                else if (chooseFlag == 1) hasFlag = false;
-                else return;
-
-                _xlsxFileHasFlag = hasFlag;
-
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateExcelCommand(excelFilepath, hasFlag);
-                if (!resultCreate)
+                CreateCardListResult resultCreate = await CreateExcelService.CreateExcelOMEGACommand(excelFilepath);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
-                xlsxFilePath = messageCreate;
+                xlsxFilePath = resultCreate.FilePath;
             }
 
             var (resultSave, messageSave) = await SaveAsExcelFileAllData(xlsxFilePath);
@@ -1817,7 +1870,7 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await SaveExcelFileCommand(selectedItems, filePath);
@@ -1834,12 +1887,12 @@ namespace CardEditor.UserControls
         public async Task<(bool, string)> SaveAsExcelFileFiltedData(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
-            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().Any()) return (false, CMess.noCardFound.ToText());
 
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await SaveExcelFileCommand(filteredItems, filePath);
@@ -1873,14 +1926,14 @@ namespace CardEditor.UserControls
             }
         }
 
-        private async Task<(bool, string)> SaveExcelFileCommand(List<CardEditor.Models.Card> cardList, string filePath)
+        private async Task<(bool, string)> SaveExcelFileCommand(List<CardEditor.Models.CardOmega> cardList, string filePath)
         {
             if (cardList == null) return (false, CMess.noCardExport.ToText());
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
 
-            var (resultSave, messageSave) = await Task.Run(() => SaveExcelService.SaveCardList(cardList, filePath, _xlsxFileHasFlag));
-            if (resultSave) return await SaveToArchive();
-            else return (false, messageSave);
+            WriteResult resultSave = await Task.Run(() => SaveExcelOMEGAService.SaveCardList(cardList, filePath, XlsxFileHasFlag));
+            if (resultSave.Result) return await SaveToArchive();
+            else return (false, resultSave.Messenger);
         }
         #endregion
 
@@ -1900,24 +1953,15 @@ namespace CardEditor.UserControls
                 string cedsFilePath = FileDiaLogHelper.SaveCeds();
                 if (string.IsNullOrEmpty(cedsFilePath)) return;
 
-                bool hasFlag;
-                int chooseFlag = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
-                    CMess.QuestHasFlag.ToText(), new[] { CMess.yes.ToText(), CMess.no.ToText(), CMess.cancel.ToText() });
-                if (chooseFlag == 0) hasFlag = true;
-                else if (chooseFlag == 1) hasFlag = false;
-                else return;
-
-                _cedsFileHasFlag = hasFlag;
-
-                var (resultCreate, messageCreate) = await CreateFileServices.CreateCedsCommand(cedsFilePath);
-                if (!resultCreate)
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {messageCreate}",
+                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {resultCreate.Messenger}",
                         new[] { CMess.ok.ToText() });
                     return;
                 }
-                cedsFilePath = messageCreate;
+                cedsFilePath = resultCreate.FilePath;
             }
 
             var (resultSave, messageSave) = await SaveAsCedsFileAllData(cedsFilePath);
@@ -1937,7 +1981,7 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await SaveCedsFileCommand(selectedItems, filePath);
@@ -1954,12 +1998,12 @@ namespace CardEditor.UserControls
         public async Task<(bool, string)> SaveAsCedsFileFiltedData(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
-            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().Any()) return (false, CMess.noCardFound.ToText());
 
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await SaveCedsFileCommand(filteredItems, filePath);
@@ -1993,14 +2037,14 @@ namespace CardEditor.UserControls
             }
         }
 
-        private async Task<(bool, string)> SaveCedsFileCommand(List<CardEditor.Models.Card> cardList, string filePath)
+        private async Task<(bool, string)> SaveCedsFileCommand(List<CardEditor.Models.CardOmega> cardList, string filePath)
         {
             if (cardList == null) return (false, CMess.noCardExport.ToText());
             if (string.IsNullOrEmpty(filePath)) return (false, CMess.noFileFound.ToText());
 
-            var (resultSave, messageSave) = await Task.Run(() => SaveCedsService.SaveCardList(cardList, filePath));
-            if (resultSave) return await SaveToArchive();
-            else return (false, messageSave);
+            WriteResult resultSave = await Task.Run(() => SaveCedsOMEGAService.SaveCardList(cardList, filePath, CedsFileHasFlag));
+            if (resultSave.Result) return await SaveToArchive();
+            else return (false, resultSave.Messenger);
         }
         #endregion
 
@@ -2018,7 +2062,7 @@ namespace CardEditor.UserControls
                 return;
             }
 
-            CardEditor.Models.Card newCard = ExtractCardFromForm();
+            CardEditor.Models.CardOmega newCard = ExtractCardFromForm();
             if (newCard == null) return;
             if (newCard.id <= 10000)
             {
@@ -2049,20 +2093,20 @@ namespace CardEditor.UserControls
             else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                 $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlAdd.ToText(), CMess.Card.ToText())} {messageAdd}", new[] { CMess.ok.ToText() });
         }
-        public async Task<(bool, string)> AddNewCardCommand(CardEditor.Models.Card newCard)
+        public async Task<(bool, string)> AddNewCardCommand(CardEditor.Models.CardOmega newCard)
         {
-            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+            WriteResult? saveResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                saveResult = await SaveDatabaseServices.AddNewCard(newCard, cdbFilePath);
+                saveResult = await SaveDatabaseOMEGAService.AddNewCard(newCard, cdbFilePath, CdbFileHasFlag);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                saveResult = await SaveExcelService.AddNewCard(newCard, xlsxFilePath);
+                saveResult = await SaveExcelOMEGAService.AddNewCard(newCard, xlsxFilePath, XlsxFileHasFlag);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                saveResult = await SaveCedsService.AddNewCard(newCard, cedsFilePath);
+                saveResult = await SaveCedsOMEGAService.AddNewCard(newCard, cedsFilePath, CedsFileHasFlag);
 
             if (saveResult != null)
             {
-                if (!saveResult.Value.resultSaveDB) return (false, saveResult.Value.messageSaveDB);
+                if (!saveResult.Result) return (false, saveResult.Messenger);
                 var (resultArchive, messageArchive) = await SaveToArchive();
                 if (!resultArchive) return (false, messageArchive);
             }
@@ -2073,7 +2117,7 @@ namespace CardEditor.UserControls
             IsSaved = true;
             return (true, string.Empty);
         }
-        private (bool, string) AddNewCardGrid(CardEditor.Models.Card newCard)
+        private (bool, string) AddNewCardGrid(CardEditor.Models.CardOmega newCard)
         {
             try
             {
@@ -2082,7 +2126,7 @@ namespace CardEditor.UserControls
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error, CMess.cardIDExist.ToText(), new[] { CMess.ok.ToText() });
                     return (false, CMess.cardIDExist.ToText());
                 }
-                int insertIndex = Cards.ToList().BinarySearch(newCard, Comparer<CardEditor.Models.Card>.Create((x, y) => x.id.CompareTo(y.id)));
+                int insertIndex = Cards.ToList().BinarySearch(newCard, Comparer<CardEditor.Models.CardOmega>.Create((x, y) => x.id.CompareTo(y.id)));
                 if (insertIndex < 0) insertIndex = ~insertIndex;
 
                 Cards.Insert(insertIndex, newCard);
@@ -2111,7 +2155,7 @@ namespace CardEditor.UserControls
                 return;
             }
 
-            CardEditor.Models.Card newCard = ExtractCardFromForm();
+            CardEditor.Models.CardOmega newCard = ExtractCardFromForm();
 
             var (resultModify, messageModify) = await ModifyCard(newCard);
             if (resultModify)
@@ -2135,23 +2179,23 @@ namespace CardEditor.UserControls
             else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                 $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.tlModify.ToText(), CMess.Card.ToText())} {messageModify}", new[] { CMess.ok.ToText() });
         }
-        public async Task<(bool, string)> ModifyCard(CardEditor.Models.Card newCard = null)
+        public async Task<(bool, string)> ModifyCard(CardEditor.Models.CardOmega newCard = null)
         {
             if (newCard == null) newCard = ExtractCardFromForm();
             if (newCard == null) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Data.ToText(), CMess.Format.ToText()));
 
-            (bool resultSaveDB, string messageSaveDB)? saveResult = null;
+            WriteResult? saveResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                saveResult = await SaveDatabaseServices.ModifyCurrentCard(newCard, cdbFilePath);
+                saveResult = await SaveDatabaseOMEGAService.ModifyCurrentCard(newCard, cdbFilePath, CdbFileHasFlag);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                saveResult = await SaveExcelService.ModifyCurrentCard(newCard, xlsxFilePath);
+                saveResult = await SaveExcelOMEGAService.ModifyCurrentCard(newCard, xlsxFilePath, XlsxFileHasFlag);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                saveResult = await SaveCedsService.ModifyCurrentCard(newCard, cedsFilePath);
+                saveResult = await SaveCedsOMEGAService.ModifyCurrentCard(newCard, cedsFilePath, CedsFileHasFlag);
 
             if (saveResult != null)
             {
-                if (!saveResult.Value.resultSaveDB) return (false, saveResult.Value.messageSaveDB);
+                if (!saveResult.Result) return (false, saveResult.Messenger);
                 var (resultArchive, messageArchive) = await SaveToArchive();
                 if (!resultArchive) return (false, messageArchive);
             }
@@ -2162,7 +2206,7 @@ namespace CardEditor.UserControls
             IsSaved = true;
             return (true, string.Empty);
         }
-        private (bool, string) ModifyCardGrid(CardEditor.Models.Card newCard)
+        private (bool, string) ModifyCardGrid(CardEditor.Models.CardOmega newCard)
         {
             try
             {
@@ -2202,6 +2246,8 @@ namespace CardEditor.UserControls
                 existingCard.race = newCard.race;
                 existingCard.attribute = newCard.attribute;
                 existingCard.category = newCard.category;
+                existingCard.genre = newCard.genre;
+                existingCard.support = newCard.support;
 
                 CollectionViewCollection.Refresh();
                 return (true, string.Empty);
@@ -2311,7 +2357,8 @@ namespace CardEditor.UserControls
             CurrentCard.race = 0;
             CurrentCard.attribute = 0;
             CurrentCard.category = 0;
-
+            CurrentCard.genre = 0;
+            CurrentCard.support = 0;
         }
         private void ClearAll()
         {
@@ -2323,8 +2370,8 @@ namespace CardEditor.UserControls
                 cmbcardrace?.SelectedItems?.Clear();
                 cmbcardattribute?.SelectedItems?.Clear();
                 cmbsetcode?.SelectedItems?.Clear();
-                cmbcategory?.SelectedItems?.Clear();
-                cmbflag?.SelectedItems?.Clear();
+                cmbgenre?.SelectedItems?.Clear();
+                cmbcategoryOmega?.SelectedItems?.Clear();
                 cmbrarity?.SelectedItems?.Clear();
                 txtLvRk.Text = string.Empty;
                 txtlinkrating.Text = string.Empty;
@@ -2470,18 +2517,18 @@ namespace CardEditor.UserControls
         {
             if (cardID <= 0) return (false, string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()));
 
-            (bool resultDelete, string messageDelete)? deleteResult = null;
+            WriteResult? deleteResult = null;
 
             if (!string.IsNullOrEmpty(cdbFilePath) && System.IO.File.Exists(cdbFilePath))
-                deleteResult = await SaveDatabaseServices.DeleteCard(cardID, cdbFilePath);
+                deleteResult = await SaveDatabaseOMEGAService.DeleteCard(cardID, cdbFilePath);
             else if (!string.IsNullOrEmpty(xlsxFilePath) && System.IO.File.Exists(xlsxFilePath))
-                deleteResult = await SaveExcelService.DeleteCard(cardID, xlsxFilePath);
+                deleteResult = await SaveExcelOMEGAService.DeleteCard(cardID, xlsxFilePath);
             else if (!string.IsNullOrEmpty(cedsFilePath) && System.IO.File.Exists(cedsFilePath))
-                deleteResult = await SaveCedsService.DeleteCard(cardID, cedsFilePath);
+                deleteResult = await SaveCedsOMEGAService.DeleteCard(cardID, cedsFilePath, CedsFileHasFlag);
 
             if (deleteResult != null)
             {
-                if (!deleteResult.Value.resultDelete) return (false, deleteResult.Value.messageDelete);
+                if (!deleteResult.Result) return (false, deleteResult.Messenger);
                 var (resultAtchive, messageArchive) = await SaveToArchive();
                 if (!resultAtchive) return (false, messageArchive);
             }
@@ -2547,7 +2594,7 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!selectedItems.Any())
                 {
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
@@ -2555,15 +2602,15 @@ namespace CardEditor.UserControls
                     return;
                 }
 
-                var (resultCopy, messageCopy) = await CopyCardsCommand(selectedItems);
-                if (resultCopy)
+                SetClipboardResult result = await CopyCardsCommand(selectedItems);
+                if (result.Result)
                 {
                     MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -2574,7 +2621,7 @@ namespace CardEditor.UserControls
         }
         public async Task CopyAllFilterCard()
         {
-            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any())
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().Any())
             {
                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
                     CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
@@ -2584,7 +2631,7 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!filteredItems.Any())
                 {
                     CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
@@ -2592,15 +2639,15 @@ namespace CardEditor.UserControls
                     return;
                 }
 
-                var (resultCopy, messageCopy) = await CopyCardsCommand(filteredItems);
-                if (resultCopy)
+                SetClipboardResult result = await CopyCardsCommand(filteredItems);
+                if (result.Result)
                 {
                     MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -2621,15 +2668,15 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var (resultCopy, messageCopy) = await CopyCardsCommand(Cards.ToList());
-                if (resultCopy)
+                SetClipboardResult result = await CopyCardsCommand(Cards.ToList());
+                if (result.Result)
                 {
                     MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
                 }
                 else
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {messageCopy}", new[] { CMess.ok.ToText() });
+                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
                 }
             }
             catch (Exception ex)
@@ -2639,11 +2686,17 @@ namespace CardEditor.UserControls
             }
         }
 
-        private async Task<(bool, string)> CopyCardsCommand(List<CardEditor.Models.Card> cardList)
+        private async Task<SetClipboardResult> CopyCardsCommand(List<CardEditor.Models.CardOmega> cardList)
         {
-            if (cardList == null || !cardList.Any()) return (false, CMess.noCardExport.ToText());
-
-            return await Task.Run(() => ClipboardService.CopyCardJSON(cardList));
+            if (cardList == null || !cardList.Any())
+            {
+                SetClipboardResult result = new SetClipboardResult
+                {
+                    Result = false,
+                    Messenger = CMess.noCardExport.ToText()
+                };
+            }
+           return await Task.Run(() => CopyCardService.CopyCardOmegaToJSON(cardList, HasFlag));
         }
 
         private async Task CopyCardDescExecute()
@@ -2660,8 +2713,8 @@ namespace CardEditor.UserControls
         {
             try
             {
-                var (resultCopy, messageCopy) = ClipboardService.CopyTextToClipboard(txtcarddesc.Text);
-                return resultCopy;
+                SetClipboardResult result = CopyTextService.CopyTextToClipboard(txtcarddesc.Text);
+                return result.Result;
             }
             catch
             {
@@ -2681,7 +2734,7 @@ namespace CardEditor.UserControls
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList();
+                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!selectedItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await CreateCompressedFile(selectedItems, targetPath);
@@ -2698,12 +2751,13 @@ namespace CardEditor.UserControls
         public async Task<(bool, string)> ExportCompressedFiltedData(string targetPath)
         {
             if (string.IsNullOrEmpty(targetPath)) return (false, CMess.noFileFound.ToText());
-            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.Card>().Any()) return (false, CMess.noCardFound.ToText());
+            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().Any())
+                return (false, CMess.noCardFound.ToText());
 
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList();
+                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList();
                 if (!filteredItems.Any()) return (false, CMess.noCardSelec.ToText());
 
                 return await CreateCompressedFile(filteredItems, targetPath);
@@ -2737,7 +2791,7 @@ namespace CardEditor.UserControls
             }
         }
 
-        private async Task<(bool, string)> CreateCompressedFile(List<CardEditor.Models.Card> cardList, string targetPath)
+        private async Task<(bool, string)> CreateCompressedFile(List<CardEditor.Models.CardOmega> cardList, string targetPath)
         {
             if (cardList == null || !cardList.Any()) return (false, CMess.noCardExport.ToText());
             if (string.IsNullOrEmpty(targetPath)) return (false, CMess.noFileFound.ToText());
@@ -2748,7 +2802,11 @@ namespace CardEditor.UserControls
                 !string.IsNullOrWhiteSpace(cedsFilePath) ? cedsFilePath :
                 null;
 
-            return await Task.Run(() => SaveArchiveService.SaveCompressed(cardList, targetPath, dbFilePath));
+            string[] CardDBExtensions = { ".db", ".cdb", ".bytes", ".sqlite", };
+            int chooseExtension = CMSG.Show(CMess.questi.ToText(), CMSG.MessageBoxIconType.Question,
+                "Chọn Phần mở rộng", CardDBExtensions);
+            string selectedExtension = CardDBExtensions[chooseExtension];
+            return await Task.Run(() => SaveArchiveService.SaveCompressedOMEGA(cardList, selectedExtension, targetPath, dbFilePath));
         }
         #endregion
 
@@ -2796,10 +2854,10 @@ namespace CardEditor.UserControls
             // 3. Get target cards
             var targetCards = scope switch
             {
-                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList(),
-                2 => CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList(),
+                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList(),
+                2 => CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList(),
                 3 => Cards.ToList(),
-                _ => new List<CardEditor.Models.Card>()
+                _ => new List<CardEditor.Models.CardOmega>()
             };
 
             int totalCount = targetCards.Count;
@@ -2951,10 +3009,10 @@ namespace CardEditor.UserControls
 
             var targetCards = scope switch
             {
-                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.Card>().ToList(),
-                2 => CollectionViewCollection.Cast<CardEditor.Models.Card>().ToList(),
+                1 => datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList(),
+                2 => CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList(),
                 3 => Cards.ToList(),
-                _ => new List<CardEditor.Models.Card>()
+                _ => new List<CardEditor.Models.CardOmega>()
             };
 
             if (!targetCards.Any())
@@ -2968,7 +3026,7 @@ namespace CardEditor.UserControls
                 ? RegexOptions.None
                 : RegexOptions.IgnoreCase;
 
-            int modifiedCount = await Task.Run(() => SearchPattern.Replace(targetCards, findWhat, replaceWith, opt, regexOpt));
+            int modifiedCount = await Task.Run(() => SearchPattern.ReplaceCardOmega(targetCards, findWhat, replaceWith, opt, regexOpt));
 
             if (modifiedCount > 0)
             {
@@ -2993,28 +3051,29 @@ namespace CardEditor.UserControls
         #endregion
 
         #region Replace Field
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags, bool isAddNew)
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataCommand(CardListFormat cardListFormat,
+            IEnumerable<CardEditor.Models.CardOmega> cardList, ulong flags, bool isAddNew)
         {
             if (cardList == null || flags == 0) return (false, 0, 0, CMess.noCardReplace.ToText());
 
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters =
-                Enumerable.Empty<Action<CardEditor.Models.Card, CardEditor.Models.Card>>();
+            IEnumerable<Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>> updaters =
+                Enumerable.Empty<Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>>();
 
             if (flags != 0)
             {
-                var selected = (CardField)flags;
-                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                var selected = (CardOmegaField)flags;
+                updaters = CardOmegaFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
             }
 
-            return ReplaceDataField(cardList, isAddNew, updaters);
+            return ReplaceDataField(cardListFormat, cardList, isAddNew, updaters);
         }
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
-            params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.CardOmega> cardList,
+            bool isAddNew, params Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>[] updaters)
         {
-            return ReplaceDataField(cardList, isAddNew, updaters.AsEnumerable());
+            return ReplaceDataField(cardListFormat, cardList, isAddNew, updaters.AsEnumerable());
         }
-        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(IEnumerable<CardEditor.Models.Card> cardList, bool isAddNew,
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
+        public (bool Success, int ReplacedCard, int TotalCard, string Message) ReplaceDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.CardOmega> cardList,
+            bool isAddNew, IEnumerable<Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>> updaters)
         {
             if (cardList == null || Cards == null)
                 return (false, 0, 0, CMess.noCardReplace.ToText());
@@ -3063,23 +3122,23 @@ namespace CardEditor.UserControls
             var duplicates = Cards.GroupBy(c => c.id).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
             return (duplicates.Count > 0, duplicates);
         }
-        public (bool, string) ImportDataCommand(IEnumerable<CardEditor.Models.Card> cardList, ulong flags)
+        public (bool, string) ImportDataCommand(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.CardOmega> cardList, ulong flags)
         {
             if (cardList == null) return (false, CMess.noCardReplace.ToText());
 
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters =
-                Enumerable.Empty<Action<CardEditor.Models.Card, CardEditor.Models.Card>>();
+            IEnumerable<Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>> updaters =
+                Enumerable.Empty<Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>>();
 
             if (flags != 0)
             {
-                var selected = (CardField)flags;
-                updaters = CardFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
+                var selected = (CardOmegaField)flags;
+                updaters = CardOmegaFieldUpdate.FieldUpdaters.Where(kv => selected.HasFlag(kv.Key)).Select(kv => kv.Value);
             }
 
-            return ImportDataField(cardList, updaters);
+            return ImportDataField(cardListFormat, cardList, updaters);
         }
-        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
-            IEnumerable<Action<CardEditor.Models.Card, CardEditor.Models.Card>> updaters)
+        public (bool, string) ImportDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.CardOmega> cardList,
+            IEnumerable<Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>> updaters)
         {
             if (cardList == null || Cards == null)
                 return (false, CMess.noCardReplace.ToText());
@@ -3111,24 +3170,24 @@ namespace CardEditor.UserControls
                 return (false, ex.Message);
             }
         }
-        public (bool, string) ImportDataField(IEnumerable<CardEditor.Models.Card> cardList,
-            params Action<CardEditor.Models.Card, CardEditor.Models.Card>[] updaters)
+        public (bool, string) ImportDataField(CardListFormat cardListFormat, IEnumerable<CardEditor.Models.CardOmega> cardList,
+            params Action<CardEditor.Models.CardOmega, CardEditor.Models.CardOmega>[] updaters)
         {
-            return ImportDataField(cardList, updaters.AsEnumerable());
+            return ImportDataField(cardListFormat, cardList, updaters.AsEnumerable());
         }
 
-        public void ImportCreateNew(IEnumerable<CardEditor.Models.Card> importedCards)
+        public void ImportCreateNew(IEnumerable<CardEditor.Models.CardOmega> importedCards)
         {
             if (importedCards == null) return;
             Cards.ReplaceAll(importedCards);
             Mouse.OverrideCursor = null;
             RebuildWindowTitle();
         }
-        public void ImportOverwrite(IEnumerable<CardEditor.Models.Card> importedCards)
+        public void ImportOverwrite(IEnumerable<CardEditor.Models.CardOmega> importedCards)
         {
             if (importedCards == null || !importedCards.Any()) return;
 
-            List<CardEditor.Models.Card> CardList = new List<CardEditor.Models.Card>();
+            List<CardEditor.Models.CardOmega> CardList = new List<CardEditor.Models.CardOmega>();
             var CardsDict = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
 
             foreach (var item in importedCards)
@@ -3146,10 +3205,10 @@ namespace CardEditor.UserControls
             Mouse.OverrideCursor = null;
             RebuildWindowTitle();
         }
-        public void ImportAppendwrite(IEnumerable<CardEditor.Models.Card> importedCards)
+        public void ImportAppendwrite(IEnumerable<CardEditor.Models.CardOmega> importedCards)
         {
             if (importedCards == null || !importedCards.Any()) return;
-            List<CardEditor.Models.Card> CardList = new List<CardEditor.Models.Card>();
+            List<CardEditor.Models.CardOmega> CardList = new List<CardEditor.Models.CardOmega>();
             var CardsDict = Cards.GroupBy(c => c.id).ToDictionary(g => g.Key, g => g.First());
 
             foreach (var item in importedCards)
@@ -3187,7 +3246,7 @@ namespace CardEditor.UserControls
 
             if (MainWindowService != null)
             {
-                MainWindowService.OpenPreViewDescWindow(CurrentCard, SelectedPenLangRule);
+                MainWindowService.OpenPreViewDescWindowCardOmega(CurrentCard, SelectedPenLangRule);
             }
         }
         private void ApplyPendulumLanguageDesc()
@@ -3220,10 +3279,10 @@ namespace CardEditor.UserControls
 
             var cardList = scope switch
             {
-                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
-                _ => new List<CardEditor.Models.Card>()
+                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.CardOmega>().ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                1 => CollectionViewCollection?.OfType<CardEditor.Models.CardOmega>().ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                2 => Cards?.ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                _ => new List<CardEditor.Models.CardOmega>()
             };
 
             if (cardList == null || cardList.Count == 0)
@@ -3237,7 +3296,7 @@ namespace CardEditor.UserControls
 
             try
             {
-                PenDescProcessSummary result = await PenLanguageViewModel.Instance.ProcessPenDesc(cardList, rule, _applyPenLangCts.Token, overwrite);
+                PenDescProcessSummary result = await PenLanguageViewModel.Instance.ProcessPenDescCardOmega(cardList, rule, _applyPenLangCts.Token, overwrite);
                 // Total: Tổng số card có cờ CardType.Pendulum được đưa vào xử lý (đếm ngay từ đầu vòng lặp, trước khi biết kết quả thành hay bại)
                 // Success: Số card đã build lại desc thành công bằng newRule, toàn bộ pipeline Analyze → BuildDesc chạy trót lọt không throw exception, và card.desc đã được gán giá trị mới.
                 // Error: Số card mà Analyze hoặc BuildDesc throw exception trong lúc xử lý. Card này bị bỏ qua, card.desc giữ nguyên giá trị gốc (không được gán lại). ID của các card này nằm trong ErrorCardIds.
@@ -3261,7 +3320,7 @@ namespace CardEditor.UserControls
         }
         public (bool, string) RollBackPenlang()
         {
-            var result = PenLanguageViewModel.Instance.PerformManualRollback();
+            var result = PenLanguageViewModel.Instance.PerformManualRollbackCardOmega();
             IsSaved = false;
             return result;
         }
@@ -3296,10 +3355,10 @@ namespace CardEditor.UserControls
 
             var cardList = scope switch
             {
-                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
-                _ => new List<CardEditor.Models.Card>()
+                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.CardOmega>().ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                1 => CollectionViewCollection?.OfType<CardEditor.Models.CardOmega>().ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                2 => Cards?.ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                _ => new List<CardEditor.Models.CardOmega>()
             };
 
             if (cardList == null || cardList.Count == 0)
@@ -3315,7 +3374,7 @@ namespace CardEditor.UserControls
 
             try
             {
-                var result = await CreditsViewModel.Instance.CreditTeam(cardList, credit, writeMode, _applyCreditCts.Token);
+                var result = await CreditsViewModel.Instance.CreditTeamCardOmega(cardList, credit, writeMode, _applyCreditCts.Token);
                 IsSaved = false;
                 return result;
             }
@@ -3340,10 +3399,10 @@ namespace CardEditor.UserControls
 
             var cardList = scope switch
             {
-                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                1 => CollectionViewCollection?.OfType<CardEditor.Models.Card>().ToList() ?? new List<CardEditor.Models.Card>(),
-                2 => Cards?.ToList() ?? new List<CardEditor.Models.Card>(),
-                _ => new List<CardEditor.Models.Card>()
+                0 => datagrMain.SelectedItems?.OfType<CardEditor.Models.CardOmega>().ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                1 => CollectionViewCollection?.OfType<CardEditor.Models.CardOmega>().ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                2 => Cards?.ToList() ?? new List<CardEditor.Models.CardOmega>(),
+                _ => new List<CardEditor.Models.CardOmega>()
             };
 
             if (cardList == null || cardList.Count == 0)
@@ -3357,13 +3416,13 @@ namespace CardEditor.UserControls
                 };
             }
 
-            var result = await CreditsViewModel.Instance.RemoveAllCredits(cardList);
+            var result = await CreditsViewModel.Instance.RemoveAllCreditsCardOmega(cardList);
             IsSaved = false;
             return result;
         }
         public (bool, string) RollbackCredits()
         {
-            var result = CreditsViewModel.Instance.PerformManualRollback();
+            var result = CreditsViewModel.Instance.PerformManualRollbackCardOmega();
             IsSaved = false;
             return result;
         }
@@ -3456,8 +3515,9 @@ namespace CardEditor.UserControls
             var fillerleft = GetLeftScaleNull();
             var fillerRace = GetCardRace();
             var fillerAttribute = GetCardAttribue();
-            var fillerCategory = GetCardCategory();
-            var fillerFlag = GetCardFlag();
+            var filterGenre = GetCardGenre();
+            var filterCategory = GetCardCategoryOmega();
+            var filterSupport = GetCardSupportNull();
 
             var normalizedFilters = new Dictionary<string, string>();
             var strFilters = new[] {
@@ -3556,7 +3616,7 @@ namespace CardEditor.UserControls
             {
                 CollectionViewCollection.Filter = item =>
                 {
-                    var card = (CardEditor.Models.Card)item;
+                    var card = (CardEditor.Models.CardOmega)item;
 
                     if (filterId.HasValue && card.id != filterId.Value) return false;
                     if (fillerAlias.HasValue && card.alias != fillerAlias.Value) return false;
@@ -3586,9 +3646,9 @@ namespace CardEditor.UserControls
                     if (fillerleft.HasValue && fillerleft.Value != ((card.level >> 24) & 0xFF)) return false;
                     if (fillerRace != 0 && (card.race & fillerRace) != fillerRace) return false;
                     if (fillerAttribute != 0 && (card.attribute & fillerAttribute) != fillerAttribute) return false;
-                    if (fillerCategory != 0 && (card.category & fillerCategory) != fillerCategory) return false;
-                    if (fillerFlag != 0 && (card.flag & fillerFlag) != fillerFlag) return false;
-
+                    if (filterGenre != 0 && (card.genre & filterGenre) != filterGenre) return false;
+                    if (filterCategory != 0 && (card.category & filterCategory) != filterCategory) return false;
+                    if (filterSupport.HasValue && card.support != filterSupport.Value) return false;
 
                     if (!MatchString(card.name, fillerName)) return false;
                     if (!MatchString(card.desc, fillerDesc)) return false;
@@ -3622,7 +3682,7 @@ namespace CardEditor.UserControls
             {
                 CollectionViewCollection.Filter = item =>
                 {
-                    var card = (CardEditor.Models.Card)item;
+                    var card = (CardEditor.Models.CardOmega)item;
 
                     if (filterId.HasValue && card.id == filterId.Value) return true;
                     if (fillerAlias.HasValue && card.alias == fillerAlias.Value) return true;
@@ -3652,8 +3712,9 @@ namespace CardEditor.UserControls
                     if (fillerleft.HasValue && fillerleft.Value == ((card.level >> 24) & 0xFF)) return true;
                     if (fillerRace != 0 && (card.race & fillerRace) != 0) return true;
                     if (fillerAttribute != 0 && (card.attribute & fillerAttribute) != 0) return true;
-                    if (fillerCategory != 0 && (card.category & fillerCategory) != 0) return true;
-                    if (fillerFlag != 0 && (card.flag & fillerFlag) != 0) return true;
+                    if (filterGenre != 0 && (card.genre & filterGenre) != 0) return true;
+                    if (filterCategory != 0 && (card.category & filterCategory) != 0) return true;
+                    if (filterSupport.HasValue && card.support == filterSupport.Value) return true;
 
                     if (MatchString(card.name, fillerName)) return true;
                     if (MatchString(card.desc, fillerDesc)) return true;
@@ -3681,7 +3742,7 @@ namespace CardEditor.UserControls
             {
                 CollectionViewCollection.Filter = item =>
                 {
-                    var card = (CardEditor.Models.Card)item;
+                    var card = (CardEditor.Models.CardOmega)item;
 
                     if (filterId.HasValue && card.id != filterId.Value) return false;
                     if (fillerAlias.HasValue && card.alias != fillerAlias.Value) return false;
@@ -3692,8 +3753,9 @@ namespace CardEditor.UserControls
                     if (fillerType != 0 && (card.type & fillerType) == 0) return false;
                     if (fillerRace != 0 && (card.race & fillerRace) == 0) return false;
                     if (fillerAttribute != 0 && (card.attribute & fillerAttribute) == 0) return false;
-                    if (fillerCategory != 0 && (card.category & fillerCategory) == 0) return false;
-                    if (fillerFlag != 0 && (card.flag & fillerFlag) == 0) return false;
+                    if (filterGenre != 0 && (card.genre & filterGenre) == 0) return false;
+                    if (filterCategory != 0 && (card.category & filterCategory) == 0) return false;
+                    if (filterSupport.HasValue && card.support != filterSupport.Value) return false;
 
                     // Numeric filters: exact match
                     if (fillerATK.HasValue)
@@ -3753,365 +3815,6 @@ namespace CardEditor.UserControls
                 new[] { CMess.ok.ToText() });
         }
 
-        private void FilterData1()
-        {
-            int advancedSettings = ConfigViewModel.Instance.dataHandlingSetting.Advanced;
-            bool isAdvancedFind = (advancedSettings & 0x01) == 0x01; // bit 1: Advanced Find
-            bool matchCase = (advancedSettings & 0x02) == 0x02;     // bit 2: Match Case
-            bool useWildcards = (advancedSettings & 0x04) == 0x04;  // bit 3: Use Wildcards
-            bool matchPrefix = (advancedSettings & 0x08) == 0x08;   // bit 4: Match Prefix
-            bool matchSuffix = (advancedSettings & 0x10) == 0x10;   // bit 5: Match Suffix
-            bool wholeWords = (advancedSettings & 0x20) == 0x20;    // bit 6: Find Whole Words Only
-            bool ignorePunctuation = (advancedSettings & 0x40) == 0x40; // bit 7: Ignore Punctuation
-            bool ignoreWhitespace = (advancedSettings & 0x80) == 0x80;  // bit 8: Ignore White-Space
-
-            var filterId = GetCardIDNull();
-
-            var fillerName = GetCardname();
-            var fillerDesc = GetCardDesc();
-            var fillerSTR1 = GetSTR1();
-            var fillerSTR2 = GetSTR2();
-            var fillerSTR3 = GetSTR3();
-            var fillerSTR4 = GetSTR4();
-            var fillerSTR5 = GetSTR5();
-            var fillerSTR6 = GetSTR6();
-            var fillerSTR7 = GetSTR7();
-            var fillerSTR8 = GetSTR8();
-            var fillerSTR9 = GetSTR9();
-            var fillerSTR10 = GetSTR10();
-            var fillerSTR11 = GetSTR11();
-            var fillerSTR12 = GetSTR12();
-            var fillerSTR13 = GetSTR13();
-            var fillerSTR14 = GetSTR14();
-            var fillerSTR15 = GetSTR15();
-            var fillerSTR16 = GetSTR16();
-
-            var fillerRule = GetCardRule();
-            var fillerAlias = GetCardAliasNull();
-            var fillerSetCode = GetSetCode();
-            var fillerType = GetCardType();
-            var fillerATK = GetATKNull();
-            var fillerDEF = GetDEFNull();
-            var fillerLevel = GetLevelNull();
-            var fillerright = GetRightScaleNull();
-            var fillerleft = GetLeftScaleNull();
-            var fillerRace = GetCardRace();
-            var fillerAttribute = GetCardAttribue();
-            var fillerCategory = GetCardCategory();
-
-            var normalizedFilters = new Dictionary<string, string>();
-            var strFilters = new[] {
-                fillerSTR1, fillerSTR2, fillerSTR3, fillerSTR4,
-                fillerSTR5, fillerSTR6, fillerSTR7, fillerSTR8,
-                fillerSTR9, fillerSTR10, fillerSTR11, fillerSTR12,
-                fillerSTR13, fillerSTR14, fillerSTR15, fillerSTR16
-            };
-            bool hasAnyStrFilter = strFilters.Any(f => !string.IsNullOrWhiteSpace(f));
-
-            // Pre-normalize tất cả filter strings
-            if (isAdvancedFind && (ignorePunctuation || ignoreWhitespace))
-            {
-                foreach (var filter in new[] { fillerName, fillerDesc }.Concat(strFilters))
-                {
-                    if (!string.IsNullOrWhiteSpace(filter))
-                    {
-                        string normalized = filter;
-                        if (ignorePunctuation)
-                            normalized = new string(normalized.Where(c => !char.IsPunctuation(c)).ToArray());
-                        if (ignoreWhitespace)
-                            normalized = Regex.Replace(normalized, @"\s+", "");
-
-                        normalizedFilters[filter] = normalized;
-                    }
-                }
-            }
-
-            // Pre-compile regex patterns nếu dùng wildcards hoặc whole words
-            Dictionary<string, Regex> preCompiledRegex = null;
-            if (isAdvancedFind && (useWildcards || wholeWords))
-            {
-                preCompiledRegex = new Dictionary<string, Regex>();
-                foreach (var kvp in normalizedFilters)
-                {
-                    string pattern = useWildcards
-                        ? BuildRegexPattern(kvp.Value, matchPrefix, matchSuffix, wholeWords)
-                        : wholeWords ? $@"\b{Regex.Escape(kvp.Value)}\b" : null;
-
-                    if (pattern != null)
-                    {
-                        preCompiledRegex[kvp.Key] = GetOrCreateRegex(pattern, matchCase);
-                    }
-                }
-            }
-
-            // String comparison type
-            StringComparison comparison = (isAdvancedFind && matchCase)
-                ? StringComparison.Ordinal
-                : StringComparison.OrdinalIgnoreCase;
-
-            // Optimized MatchString - closure captures all pre-processed data
-            bool MatchString(string source, string pattern)
-            {
-                if (string.IsNullOrWhiteSpace(pattern)) return true;
-                if (string.IsNullOrWhiteSpace(source)) return false;
-
-                // Get normalized pattern
-                string normalizedPattern = normalizedFilters.TryGetValue(pattern, out var cached)
-                    ? cached
-                    : pattern;
-
-                // Normalize source
-                string normalizedSource = source;
-                if (isAdvancedFind)
-                {
-                    if (ignorePunctuation)
-                        normalizedSource = new string(normalizedSource.Where(c => !char.IsPunctuation(c)).ToArray());
-                    if (ignoreWhitespace)
-                        normalizedSource = Regex.Replace(normalizedSource, @"\s+", "");
-                }
-
-                // Fast path: no advanced options
-                if (!isAdvancedFind)
-                {
-                    return normalizedSource.IndexOf(normalizedPattern, comparison) >= 0;
-                }
-
-                // Advanced find với wildcards hoặc whole words
-                if (useWildcards || wholeWords)
-                {
-                    if (preCompiledRegex != null && preCompiledRegex.TryGetValue(pattern, out var regex))
-                    {
-                        return regex.IsMatch(normalizedSource);
-                    }
-
-                    // Fallback nếu không có pre-compiled regex
-                    string regexPattern = useWildcards
-                        ? BuildRegexPattern(normalizedPattern, matchPrefix, matchSuffix, wholeWords)
-                        : $@"\b{Regex.Escape(normalizedPattern)}\b";
-
-                    return GetOrCreateRegex(regexPattern, matchCase).IsMatch(normalizedSource);
-                }
-
-                // Simple string matching với prefix/suffix
-                int index = normalizedSource.IndexOf(normalizedPattern, comparison);
-                if (index < 0) return false;
-
-                if (matchPrefix && index != 0) return false;
-                if (matchSuffix && (index + normalizedPattern.Length) != normalizedSource.Length) return false;
-
-                return true;
-            }
-
-            CollectionViewCollection.Filter = item =>
-            {
-                var card = (CardEditor.Models.Card)item;
-
-                // Fast checks first - numeric và bitwise operations (cheapest)
-                if (filterId.HasValue && card.id != filterId.Value) return false;
-                if (fillerAlias.HasValue && card.alias != fillerAlias.Value) return false;
-                if (fillerRule != 0 && (card.ot & fillerRule) != fillerRule) return false;
-                if (fillerSetCode != 0 && (card.setcode & fillerSetCode) != fillerSetCode) return false;
-                if (fillerType != 0 && (card.type & fillerType) != fillerType) return false;
-
-                // Numeric comparisons
-                if (fillerATK.HasValue)
-                {
-                    if (fillerATK.Value >= 0)
-                    {
-                        if (card.atk != fillerATK.Value) return false;
-                    }
-                    else
-                    {
-                        if (card.atk >= 0) return false;
-                    }
-                }
-
-                if (fillerDEF.HasValue)
-                {
-                    if (fillerDEF.Value >= 0)
-                    {
-                        if (card.def != fillerDEF.Value) return false;
-                    }
-                    else
-                    {
-                        if (card.def >= 0) return false;
-                    }
-                }
-
-                if (fillerLevel.HasValue)
-                {
-                    ulong levelValue = IsLinkIntf ? (card.level & 0xFFFF) : (card.level & 0xFF);
-                    if (fillerLevel.Value != levelValue) return false;
-                }
-
-                if (fillerright.HasValue && fillerright.Value != ((card.level >> 16) & 0xFF)) return false;
-                if (fillerleft.HasValue && fillerleft.Value != ((card.level >> 24) & 0xFF)) return false;
-                if (fillerRace != 0 && (card.race & fillerRace) != fillerRace) return false;
-                if (fillerAttribute != 0 && (card.attribute & fillerAttribute) != fillerAttribute) return false;
-                if (fillerCategory != 0 && (card.category & fillerCategory) != fillerCategory) return false;
-
-                // String matching (more expensive) - check simpler ones first
-                if (!MatchString(card.name, fillerName)) return false;
-                if (!MatchString(card.desc, fillerDesc)) return false;
-
-                // STR fields với OR logic - short circuit khi tìm thấy match đầu tiên
-                if (hasAnyStrFilter)
-                {
-                    bool anyStrMatches =
-                        MatchString(card.str1, fillerSTR1) ||
-                        MatchString(card.str2, fillerSTR2) ||
-                        MatchString(card.str3, fillerSTR3) ||
-                        MatchString(card.str4, fillerSTR4) ||
-                        MatchString(card.str5, fillerSTR5) ||
-                        MatchString(card.str6, fillerSTR6) ||
-                        MatchString(card.str7, fillerSTR7) ||
-                        MatchString(card.str8, fillerSTR8) ||
-                        MatchString(card.str9, fillerSTR9) ||
-                        MatchString(card.str10, fillerSTR10) ||
-                        MatchString(card.str11, fillerSTR11) ||
-                        MatchString(card.str12, fillerSTR12) ||
-                        MatchString(card.str13, fillerSTR13) ||
-                        MatchString(card.str14, fillerSTR14) ||
-                        MatchString(card.str15, fillerSTR15) ||
-                        MatchString(card.str16, fillerSTR16);
-
-                    if (!anyStrMatches) return false;
-                }
-
-                return true;
-            };
-
-            CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-        string.Format(CMess.filterSuc.ToText(),
-            CollectionViewCollection.Cast<CardEditor.Models.Card>().Count().ToString(),
-            Cards.Count.ToString()),
-        new[] { CMess.ok.ToText() });
-
-
-
-            //CollectionViewCollection.Filter = item =>
-            //{
-            //    var card = (CardEditor.Models.Card)item;
-
-            //    // Kiểm tra các điều kiện lọc
-            //    bool matchesId = !filterId.HasValue || card.id == filterId;
-            //    bool matchesAlias = !fillerAlias.HasValue || card.alias == fillerAlias;
-
-            //    bool matchesRule = fillerRule == 0 || (card.ot & fillerRule) == fillerRule; 
-            //    bool matchesSetCode = fillerSetCode == 0 || (card.setcode & fillerSetCode) == fillerSetCode;
-            //    bool matchesType = fillerType == 0 || (card.type & fillerType) == fillerType;
-
-            //    bool matchesATK = !fillerATK.HasValue || (fillerATK.Value >= 0 ? card.atk == fillerATK.Value : card.atk < 0);
-            //    bool matchesDEF = !fillerDEF.HasValue || (fillerDEF.Value >= 0 ? card.def == fillerDEF.Value : card.def < 0);
-
-            //    // bool matchesLevel = !fillerLevel.HasValue || fillerLevel == (card.level & 0xFF);
-
-            //    bool matchesLevel = !fillerLevel.HasValue || (IsLink ? fillerLevel == (card.level & 0xFFFF) : fillerLevel == (card.level & 0xFF));
-
-
-            //    bool matchesRight = !fillerright.HasValue || fillerright == ((card.level >> 16) & 0xFF);
-            //    bool matchesLeft = !fillerleft.HasValue || fillerleft == ((card.level >> 24) & 0xFF);
-
-            //    bool matchesRace = fillerRace == 0 || (card.race & fillerRace) == fillerRace;
-            //    bool matchesAttri = fillerAttribute == 0 || (card.attribute & fillerAttribute) == fillerAttribute;
-            //    bool matchesCategory = fillerCategory == 0 || (card.category & fillerCategory) == fillerCategory;
-
-            //    // Hàm phụ để xử lý so sánh chuỗi với các tùy chọn nâng cao
-            //    bool MatchString(string source, string pattern)
-            //    {
-            //        if (string.IsNullOrWhiteSpace(pattern)) return true;
-
-            //        // Chuẩn hóa chuỗi trước khi so sánh
-            //        string normalizedSource = source ?? "";
-            //        string normalizedPattern = pattern ?? "";
-            //        if (isAdvancedFind)
-            //        {
-            //            if (ignorePunctuation)
-            //            {
-            //                normalizedSource = new string(normalizedSource.Where(c => !char.IsPunctuation(c)).ToArray());
-            //                normalizedPattern = new string(normalizedPattern.Where(c => !char.IsPunctuation(c)).ToArray());
-            //            }
-            //            if (ignoreWhitespace)
-            //            {
-            //                normalizedSource = normalizedSource.Replace(" ", "").Replace("\t", "").Replace("\n", "").Replace("\r", "");
-            //                normalizedPattern = normalizedPattern.Replace(" ", "").Replace("\t", "").Replace("\n", "").Replace("\r", "");
-            //            }
-            //        }
-
-            //        // Xác định cách so sánh (phân biệt hoa thường hay không)
-            //        StringComparison comparison = (isAdvancedFind && matchCase)
-            //            ? StringComparison.Ordinal
-            //            : StringComparison.OrdinalIgnoreCase;
-
-            //        if (!isAdvancedFind)
-            //        {
-            //            // Logic mặc định khi Advanced Find tắt
-            //            return normalizedSource.IndexOf(normalizedPattern, comparison) >= 0;
-            //        }
-
-            //        // Xử lý khi Advanced Find bật
-            //        if (useWildcards)
-            //        {
-            //            // Chuyển wildcard sang regex pattern
-            //            string regexPattern = Regex.Escape(normalizedPattern)
-            //                .Replace("\\*", ".*")
-            //                .Replace("\\?", ".");
-
-            //            // Áp dụng các điều kiện bổ sung nếu có
-            //            if (matchPrefix) regexPattern = "^" + regexPattern;
-            //            if (matchSuffix) regexPattern += "$";
-            //            if (wholeWords) regexPattern = $"\\b{regexPattern}\\b";
-
-            //            return Regex.IsMatch(normalizedSource, regexPattern, matchCase ? RegexOptions.None : RegexOptions.IgnoreCase);
-            //        }
-            //        else
-            //        {
-            //            // Không dùng wildcard, xử lý các điều kiện khác
-            //            bool matches = normalizedSource.IndexOf(normalizedPattern, comparison) >= 0;
-
-            //            if (matchPrefix) matches = matches && normalizedSource.StartsWith(normalizedPattern, comparison);
-            //            if (matchSuffix) matches = matches && normalizedSource.EndsWith(normalizedPattern, comparison);
-            //            if (wholeWords)
-            //            {
-            //                string regexPattern = $"\\b{Regex.Escape(normalizedPattern)}\\b";
-            //                matches = Regex.IsMatch(normalizedSource, regexPattern, matchCase ? RegexOptions.None : RegexOptions.IgnoreCase);
-            //            }
-
-            //            return matches;
-            //        }
-            //    }
-
-            //    bool matchesName = MatchString(card.name, fillerName);
-            //    bool matchesDesc = MatchString(card.desc, fillerDesc);
-            //    bool matchesStr1 = MatchString(card.str1, fillerSTR1);
-            //    bool matchesStr2 = MatchString(card.str2, fillerSTR2);
-            //    bool matchesStr3 = MatchString(card.str3, fillerSTR3);
-            //    bool matchesStr4 = MatchString(card.str4, fillerSTR4);
-            //    bool matchesStr5 = MatchString(card.str5, fillerSTR5);
-            //    bool matchesStr6 = MatchString(card.str6, fillerSTR6);
-            //    bool matchesStr7 = MatchString(card.str7, fillerSTR7);
-            //    bool matchesStr8 = MatchString(card.str8, fillerSTR8);
-            //    bool matchesStr9 = MatchString(card.str9, fillerSTR9);
-            //    bool matchesStr10 = MatchString(card.str10, fillerSTR10);
-            //    bool matchesStr11 = MatchString(card.str11, fillerSTR11);
-            //    bool matchesStr12 = MatchString(card.str12, fillerSTR12);
-            //    bool matchesStr13 = MatchString(card.str13, fillerSTR13);
-            //    bool matchesStr14 = MatchString(card.str14, fillerSTR14);
-            //    bool matchesStr15 = MatchString(card.str15, fillerSTR15);
-            //    bool matchesStr16 = MatchString(card.str16, fillerSTR16);
-
-            //    return matchesId && matchesAlias && matchesName && matchesDesc &&
-            //        (matchesStr1 || matchesStr2 || matchesStr3 || matchesStr4 || matchesStr5 || matchesStr6 ||
-            //         matchesStr7 || matchesStr8 || matchesStr9 || matchesStr10 || matchesStr11 || matchesStr12 ||
-            //         matchesStr13 || matchesStr14 || matchesStr15 || matchesStr16) &&
-            //         matchesRule && matchesSetCode && matchesType && matchesATK && matchesDEF &&
-            //         matchesLevel && matchesRight && matchesLeft && matchesRace && matchesAttri && matchesCategory;
-            //};
-
-            //CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-            //    string.Format(CMess.filterSuc.ToText(), CollectionViewCollection.Cast<CardEditor.Models.Card>().Count().ToString(), Cards.Count.ToString()),
-            //    new[] { CMess.ok.ToText() });
-        }
         private void ClearRegexCache()
         {
             _regexCache.Clear();
@@ -4157,7 +3860,7 @@ namespace CardEditor.UserControls
                     {
                         CollectionViewCollection.Filter = item =>
                         {
-                            var card = (CardEditor.Models.Card)item;
+                            var card = (CardEditor.Models.CardOmega)item;
                             return cardIds.Contains(card.id);
                         };
                     });
@@ -4168,7 +3871,7 @@ namespace CardEditor.UserControls
                     {
                         CollectionViewCollection.Filter = item =>
                         {
-                            var card = (CardEditor.Models.Card)item;
+                            var card = (CardEditor.Models.CardOmega)item;
                             return !cardIds.Contains(card.id);
                         };
                     });
@@ -4216,7 +3919,7 @@ namespace CardEditor.UserControls
                     {
                         CollectionViewCollection.Filter = item =>
                         {
-                            var card = (CardEditor.Models.Card)item;
+                            var card = (CardEditor.Models.CardOmega)item;
                             return cardIds.Contains(card.id);
                         };
                     });
@@ -4227,7 +3930,7 @@ namespace CardEditor.UserControls
                     {
                         CollectionViewCollection.Filter = item =>
                         {
-                            var card = (CardEditor.Models.Card)item;
+                            var card = (CardEditor.Models.CardOmega)item;
                             return !cardIds.Contains(card.id);
                         };
                     });
@@ -4290,7 +3993,7 @@ namespace CardEditor.UserControls
                 // Predicate chỉ tra cứu dictionary → O(1), không tính toán lại
                 CollectionViewCollection.Filter = item =>
                 {
-                    var card = (CardEditor.Models.Card)item;
+                    var card = (CardEditor.Models.CardOmega)item;
                     return cache.TryGetValue(card, out var match)
                         ? (isInclude ? match : !match)
                         : false;
@@ -4352,7 +4055,7 @@ namespace CardEditor.UserControls
 
                 CollectionViewCollection.Filter = item =>
                 {
-                    var card = (CardEditor.Models.Card)item;
+                    var card = (CardEditor.Models.CardOmega)item;
                     return cache.TryGetValue(card, out var match) && match;
                 };
 
@@ -4495,7 +4198,7 @@ namespace CardEditor.UserControls
 
                 CollectionViewCollection.Filter = item =>
                 {
-                    var card = (CardEditor.Models.Card)item;
+                    var card = (CardEditor.Models.CardOmega)item;
                     return isDuplicate == ids.Contains(card.id);
                 };
 
@@ -4547,7 +4250,7 @@ namespace CardEditor.UserControls
 
                         string cardPropertyName = sort.SelectedItem.Name;
                         if (cardPropertyName == null || string.IsNullOrEmpty(cardPropertyName)) continue;
-                        if (cardPropertyName == "Rare" || cardPropertyName == "GPoint") continue;
+                        if (cardPropertyName == "flag" || cardPropertyName == "Rare" || cardPropertyName == "GPoint") continue;
 
                         var direction = sort.OrderByAsc ? ListSortDirection.Ascending : ListSortDirection.Descending;
 
@@ -5060,9 +4763,12 @@ namespace CardEditor.UserControls
             try
             {
                 ImageGenerator.outputFolderPath = outPutPath;
+                var card = CardConverter.CardOmegaToCard(CurrentCard);
+                if (card == null) return (false, "Card Is Null");
+
                 if (ConfigViewModel.Instance.imageSetting.Series == 4)
                 {
-                    var (resultImage, Imagepath) = await ImageGenerator.GenerateImage10(CurrentCard);
+                    var (resultImage, Imagepath) = await ImageGenerator.GenerateImage10(card);
                     return (resultImage, Imagepath);
                 }
                 else return (false, "This series is not yet supported.");
@@ -5099,17 +4805,17 @@ namespace CardEditor.UserControls
 
             try
             {
-                IEnumerable<CardEditor.Models.Card> cardsToProcess = null;
+                IEnumerable<CardEditor.Models.CardOmega> cardsToProcess = null;
 
                 if (Series == 0)
                 {
                     if (Scope == 0)
                     {
-                        cardsToProcess = datagrMain.SelectedItems.OfType<CardEditor.Models.Card>();
+                        cardsToProcess = datagrMain.SelectedItems.OfType<CardEditor.Models.CardOmega>();
                     }
                     else if (Scope == 1)
                     {
-                        cardsToProcess = CollectionViewCollection.Cast<CardEditor.Models.Card>();
+                        cardsToProcess = CollectionViewCollection.Cast<CardEditor.Models.CardOmega>();
                     }
                     else if (Scope == 2)
                     {
@@ -5151,7 +4857,17 @@ namespace CardEditor.UserControls
 
                                 try
                                 {
-                                    var (result, imageURL) = await ImageGenerator.GenerateImage10(cardItem);
+                                    var card = CardConverter.CardOmegaToCard(cardItem);
+                                    if (card == null)
+                                    {
+                                        Interlocked.Increment(ref failCount);
+                                        lock (failedIds)
+                                        {
+                                            failedIds.Add(cardItem.id);
+                                        }
+                                        return;
+                                    }
+                                    var (result, imageURL) = await ImageGenerator.GenerateImage10(card);
                                     if (result)
                                     {
                                         Interlocked.Increment(ref successCount);
@@ -5247,7 +4963,7 @@ namespace CardEditor.UserControls
         }
         #endregion
 
-        #region Scriot Card
+        #region Script Card
         private (ulong, ulong) GetCardPassword()
         {
             if (string.IsNullOrWhiteSpace(txtid.Text)) return (0, 0);
@@ -5293,13 +5009,13 @@ namespace CardEditor.UserControls
 
         private (bool, string) CreateScriptFile(string DirectoryPath, ulong password, string luaContent, LanguageArea Area)
         {
-            var (resultCreate, messageCreate) = CreateFileServices.CreateScript(DirectoryPath, $"c{password}.lua", newScript: true, luaContent, Area);
-            if (resultCreate)
+            CreateFileResult resultCreate = CreateScriptService.CreateScript(DirectoryPath, $"c{password}.lua", newScript: true, luaContent, Area);
+            if (resultCreate.Result)
             {
-                CardEXDataViewModel.Instance.AddScriptPath(password, messageCreate);
-                return (true, messageCreate);
+                CardEXDataViewModel.Instance.AddScriptPath(password, resultCreate.FilePath);
+                return (true, resultCreate.FilePath);
             }
-            else return (false, messageCreate);
+            else return (false, resultCreate.Messenger);
         }
         private async Task ScriptCardHandler(ulong password, string luaContent, LanguageArea Area, string DirectoryPath)
         {
@@ -5308,12 +5024,12 @@ namespace CardEditor.UserControls
             #region Archive
             if (!string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath))
             {
-                var resultFilterArchive = await LoadDataServices.FindEntriesByName(archiveFilePath, $"c{password}", "lua");
+                var resultFilterArchive = await LoadArchiveService.FindEntriesByName(archiveFilePath, $"c{password}", "lua");
                 if (resultFilterArchive.success)
                 {
                     if (resultFilterArchive.fileLists.Count() > 0)
                     {
-                        var resultExtract = await LoadDataServices.ExtractTempEntry(archiveFilePath, resultFilterArchive.fileLists);
+                        var resultExtract = await LoadArchiveService.ExtractTempEntry(archiveFilePath, resultFilterArchive.fileLists);
                         if (resultExtract.result && resultExtract.extractedEntries.Count() > 0)
                         {
                             foreach (var entry in resultExtract.extractedEntries)
@@ -5395,18 +5111,8 @@ namespace CardEditor.UserControls
                 }
             }
         }
-        private async Task ScriptCard()
+        private async Task ScriptCardYGO(ulong cardID, ulong cardAlias, string luaContent, LanguageArea Area)
         {
-            if (MainWindowService == null) return;
-            var (password, aliasPassword) = GetCardPassword();
-            if (password == 0)
-            {
-                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
-                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()),
-                    new[] { CMess.ok.ToText() });
-                return;
-            }
-            var (luaContent, Area) = GetCardScriptContent();
             string DirectoryPath = GetDirectoryPath();
             if (string.IsNullOrWhiteSpace(DirectoryPath)) return;
             if (!Directory.Exists(DirectoryPath)) Directory.CreateDirectory(DirectoryPath);
@@ -5414,7 +5120,7 @@ namespace CardEditor.UserControls
             try
             {
                 if (!CardEXDataViewModel.Instance.IsLoadedScript) await CardEXDataViewModel.Instance.LoadScriptAsync();
-                foreach (var id in new[] { aliasPassword, password }.Where(x => x > 0).Distinct())
+                foreach (var id in new[] { cardAlias, cardID }.Where(x => x > 0).Distinct())
                 {
                     await ScriptCardHandler(id, luaContent, Area, DirectoryPath);
                 }
@@ -5426,6 +5132,46 @@ namespace CardEditor.UserControls
                     new[] { CMess.ok.ToText() });
             }
         }
+        private async Task ScriptCardOMEGA(ulong cardID, ulong cardAlias, string luaContent, LanguageArea Area)
+        {
+            CardOmegaScript script = new CardOmegaScript();
+
+            if (CurrentCard == null) CurrentCard = new();
+
+            script.id = cardID;
+            script.BaseCard = CurrentCard;
+            script.cdbFilePath = cdbFilePath;
+            script.xlsxFilePath = xlsxFilePath;
+            script.cedsFilePath = cedsFilePath;
+
+            script.archiveFilePath = archiveFilePath;
+            script.archiveEntryName = archiveEntryName;
+
+            if (string.IsNullOrWhiteSpace(CurrentCard.script))
+                CurrentCard.script = CreateScriptService.CreateScriptContent(luaContent, Area);
+
+            await MainWindowService.OpenCodeEditorTab(script);
+        }
+
+        private async Task ScriptCard()
+        {
+            if (MainWindowService == null) return;
+            var (cardID, cardAlias) = GetCardPassword();
+            if (cardID == 0)
+            {
+                CMSG.Show(CMess.warning.ToText(), CMSG.MessageBoxIconType.Warning,
+                    string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.Card.ToText(), CMess.cardID.ToText()),
+                    new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            var (luaContent, Area) = GetCardScriptContent();
+
+            await ScriptCardOMEGA(cardID, cardAlias, luaContent, Area);
+
+            await ScriptCardYGO(cardID, cardAlias, luaContent, Area);
+        }
+
         #endregion
 
         #region Web

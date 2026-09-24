@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.ComponentModel;
 using CardEditor.Models;
-using CardEditor.Services;
+using CardEditor.Services.CreateFile;
 using CardEditor.Collections;
 using CardEditor.Localization;
-using CardAppContext = CardEditor.Models.AppContext;
 using CMess = CardEditor.Localization.Language;
+using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor.ViewModels
 {
@@ -24,7 +24,8 @@ namespace CardEditor.ViewModels
         #region Data Storage
         private Dictionary<int, CreditItem> _creditData = new();
         public IReadOnlyDictionary<int, CreditItem> CreditData => _creditData;
-        private Dictionary<Card, string> _lastSnapshot;
+        private Dictionary<Card, string> _lastSnapshotCard;
+        private Dictionary<CardOmega, string> _lastSnapshotCardOmega;
 
         private BulkObservableCollection<CreditItem> _creditDataUI = new BulkObservableCollection<CreditItem>();
         public BulkObservableCollection<CreditItem> CreditDataUI
@@ -64,7 +65,7 @@ namespace CardEditor.ViewModels
         {
             if (!File.Exists(CardAppContext.Instance.CreditDBPath))
             {
-                var (resultCreate, messageCreate) = await Task.Run(() => CreateFileServices.CreateCreditsDatabase(CardAppContext.Instance.CreditFolderPath, "CreditDB.cdb"));
+                var (resultCreate, messageCreate) = await Task.Run(() => CreateCreditService.CreateCreditsDatabase(CardAppContext.Instance.CreditFolderPath, "CreditDB.cdb"));
                 if (!resultCreate)
                 {
                     OnErrorOccurred?.Invoke($"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.CreditTeam.ToText())} {messageCreate}");
@@ -236,7 +237,7 @@ namespace CardEditor.ViewModels
 
         #region Proces Desc
         private static readonly ParallelOptions DefaultParallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2) };
-        public async Task<ResultItem> CreditTeam(IEnumerable<Card> cards, CreditItem credit, int writeMode, CancellationToken cancellationToken = default)
+        public async Task<ResultItem> CreditTeamCard(IEnumerable<Card> cards, CreditItem credit, int writeMode, CancellationToken cancellationToken = default)
         {
             if (credit == null || string.IsNullOrWhiteSpace(credit.Header))
                 return new ResultItem { Succeeded = false, Message = "Credit.Header không được trống." };
@@ -246,16 +247,16 @@ namespace CardEditor.ViewModels
                 return new ResultItem { Succeeded = true, TotalCount = 0, FilteredCount = 0, Message = "Không có Card nào để xử lý." };
 
             // === TẠO SNAPSHOT TRƯỚC KHI THỰC HIỆN ===
-            _lastSnapshot = CreateSnapshot(cardList);
+            _lastSnapshotCard = CreateSnapshotCard(cardList);
 
             try
             {
-                var result = await ProcessCreditInternal(cardList, credit, writeMode, cancellationToken);
+                var result = await ProcessCreditInternalCard(cardList, credit, writeMode, cancellationToken);
                 return result;
             }
             catch (OperationCanceledException)
             {
-                Rollback(_lastSnapshot);
+                RollbackCard(_lastSnapshotCard);
                 return new ResultItem
                 {
                     Succeeded = false,
@@ -264,7 +265,7 @@ namespace CardEditor.ViewModels
             }
             catch (Exception ex)
             {
-                Rollback(_lastSnapshot);
+                RollbackCard(_lastSnapshotCard);
                 // TODO: Log lỗi chi tiết nếu cần
                 return new ResultItem
                 {
@@ -273,7 +274,45 @@ namespace CardEditor.ViewModels
                 };
             }
         }
-        private async Task<ResultItem> ProcessCreditInternal(List<Card> cardList, CreditItem credit, int writeMode, CancellationToken token)
+        public async Task<ResultItem> CreditTeamCardOmega(IEnumerable<CardOmega> cards, CreditItem credit, int writeMode, CancellationToken cancellationToken = default)
+        {
+            if (credit == null || string.IsNullOrWhiteSpace(credit.Header))
+                return new ResultItem { Succeeded = false, Message = "Credit.Header không được trống." };
+
+            var cardList = cards?.ToList() ?? new List<CardOmega>();
+            if (cardList.Count == 0)
+                return new ResultItem { Succeeded = true, TotalCount = 0, FilteredCount = 0, Message = "Không có Card nào để xử lý." };
+
+            // === TẠO SNAPSHOT TRƯỚC KHI THỰC HIỆN ===
+            _lastSnapshotCardOmega = CreateSnapshotCardOmega(cardList);
+
+            try
+            {
+                var result = await ProcessCreditInternalCardOmega(cardList, credit, writeMode, cancellationToken);
+                return result;
+            }
+            catch (OperationCanceledException)
+            {
+                RollbackCardOmega(_lastSnapshotCardOmega);
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = "Thao tác đã bị hủy bởi người dùng."
+                };
+            }
+            catch (Exception ex)
+            {
+                RollbackCardOmega(_lastSnapshotCardOmega);
+                // TODO: Log lỗi chi tiết nếu cần
+                return new ResultItem
+                {
+                    Succeeded = false,
+                    Message = $"Đã xảy ra lỗi: {ex.Message}"
+                };
+            }
+        }
+
+        private async Task<ResultItem> ProcessCreditInternalCard(List<Card> cardList, CreditItem credit, int writeMode, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -291,19 +330,69 @@ namespace CardEditor.ViewModels
             switch (writeMode)
             {
                 case 1: // Overwrite Duplicate
-                    modifiedCount = await Task.Run(() => OverwriteDuplicate(cardList, credit, options), token);
+                    modifiedCount = await Task.Run(() => OverwriteDuplicateCard(cardList, credit, options), token);
                     break;
 
                 case 2: // Overwrite All
-                    modifiedCount = await Task.Run(() => OverwriteAll(cardList, creditItems, credit, options), token);
+                    modifiedCount = await Task.Run(() => OverwriteAllCard(cardList, creditItems, credit, options), token);
                     break;
 
                 case 3: // Append
-                    modifiedCount = await Task.Run(() => AppendWrite(cardList, credit, options), token);
+                    modifiedCount = await Task.Run(() => AppendWriteCard(cardList, credit, options), token);
                     break;
 
                 case 4: // Skip
-                    modifiedCount = await Task.Run(() => SkipWrite(cardList, headers, credit, options), token);
+                    modifiedCount = await Task.Run(() => SkipWriteCard(cardList, headers, credit, options), token);
+                    break;
+
+                default:
+                    return new ResultItem { Succeeded = false, Message = $"WriteMode không hợp lệ: {writeMode}" };
+            }
+
+            // Nếu thành công thì clear snapshot để giải phóng memory
+            //_lastSnapshot = null;
+
+            return new ResultItem
+            {
+                Succeeded = true,
+                TotalCount = cardList.Count,
+                FilteredCount = modifiedCount,
+                Message = writeMode == 5
+                    ? $"Đã xóa hết Credit trong {modifiedCount} Card."
+                    : $"Đã xử lý {cardList.Count} Card, ghi Credit cho {modifiedCount} Card."
+            };
+        }
+        private async Task<ResultItem> ProcessCreditInternalCardOmega(List<CardOmega> cardList, CreditItem credit, int writeMode, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var creditItems = CreditData.Values.Where(c => !string.IsNullOrWhiteSpace(c.Header)).ToList();
+            var headers = new HashSet<string>(creditItems.Select(c => c.Header?.Trim()), StringComparer.Ordinal);
+
+            int modifiedCount = 0;
+
+            var options = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2),
+                CancellationToken = token
+            };
+
+            switch (writeMode)
+            {
+                case 1: // Overwrite Duplicate
+                    modifiedCount = await Task.Run(() => OverwriteDuplicateCardOmega(cardList, credit, options), token);
+                    break;
+
+                case 2: // Overwrite All
+                    modifiedCount = await Task.Run(() => OverwriteAllCardOmega(cardList, creditItems, credit, options), token);
+                    break;
+
+                case 3: // Append
+                    modifiedCount = await Task.Run(() => AppendWriteCardOmega(cardList, credit, options), token);
+                    break;
+
+                case 4: // Skip
+                    modifiedCount = await Task.Run(() => SkipWriteCardOmega(cardList, headers, credit, options), token);
                     break;
 
                 default:
@@ -327,7 +416,7 @@ namespace CardEditor.ViewModels
         /// <summary>
         /// Skip: Nếu desc đã có bất kỳ Credit nào → bỏ qua. Chưa có → append Credit mới.
         /// </summary>
-        private int SkipWrite(List<Card> cards, HashSet<string> headers, CreditItem newCredit, ParallelOptions options)
+        private int SkipWriteCard(List<Card> cards, HashSet<string> headers, CreditItem newCredit, ParallelOptions options)
         {
             int count = 0;
             Parallel.ForEach(cards, options, card =>
@@ -340,11 +429,23 @@ namespace CardEditor.ViewModels
             });
             return count;
         }
+        private int SkipWriteCardOmega(List<CardOmega> cards, HashSet<string> headers, CreditItem newCredit, ParallelOptions options)
+        {
+            int count = 0;
+            Parallel.ForEach(cards, options, card =>
+            {
+                if (HasAnyCredit(card.desc, headers))
+                    return;
 
+                card.desc = AppendCreditBlockOptimized(card.desc, newCredit);
+                Interlocked.Increment(ref count);
+            });
+            return count;
+        }
         /// <summary>
         /// Appendwrite: Luôn append Credit mới, không quan tâm desc đã có Credit chưa.
         /// </summary>
-        private int AppendWrite(List<Card> cards, CreditItem newCredit, ParallelOptions options)
+        private int AppendWriteCard(List<Card> cards, CreditItem newCredit, ParallelOptions options)
         {
             int count = 0;
             Parallel.ForEach(cards, options, card =>
@@ -354,12 +455,21 @@ namespace CardEditor.ViewModels
             });
             return count;
         }
-
+        private int AppendWriteCardOmega(List<CardOmega> cards, CreditItem newCredit, ParallelOptions options)
+        {
+            int count = 0;
+            Parallel.ForEach(cards, options, card =>
+            {
+                card.desc = AppendCreditBlockOptimized(card.desc, newCredit);
+                Interlocked.Increment(ref count);
+            });
+            return count;
+        }
         /// <summary>
         /// Overwrite Only Duplicate: Xoá toàn bộ instance có cùng Header với Credit mới,
         /// rồi append Credit mới. Nếu không có instance nào → vẫn append bình thường.
         /// </summary>
-        private int OverwriteDuplicate(List<Card> cards, CreditItem newCredit, ParallelOptions options)
+        private int OverwriteDuplicateCard(List<Card> cards, CreditItem newCredit, ParallelOptions options)
         {
             int count = 0;
             Parallel.ForEach(cards, options, card =>
@@ -370,12 +480,22 @@ namespace CardEditor.ViewModels
             });
             return count;
         }
-
+        private int OverwriteDuplicateCardOmega(List<CardOmega> cards, CreditItem newCredit, ParallelOptions options)
+        {
+            int count = 0;
+            Parallel.ForEach(cards, options, card =>
+            {
+                string cleaned = RemoveCreditBlocks(card.desc, newCredit); // xóa tất cả instance của credit này
+                card.desc = AppendCreditBlockOptimized(cleaned, newCredit);
+                Interlocked.Increment(ref count);
+            });
+            return count;
+        }
         /// <summary>
         /// Overwrite All: Xoá mọi Credit cũ thuộc bất kỳ CreditItem nào trong database,
         /// rồi append Credit mới.
         /// </summary>
-        private int OverwriteAll(List<Card> cards, List<CreditItem> creditItems, CreditItem newCredit, ParallelOptions options)
+        private int OverwriteAllCard(List<Card> cards, List<CreditItem> creditItems, CreditItem newCredit, ParallelOptions options)
         {
             int count = 0;
             Parallel.ForEach(cards, options, card =>
@@ -386,11 +506,70 @@ namespace CardEditor.ViewModels
             });
             return count;
         }
-
+        private int OverwriteAllCardOmega(List<CardOmega> cards, List<CreditItem> creditItems, CreditItem newCredit, ParallelOptions options)
+        {
+            int count = 0;
+            Parallel.ForEach(cards, options, card =>
+            {
+                string cleaned = RemoveAllKnownCreditBlocks(card.desc, creditItems);
+                card.desc = AppendCreditBlockOptimized(cleaned, newCredit);
+                Interlocked.Increment(ref count);
+            });
+            return count;
+        }
         /// <summary>
         /// Xoá mọi Credit cũ thuộc bất kỳ CreditItem nào trong database, không append Credit mới.
         /// </summary>
-        public async Task<ResultItem> RemoveAllCredits(IEnumerable<Card> cards)
+        public async Task<ResultItem> RemoveAllCreditsCard(IEnumerable<Card> cards)
+        {
+            if (cards == null || cards.Count() == 0)
+            {
+                var emptyResult = new ResultItem
+                {
+                    Succeeded = false,
+                    TotalCount = 0,
+                    FilteredCount = 0,
+                    Message = CMess.noCardFound.ToText()
+                };
+                return emptyResult;
+            }
+
+            var creditItems = CreditData.Values.Where(c => !string.IsNullOrEmpty(c.Header)).ToList();
+            if (creditItems == null || creditItems.Count == 0)
+            {
+                var noCreditResult = new ResultItem
+                {
+                    Succeeded = true,
+                    TotalCount = cards.Count(),
+                    FilteredCount = 0,
+                    Message = "Không có Credit nào trong database để xóa."
+                };
+            }
+
+            int count = 0;
+
+            Parallel.ForEach(cards, DefaultParallelOptions, card =>
+            {
+                string cleaned = RemoveAllKnownCreditBlocks(card.desc, creditItems);
+
+                // Chỉ cập nhật nếu có thay đổi
+                if (cleaned != card.desc)
+                {
+                    card.desc = cleaned;
+                    Interlocked.Increment(ref count);
+                }
+            });
+
+            var result = new ResultItem
+            {
+                Succeeded = true,
+                TotalCount = cards.Count(),
+                FilteredCount = count,
+                Message = $"Đã xử lý {cards.Count()} Card, xóa Credit cho {count} Card."
+            };
+            return result;
+        }
+        public async Task<ResultItem> RemoveAllCreditsCardOmega(IEnumerable<CardOmega> cards)
         {
             if (cards == null || cards.Count() == 0)
             {
@@ -440,7 +619,7 @@ namespace CardEditor.ViewModels
             return result;
         }
 
-        private Dictionary<Card, string> CreateSnapshot(List<Card> cards)
+        private Dictionary<Card, string> CreateSnapshotCard(List<Card> cards)
         {
             var snapshot = new Dictionary<Card, string>(cards.Count);
             foreach (var card in cards)
@@ -449,7 +628,17 @@ namespace CardEditor.ViewModels
             }
             return snapshot;
         }
-        private void Rollback(Dictionary<Card, string> snapshot)
+        private Dictionary<CardOmega, string> CreateSnapshotCardOmega(List<CardOmega> cards)
+        {
+            var snapshot = new Dictionary<CardOmega, string>(cards.Count);
+            foreach (var card in cards)
+            {
+                snapshot[card] = card.desc ?? string.Empty;
+            }
+            return snapshot;
+        }
+
+        private void RollbackCard(Dictionary<Card, string> snapshot)
         {
             if (snapshot == null) return;
 
@@ -458,12 +647,22 @@ namespace CardEditor.ViewModels
                 kv.Key.desc = kv.Value;
             }
         }
-        public (bool, string) PerformManualRollback()
+        private void RollbackCardOmega(Dictionary<CardOmega, string> snapshot)
+        {
+            if (snapshot == null) return;
+
+            foreach (var kv in snapshot)
+            {
+                kv.Key.desc = kv.Value;
+            }
+        }
+
+        public (bool, string) PerformManualRollbackCard()
         {
             try
             {
-                Rollback(_lastSnapshot);
-                _lastSnapshot = null;
+                RollbackCard(_lastSnapshotCard);
+                _lastSnapshotCard = null;
                 return (true, string.Empty);
             }
             catch (Exception ex)
@@ -471,6 +670,20 @@ namespace CardEditor.ViewModels
                 return (false, ex.Message);
             }
             
+        }
+        public (bool, string) PerformManualRollbackCardOmega()
+        {
+            try
+            {
+                RollbackCardOmega(_lastSnapshotCardOmega);
+                _lastSnapshotCardOmega = null;
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+
         }
         // ──────────────────────────────────────────────
         // Các hàm helper
@@ -578,11 +791,13 @@ namespace CardEditor.ViewModels
         public void Dispose()
         {
             _creditData?.Clear();
-            _lastSnapshot?.Clear();
+            _lastSnapshotCard?.Clear();
+            _lastSnapshotCardOmega?.Clear();
             CreditDataUI?.Clear();
 
             _creditData = null;
-            _lastSnapshot = null;
+            _lastSnapshotCard = null;
+            _lastSnapshotCardOmega = null;
         }
         #endregion
 
