@@ -20,6 +20,7 @@ using MaterialDesignThemes.Wpf;
 using CardEditor.Enums;
 using CardEditor.Helpers;
 using CardEditor.Services;
+using CardEditor.Services.SaveData;
 using CardEditor.Collections;
 using CardEditor.Models;
 using CardEditor.ViewModels;
@@ -880,32 +881,57 @@ namespace CardEditor.UserControls
                     WhiteList = WhiteList,
                 };
                 var (resultSave, messageSave) = await BanListRawDataViewModel.Instance.SaveBanListFile(saveBanList);
-                if (resultSave)
-                {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), saveBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
-                        new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {messageSave}", new[] { CMess.ok.ToText() });
-                }
+                if (resultSave) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), saveBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
+                    new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Ceds.ToText())} {messageSave}",
+                    new[] { CMess.ok.ToText() });
             }
             else
             {
                 var (resultSave, messageSave) = await BanListRawDataViewModel.Instance.SaveBanListFile(SelectedBanList, newFilePath);
-                if (resultSave)
+                if (resultSave) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
+                    new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Ceds.ToText())} {messageSave}",
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+        public async Task SaveAsBanListCeds()
+        {
+            string cedsFilePath = FileDiaLogHelper.SaveCeds();
+            if (string.IsNullOrEmpty(cedsFilePath)) return;
+
+            if (SelectedBanList == null)
+            {
+                BanList saveBanList = new BanList()
                 {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
-                        new[] { CMess.ok.ToText() });
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{CMess.errorOcc.ToText()} {messageSave}", new[] { CMess.ok.ToText() });
-                }
+                    Name = BanListName,
+                    FileName = System.IO.Path.GetFileName(cedsFilePath),
+                    FilePath = cedsFilePath,
+                    CardList = BuildCardList(),
+                    WhiteList = WhiteList,
+                };
+
+                WriteResult resultSave = await SaveCedsBanlistService.SaveCardList(saveBanList.CardList.Values.ToList(), cedsFilePath);
+                if (resultSave.Result) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), saveBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
+                    new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Ceds.ToText())} {resultSave.Messenger}",
+                    new[] { CMess.ok.ToText() });
+            }
+            else
+            {
+                WriteResult resultSave = await SaveCedsBanlistService.SaveCardList(SelectedBanList.CardList.Values.ToList(), cedsFilePath);
+                if (resultSave.Result) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                    string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedBanList.Name, CMess.BanList.ToText(), CMess.Save.ToText()),
+                    new[] { CMess.ok.ToText() });
+                else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Ceds.ToText())} {resultSave.Messenger}",
+                    new[] { CMess.ok.ToText() });
             }
         }
         private bool CanNewBanList()

@@ -1961,7 +1961,9 @@ namespace CardEditor.UserControls
 
                 _cedsFileHasFlag = hasFlag;
 
-                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                CardListFormat format = _cedsFileHasFlag ? CardListFormat.YGOHasFlag : CardListFormat.YGONoFlag;
+
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath, format);
                 if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,

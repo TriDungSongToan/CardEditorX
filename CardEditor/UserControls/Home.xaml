@@ -5,111 +5,682 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:Controls="clr-namespace:CardEditor.Controls"
+             xmlns:Behaviors="clr-namespace:CardEditor.Behaviors"
+             xmlns:UserControls="clr-namespace:CardEditor.UserControls"
              xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
              xmlns:Lag="clr-namespace:CardEditor.Localization"
              mc:Ignorable="d"
              Background="Transparent"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True"
              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
              Loaded="UserControl_Loaded"
              Unloaded="UserControl_Unloaded"
              d:DesignHeight="800" d:DesignWidth="1220">
+    
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Styles/TwoStateToggleStyle.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/Styles/TriStateToggleStyle.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/Styles/CircularTriStateToggleStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid>
-        <StackPanel Panel.ZIndex="1" HorizontalAlignment="Center" VerticalAlignment="Center"  >
-            <Controls:TriStateToggle x:Name="tbtnTest" Width="180" Height="40" Visibility="Collapsed"
-                                     LeftBackgroundBrush="Cyan"
-                                     MiddleBackgroundBrush="DimGray"
-                                     RightBackgroundBrush="Red"
-                                     ThumbBackgroundBrush="Red"
-                                     
-                                     TrackCornerRadius="8"
-                                     TrackLeftCornerRadius="8,0,0,8"
-                                     TrackMiddleCornerRadius="0"
-                                     TrackRightCornerRadius="0,8,8,0"
-                                     
-                                     TrackPadding="0"
-                                     TrackBorderThickness="0"
-                                     TrackBorderBrush="Red"
-                                     
-                                     ThumbZIndex="5"
-                                     LeftCellContentZIndex="10"
-                                     RightCellContentZIndex="6"
-                                     MiddleCellContentZIndex="7"
-                                     
-                                     ThumbBorderBrush="Black"
-                                     ThumbBorderThickness="2"
-                                     
-                                     
-                                     ThumbBackgroundHoverBrush="Yellow"
-                                     
-                                     >
+    
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <materialDesign:Card Margin="0,1,0,0" Background="Transparent"
+                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                             FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                             d:FlowDirection="LeftToRight" >
+            
+            <Grid x:Name="GridRoot" Margin="20,0,20,20"
+                  Background="Transparent" IsHitTestVisible="True" >
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="GridTopRow" />
+                    <RowDefinition Height="15" />
+                    <RowDefinition x:Name="GridBottomRow" />
+                </Grid.RowDefinitions>
 
-                <Controls:TriStateToggle.LeftCellContent>
-                    <materialDesign:PackIcon Kind="ArrowLeftThick" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                </Controls:TriStateToggle.LeftCellContent>
-                <Controls:TriStateToggle.MiddleCellContent>
-                    <materialDesign:PackIcon Kind="CogOutline" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                </Controls:TriStateToggle.MiddleCellContent>
-                <Controls:TriStateToggle.RightCellContent>
-                    <materialDesign:PackIcon Kind="ArrowRightThick" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                </Controls:TriStateToggle.RightCellContent>
+                <Grid x:Name="GridTop" Grid.Row="0" Background="Transparent"
+                      SizeChanged="GridTop_SizeChanged" >
+                    <Border Margin="0,15,0,0" CornerRadius="50"
+                            BorderBrush="#0535e2" BorderThickness="2"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                              Background="Transparent" >
 
-            </Controls:TriStateToggle>
-            <Controls:CircularTriStateToggle Width="100" Height="100" Visibility="Collapsed"
-                                             CircleBackgroundBrush="Yellow"
-                                             CircleBorderBrush="Black"
-                                             CircleBorderThickness="3"
-                                             
-                                             FalseBackgroundBrush="Red"
-                                             TrueBackgroundBrush="Green"
-                                             NullBackgroundBrush="Gray"
-                                             
-                                             CircleBorderHoverBrush="Blue" >
-                <Controls:CircularTriStateToggle.FalseContent>
-                    <Viewbox Margin="10" >
-                        <materialDesign:PackIcon Kind="AlarmSnooze" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                    </Viewbox>
-                </Controls:CircularTriStateToggle.FalseContent>
-                <Controls:CircularTriStateToggle.TrueContent>
-                    <Viewbox Margin="10" >
-                        <materialDesign:PackIcon Kind="AlertOctagonOutline" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                    </Viewbox>
-                </Controls:CircularTriStateToggle.TrueContent>
-                <Controls:CircularTriStateToggle.NullContent>
-                    <Viewbox Margin="10" >
-                        <materialDesign:PackIcon Kind="AlphaECircle" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                    </Viewbox>
-                </Controls:CircularTriStateToggle.NullContent>
-            </Controls:CircularTriStateToggle>
+                            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                  ClipToBounds="False" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                </Grid.RowDefinitions>
 
-            <Controls:TwoStateToggle x:Name="tbtnTestTwo" Width="80" Height="40" IsThreeState="False" IsChecked="True"
-                                     FalseBackgroundBrush="#404842" TrueBackgroundBrush="#20C853" Visibility="Collapsed"
-                                     ThumbBackgroundBrush="#90EFEFEF" ThumbBackgroundHoverBrush="#AAEFEFEF"
-                                     TrackCornerRadius="8" TrackFalseCornerRadius="8,5,5,8" TrackTrueCornerRadius="5,8,8,5"
-                                     FalseCellContentZIndex="3" TrueCellContentZIndex="3" ThumbZIndex="3"
-                                     ThumbBorderBrush="#8A000000" ThumbBorderThickness="0.5" >
-                <Controls:TwoStateToggle.FalseContent>
-                    <Viewbox>
-                        <materialDesign:PackIcon Kind="CloseOutline" Margin="1" Foreground="#66000000"
-                                                 HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Viewbox>
-                </Controls:TwoStateToggle.FalseContent>
-                <Controls:TwoStateToggle.TrueContent>
-                    <Viewbox>
-                        <materialDesign:PackIcon Kind="CheckOutline" Margin="1" Foreground="#FF2E7D32"
-                                                 HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Viewbox>
-                </Controls:TwoStateToggle.TrueContent>>
-            </Controls:TwoStateToggle>
+                                <Grid x:Name="GrWelcome" Grid.Row="0" Margin="0" HorizontalAlignment="Center" >
+                                    <TextBlock Text="{Binding Welcome}" Margin="0,0,0,-15" FontWeight="Light" TextAlignment="Center"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="25"
+                                               Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                               FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                </Grid>
 
-        </StackPanel>
+                                <Grid x:Name="GrLogo" Grid.Row="1" Height="110" Width="auto" HorizontalAlignment="Center" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Grid Grid.Column="0" Height="100" VerticalAlignment="Top" >
+                                        <UserControls:CardEditorTitle Margin="0" />
+                                    </Grid>
+
+                                    <Grid Grid.Column="2" Width="100" Height="100" VerticalAlignment="Bottom" >
+                                        <UserControls:Letter Width="100" Height="100" />
+                                    </Grid>
+                                    
+                                </Grid>
+
+                                <Grid x:Name="GrTitle" Grid.Row="2" HorizontalAlignment="Stretch" >
+                                    <UserControls:RotatingTitle HorizontalAlignment="Center" />
+                                </Grid>
+                                
+                            </Grid>
+
+                            <Grid x:Name="GrGetStarted" Grid.Row="0" Margin="0,0,0,40"
+                                  HorizontalAlignment="Center" VerticalAlignment="Bottom" >
+
+                                <Border x:Name="PulseRing1" Height="45" Width="220" CornerRadius="20"
+                                        BorderThickness="2" BorderBrush="#2563EB" Background="Transparent"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        RenderTransformOrigin="0.5,0.5" Opacity="0">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform x:Name="PulseScale1" ScaleX="1" ScaleY="1"/>
+                                    </Border.RenderTransform>
+                                    <Border.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                     From="0.6" To="0" Duration="0:0:2"/>
+                                                    <DoubleAnimation Storyboard.TargetName="PulseScale1"
+                                                                     Storyboard.TargetProperty="ScaleX"
+                                                                     From="1" To="1.35" Duration="0:0:2"/>
+                                                    <DoubleAnimation Storyboard.TargetName="PulseScale1"
+                                                                     Storyboard.TargetProperty="ScaleY"
+                                                                     From="1" To="1.6" Duration="0:0:2"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Border.Triggers>
+                                </Border>
+
+                                <Border x:Name="PulseRing2" Height="45" Width="220" CornerRadius="20"
+                                        BorderThickness="2" BorderBrush="#2563EB" Background="Transparent"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        RenderTransformOrigin="0.5,0.5" Opacity="0">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform x:Name="PulseScale2" ScaleX="1" ScaleY="1"/>
+                                    </Border.RenderTransform>
+                                    <Border.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever" BeginTime="0:0:1">
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                     From="0.6" To="0" Duration="0:0:2"/>
+                                                    <DoubleAnimation Storyboard.TargetName="PulseScale2"
+                                                                     Storyboard.TargetProperty="ScaleX"
+                                                                     From="1" To="1.35" Duration="0:0:2"/>
+                                                    <DoubleAnimation Storyboard.TargetName="PulseScale2"
+                                                                     Storyboard.TargetProperty="ScaleY"
+                                                                     From="1" To="1.6" Duration="0:0:2"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Border.Triggers>
+                                </Border>
+
+                                <Button Height="45" Width="220" Margin="0" Padding="0,0,0,0"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        BorderBrush="Transparent" BorderThickness="0"
+                                        Style="{StaticResource ButtonPrimary}"
+                                        Command="{Binding GetStartedCommand}" >
+                                    <Button.Content>
+                                        <TextBlock FontSize="22" FontWeight="Medium"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Margin="0,0,0,0" Padding="0" TextAlignment="Center"
+                                                   TextWrapping="Wrap" Text="Getting Started  ➤">
+                                            <TextBlock.Foreground>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                    <!-- Nền vàng đậm -->
+                                                    <GradientStop Color="#FFD700" Offset="0.00"/>
+                                                    <!-- Mép trái của vệt sáng -->
+                                                    <GradientStop x:Name="ShimmerGetStart"
+                                                                  Color="#FFD700" Offset="-0.25"/>
+                                                    <!-- Tâm vệt sáng -->
+                                                    <GradientStop x:Name="ShimmerGetLight"
+                                                                  Color="#FFF8C4"
+                                                                  Offset="-0.05"/>
+                                                    <!-- Mép phải của vệt sáng -->
+                                                    <GradientStop x:Name="ShimmerGetEnd"
+                                                                  Color="#FFD700"
+                                                                  Offset="0.15"/>
+                                                    <!-- Nền vàng đậm -->
+                                                    <GradientStop Color="#FFD700" Offset="1.00"/>
+                                                </LinearGradientBrush>
+                                            </TextBlock.Foreground>
+                                            <TextBlock.Triggers>
+                                                <EventTrigger RoutedEvent="Loaded">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <!-- Fade in -->
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetProperty="Opacity"
+                                                                From="0" To="1" Duration="0:0:0.4"/>
+                                                            <!-- Vệt sáng chạy từ trái sang phải -->
+                                                            <DoubleAnimation Storyboard.TargetName="ShimmerGetStart"
+                                                                             Storyboard.TargetProperty="Offset"
+                                                                             From="-0.25" To="1.00" Duration="0:0:2.5"
+                                                                             RepeatBehavior="Forever"/>
+                                                            <DoubleAnimation Storyboard.TargetName="ShimmerGetLight"
+                                                                             Storyboard.TargetProperty="Offset"
+                                                                             From="-0.05" To="1.20" Duration="0:0:2.5"
+                                                                             RepeatBehavior="Forever"/>
+                                                            <DoubleAnimation Storyboard.TargetName="ShimmerGetEnd"
+                                                                             Storyboard.TargetProperty="Offset"
+                                                                             From="0.15" To="1.40" Duration="0:0:2.5"
+                                                                             RepeatBehavior="Forever"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </TextBlock.Triggers>
+                                        </TextBlock>
+                                    </Button.Content>
+                                    <Button.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#FF7DA6FF" Offset="0.0"/>
+                                            <GradientStop Color="#2563EB" Offset="0.35"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                                    CornerRadius="20" SnapsToDevicePixels="True">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bd" Property="Opacity" Value="0.9"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter TargetName="Bd" Property="Opacity" Value="0.75"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="2" Background="Transparent" IsHitTestVisible="True" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="15" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="15" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="15" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="15" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!--Behaviors:GlowBorder.IsEnabled="True"
+                    Behaviors:GlowBorder.GlowColor="#3dbdfd"-->
+
+                    <Border x:Name="BrDataEditor" Grid.Column="0" Margin="0" CornerRadius="50"
+                            BorderBrush="#0535e2" BorderThickness="1.5"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid x:Name="GrDataEditor" Grid.Row="0" Cursor="Hand"
+                                  Height="{Binding ActualWidth, ElementName=BrDataEditor}" >
+                                <Image Grid.Row="0" Margin="0" Stretch="Uniform"
+                                       Width="120" Height="120"
+                                       Source="/Images/Menu/Win/DataEditor.png"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5" >
+                                    <Image.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    </Image.RenderTransform>
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Opacity" Value="0.6"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrDataEditor}" Value="True">
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
+                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
+                                                  Anchor="Center" Spacing="1" Side="Inside"
+                                                  FitMode="SpacingThenFontSize"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                                  RenderTransformOrigin="0.5,0.5"
+                                                  Text="DataEditor"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                                    <Controls:ArcText.Style>
+                                        <Style TargetType="Controls:ArcText">
+                                            <Setter Property="Foreground"
+                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
+                                                    <Setter Property="Foreground" Value="#FFC107" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Controls:ArcText.Style>
+                                    <Controls:ArcText.RenderTransform>
+                                        <RotateTransform />
+                                    </Controls:ArcText.RenderTransform>
+                                    <Controls:ArcText.Triggers>
+                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Controls:ArcText.Triggers>
+                                </Controls:ArcText>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="BrCodeEditor" Grid.Column="2" Margin="0" CornerRadius="50"
+                            BorderBrush="#0535e2" BorderThickness="1.5"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid x:Name="GrCodeEditor" Grid.Row="0" Cursor="Hand"
+                                  Height="{Binding ActualWidth, ElementName=BrCodeEditor}" >
+                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
+                                       Width="120" Height="120"
+                                       Source="/Images/Menu/Win/CodeEditor.png"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </Image.RenderTransform>
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Opacity" Value="0.6"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrCodeEditor}" Value="True">
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
+                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
+                                                  Anchor="Center" Spacing="1" Side="Inside"
+                                                  FitMode="SpacingThenFontSize"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                                  RenderTransformOrigin="0.5,0.5"
+                                                  Text="CodeEditor"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                                    <Controls:ArcText.Style>
+                                        <Style TargetType="Controls:ArcText">
+                                            <Setter Property="Foreground"
+                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
+                                                    <Setter Property="Foreground" Value="#FFC107" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Controls:ArcText.Style>
+                                    <Controls:ArcText.RenderTransform>
+                                        <RotateTransform />
+                                    </Controls:ArcText.RenderTransform>
+                                    <Controls:ArcText.Triggers>
+                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Controls:ArcText.Triggers>
+                                </Controls:ArcText>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="BrDeckEditor" Grid.Column="4" Margin="0" CornerRadius="50"
+                            BorderBrush="#0535e2" BorderThickness="1.5"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid x:Name="GrDeckEditor" Grid.Row="0" Cursor="Hand"
+                                  Height="{Binding ActualWidth, ElementName=BrDeckEditor}" >
+                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
+                                       Width="120" Height="120"
+                                       Source="/Images/Menu/Win/DeckEditor.png"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </Image.RenderTransform>
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Opacity" Value="0.6"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=BrDeckEditor}" Value="True">
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
+                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
+                                                  Anchor="Center" Spacing="1" Side="Inside"
+                                                  FitMode="SpacingThenFontSize"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                                  RenderTransformOrigin="0.5,0.5"
+                                                  Text="DeckEditor"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                                    <Controls:ArcText.Style>
+                                        <Style TargetType="Controls:ArcText">
+                                            <Setter Property="Foreground"
+                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
+                                                    <Setter Property="Foreground" Value="#FFC107" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Controls:ArcText.Style>
+                                    <Controls:ArcText.RenderTransform>
+                                        <RotateTransform />
+                                    </Controls:ArcText.RenderTransform>
+                                    <Controls:ArcText.Triggers>
+                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Controls:ArcText.Triggers>
+                                </Controls:ArcText>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="BrBanListEditor" Grid.Column="6" Margin="0" CornerRadius="50"
+                            BorderBrush="#0535e2" BorderThickness="1.5"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid x:Name="GrBanListEditor" Grid.Row="0" Cursor="Hand"
+                                  Height="{Binding ActualWidth, ElementName=BrBanListEditor}" >
+                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
+                                       Width="120" Height="120"
+                                       Source="/Images/Menu/Win/BanListEditor.png"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </Image.RenderTransform>
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Opacity" Value="0.6"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrBanListEditor}" Value="True">
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
+                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
+                                                  Anchor="Center" Spacing="1" Side="Inside"
+                                                  FitMode="SpacingThenFontSize"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                                  RenderTransformOrigin="0.5,0.5"
+                                                  Text="BanListEditor"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                                    <Controls:ArcText.Style>
+                                        <Style TargetType="Controls:ArcText">
+                                            <Setter Property="Foreground"
+                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
+                                                    <Setter Property="Foreground" Value="#FFC107" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Controls:ArcText.Style>
+                                    <Controls:ArcText.RenderTransform>
+                                        <RotateTransform />
+                                    </Controls:ArcText.RenderTransform>
+                                    <Controls:ArcText.Triggers>
+                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Controls:ArcText.Triggers>
+                                </Controls:ArcText>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="BrScriptSupport" Grid.Column="8" Margin="0" CornerRadius="50"
+                            BorderBrush="#0535e2" BorderThickness="1.5"
+                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid x:Name="GrScriptSupport" Grid.Row="0" Cursor="Hand"
+                                  Height="{Binding ActualWidth, ElementName=BrScriptSupport}" >
+                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
+                                       Width="110" Height="110"
+                                       Source="/Images/SSS.ico"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       RenderTransformOrigin="0.5,0.5">
+                                    <Image.RenderTransform>
+                                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                                    </Image.RenderTransform>
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Opacity" Value="0.6"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrScriptSupport}" Value="True">
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1.08" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
+                                                                                 To="1" Duration="0:0:0.2"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
+                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
+                                                  Anchor="Center" Spacing="1" Side="Inside"
+                                                  FitMode="SpacingThenFontSize"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                                  RenderTransformOrigin="0.5,0.5"
+                                                  Text="Script Support"
+                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
+                                    <Controls:ArcText.Style>
+                                        <Style TargetType="Controls:ArcText">
+                                            <Setter Property="Foreground"
+                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
+                                                    <Setter Property="Foreground" Value="#FFC107" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Controls:ArcText.Style>
+                                    <Controls:ArcText.RenderTransform>
+                                        <RotateTransform />
+                                    </Controls:ArcText.RenderTransform>
+                                    <Controls:ArcText.Triggers>
+                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Controls:ArcText.Triggers>
+                                </Controls:ArcText>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </materialDesign:Card>
     </Grid>
 </UserControl>

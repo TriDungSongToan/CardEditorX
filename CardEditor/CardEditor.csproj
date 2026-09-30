@@ -420,6 +420,8 @@
     <Compile Include="Behaviors\AvalonEditShare.cs" />
     <Compile Include="Behaviors\BoolToVisibilityConverter.cs" />
     <Compile Include="Behaviors\FileDropBehavior.cs" />
+    <Compile Include="Behaviors\FireBorderAdorner.cs" />
+    <Compile Include="Behaviors\GlowBorder.cs" />
     <Compile Include="Behaviors\IsExternalInit.cs" />
     <Compile Include="Behaviors\ListBoxMultiSelectBehavior.cs" />
     <Compile Include="Behaviors\ListViewDragDropBehavior.cs" />
@@ -431,6 +433,7 @@
     <Compile Include="Commands\KeySequence.cs" />
     <Compile Include="Commands\OptimizedKeySequenceGesture.cs" />
     <Compile Include="Constants\ConstantColumns.cs" />
+    <Compile Include="Controls\ArcText.cs" />
     <Compile Include="Converter\BitToBoolConverter.cs" />
     <Compile Include="Converter\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converter\CardConverter.cs" />
@@ -563,6 +566,9 @@
     <Compile Include="UserControls\BanListEditor.xaml.cs">
       <DependentUpon>BanListEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\CardEditorTitle.xaml.cs">
+      <DependentUpon>CardEditorTitle.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\CodeEditorPane.xaml.cs">
       <DependentUpon>CodeEditorPane.xaml</DependentUpon>
     </Compile>
@@ -572,11 +578,17 @@
     <Compile Include="UserControls\ImageViewer.xaml.cs">
       <DependentUpon>ImageViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\Letter.xaml.cs">
+      <DependentUpon>Letter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\OmegaDataEditor.xaml.cs">
       <DependentUpon>OmegaDataEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\PasswordRevealBox.xaml.cs">
       <DependentUpon>PasswordRevealBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\RotatingTitle.xaml.cs">
+      <DependentUpon>RotatingTitle.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\ScriptDescription.xaml.cs">
       <DependentUpon>ScriptDescription.xaml</DependentUpon>
@@ -584,6 +596,7 @@
     <Compile Include="ViewModels\BanListRawDataViewModel.cs" />
     <Compile Include="ViewModels\CreditsViewModel.cs" />
     <Compile Include="ViewModels\EnumsViewModel.cs" />
+    <Compile Include="ViewModels\HomeImageViewModel.cs" />
     <Compile Include="ViewModels\KonamiIDViewModel.cs" />
     <Compile Include="ViewModels\MasterDuelAPIViewModel.cs" />
     <Compile Include="ViewModels\PenLanguageViewModel.cs" />
@@ -736,6 +749,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserControls\CardEditorTitle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\CodeEditorPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -748,11 +765,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserControls\Letter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\OmegaDataEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\PasswordRevealBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\RotatingTitle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1000,12 +1025,34 @@
     <None Include="Docs\Images\Configuration\SortSettings.png" />
     <None Include="Docs\Images\Configuration\UserSettings.png" />
     <None Include="Docs\Images\Windows\DataEditor\DataEditor.png" />
-    <None Include="Docs\Structure\Images\ExcelStructure.png" />
-    <None Include="Docs\Structure\Images\SQLiteStructure.png" />
     <Resource Include="Docs\Images\Windows\CodeEditor\CodeEditor.png" />
     <Resource Include="Docs\Images\Windows\BanListEditor\BanListEditor.png" />
     <Resource Include="Images\DataEditor\OMEGA.png" />
     <Resource Include="Images\DataEditor\YGO.png" />
+    <None Include="Docs\Structure\Images\SQLiteTextsStructure.png" />
+    <Resource Include="Docs\Structure\Images\SQLiteDatasHasFlagStructure.png" />
+    <Resource Include="Docs\Structure\Images\SQLiteDatasNoFlagStructure.png" />
+    <Resource Include="Docs\Structure\Images\SQLiteDatasOMEGAStructure.png" />
+    <Resource Include="Docs\Structure\Images\ExcelHasFlagStructure.png" />
+    <Resource Include="Docs\Structure\Images\ExcelNoFlagStructure.png" />
+    <Resource Include="Docs\Structure\Images\ExcelOMEGAStructure.png" />
+    <Resource Include="Images\Home\cardFace1.png" />
+    <Resource Include="Images\Home\cardFace2.png" />
+    <Resource Include="Images\Home\cardFace3.png" />
+    <Resource Include="Images\Home\cardFace4.png" />
+    <Resource Include="Images\Home\cardFace5.png" />
+    <Resource Include="Images\Home\cardFace6.png" />
+    <Resource Include="Images\Home\cardFace7.png" />
+    <Resource Include="Images\Home\cardFace8.png" />
+    <Resource Include="Images\Home\cardFace9.png" />
+    <Resource Include="Images\Home\cardBack.png" />
+    <Resource Include="Images\Home\LogoX.png" />
+    <Resource Include="Images\Home\LogoCircle.png" />
+    <Resource Include="Images\Menu\Win\CodeEditor.png" />
+    <Resource Include="Images\Menu\Win\DataEditor.png" />
+    <Resource Include="Images\Menu\Win\DeckEditor.png" />
+    <Resource Include="Images\Menu\Win\BanListEditor.png" />
+    <Resource Include="Images\Menu\Win\ImageEditor.png" />
     <Content Include="Images\Message\Error.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

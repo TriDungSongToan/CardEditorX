@@ -48,6 +48,7 @@ namespace CardEditor
     public partial class MainWindow : MetroWindow, INotifyPropertyChanged, IMainWindowService
     {
         #region Variable
+        public string StartupFilePath { get; set; } = string.Empty;
         private bool isDeveloper = false;
         public bool isShuttingDown;
         private bool _isDragging = false;
@@ -118,6 +119,8 @@ namespace CardEditor
                 {
                     _dataEditVisibility = value;
                     OnPropertyChanged(nameof(DataEditVisibility));
+                    OnPropertyChanged(nameof(SaveDataEditVisibility));
+                    OnPropertyChanged(nameof(SaveAsDataEditVisibility));
                     OnPropertyChanged(nameof(CardVisibility));
                 }
             }
@@ -133,8 +136,7 @@ namespace CardEditor
                     _scriptEditVisibility = value;
                     OnPropertyChanged(nameof(ScriptEditVisibility));
                     OnPropertyChanged(nameof(SaveVisibility));
-
-
+                    OnPropertyChanged(nameof(SaveAsVisibility));
                 }
             }
         }
@@ -162,6 +164,8 @@ namespace CardEditor
                 {
                     _banListEditVisibility = value;
                     OnPropertyChanged(nameof(BanListEditVisibility));
+                    OnPropertyChanged(nameof(SaveBanListEditVisibility));
+                    OnPropertyChanged(nameof(SaveAsBanListEditVisibility));
                     OnPropertyChanged(nameof(SaveVisibility));
                     OnPropertyChanged(nameof(CardVisibility));
 
@@ -169,24 +173,81 @@ namespace CardEditor
             }
         }
 
+        // Save for DataEditor, OmegaDataEditor
+        public Visibility SaveDataEditVisibility
+        {
+            get
+            {
+                return (DataEditVisibility == Visibility.Visible) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        public Visibility SaveAsDataEditVisibility
+        {
+            get
+            {
+                return (DataEditVisibility == Visibility.Visible) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // Save for BanListEditor
+        public Visibility SaveBanListEditVisibility
+        {
+            get
+            {
+                return (BanListEditVisibility == Visibility.Visible) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        public Visibility SaveAsBanListEditVisibility
+        {
+            get
+            {
+                return (BanListEditVisibility == Visibility.Visible) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // Save for DeckEditor
+        public Visibility SaveDeckEditVisibility
+        {
+            get
+            {
+                return (DeckEditVisibility == Visibility.Visible) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        public Visibility SaveAsDeckEditVisibility
+        {
+            get
+            {
+                return (DeckEditVisibility == Visibility.Visible) ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        // Save for Other
         public Visibility SaveVisibility
         {
             get
             {
-                return (ScriptEditVisibility == Visibility.Visible ||
+                return (
+                    ScriptEditVisibility == Visibility.Visible ||
                     DeckEditVisibility == Visibility.Visible ||
                     BanListEditVisibility == Visibility.Visible)
 
                     ? Visibility.Visible : Visibility.Collapsed;
             }
         }
+        public Visibility SaveAsVisibility
+        {
+            get
+            {
+                return (ScriptEditVisibility == Visibility.Visible)
+                    ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
         public Visibility CardVisibility
         {
             get
             {
-                return (DataEditVisibility == Visibility.Visible ||
-                    BanListEditVisibility == Visibility.Visible)
-
+                return (DataEditVisibility == Visibility.Visible || BanListEditVisibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
             }
         }
@@ -209,7 +270,7 @@ namespace CardEditor
             //DataContext = UIConfigViewModel.Instance;
             DataContext = this;
 
-            ((App)Application.Current).RegisterWindow(this);
+            //((App)Application.Current).RegisterWindow(this);
         }
         public MainWindow(string[] args)
         {
@@ -221,11 +282,11 @@ namespace CardEditor
             //DataContext = UIConfigViewModel.Instance;
             DataContext = this;
 
-            ((App)Application.Current).RegisterWindow(this);
+            //((App)Application.Current).RegisterWindow(this);
 
             if (args.Length > 0 && File.Exists(args[0]))
             {
-                HandleFileOpen(args[0]);
+                StartupFilePath = args?.FirstOrDefault();
             }
         }
         private void InitializeInputBindings()
@@ -263,9 +324,12 @@ namespace CardEditor
         {
             BrowseFileCommand = new CardEditor.Commands.RelayCommand(_ => BrowseFileTitle(), _ => CanBrowseFileTitle());
         }
-        public async void HandleFileOpen(string filePath)
+        public async void HandleFileOpen()
         {
-            if (!System.IO.File.Exists(filePath)) return;
+            if (string.IsNullOrWhiteSpace(StartupFilePath) || File.Exists(StartupFilePath)) return;
+
+            string filePath = StartupFilePath;
+            StartupFilePath = string.Empty;
 
             if (filePath.EndsWith(".lflist.conf", StringComparison.OrdinalIgnoreCase))
             {
@@ -330,6 +394,10 @@ namespace CardEditor
         {
             LoadBGImage();
             LoadConfig();
+
+            if (string.IsNullOrWhiteSpace(StartupFilePath) || File.Exists(StartupFilePath))
+                OpenHomePage();
+
             LoadRecentMenuItems();
             CheckGit();
 
@@ -343,6 +411,8 @@ namespace CardEditor
             var (resultGenesys, messageGenesys) = await GenesysRawDataViewModel.Instance.LoadData();
             var (resultPenLang, messagePenLang) = await PenLanguageViewModel.Instance.LoadAsync();
             var (resultCredit, messageCredit) = await CreditsViewModel.Instance.LoadData();
+
+
             LoadSeriesImage();
 
             if (!resultChar)
@@ -372,6 +442,9 @@ namespace CardEditor
             }
 
             await FinishLoading();
+
+            if (!string.IsNullOrWhiteSpace(StartupFilePath) && File.Exists(StartupFilePath))
+                HandleFileOpen();
         }
         private void StartLoading()
         {
@@ -950,6 +1023,17 @@ namespace CardEditor
 
         #endregion
 
+        #region Save As BanListEditor
+        private async void menuSaveAsBanCEDS_Click(object sender, RoutedEventArgs e)
+        {
+            await BanListSaveAsFile();
+        }
+        private async void menuSaveAsBanFile_Click(object sender, RoutedEventArgs e)
+        {
+            await BanListSaveAsCedsFile();
+        }
+        #endregion
+
         #region Save As Non-DataEditor
         private async void CommandSaveAs_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -1028,6 +1112,18 @@ namespace CardEditor
         #endregion
 
         #region Windows
+        private void OpenHomePage()
+        {
+            var newimageEditor = new Home(this);
+            var newTab = new TabContent
+            {
+                Header = $"🏠 {CMess.Home.ToText()}",
+                Content = newimageEditor
+            };
+
+            Tabs.Add(newTab);
+            TabControlMain.SelectedItem = newTab;
+        }
         private void menuimgeditor_Click(object sender, RoutedEventArgs e)
         {
             var newimageEditor = new ImageEditor(this);
@@ -1471,9 +1567,7 @@ namespace CardEditor
                     else format = CardListFormat.YGONoFlag;
                 }
 
-                result = await CreateCedsService.CreateCedsCommand(filePath);
-                result.Format = format.Value;
-                result.HasFlag = (format == CardListFormat.YGONoFlag) ? false : true;
+                result = await CreateCedsService.CreateCedsCommand(filePath, format.Value);
                 if (!result.Result)
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                         $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.CardDB.ToText(), CMess.File.ToText())} {result.Messenger}",
@@ -3149,7 +3243,8 @@ namespace CardEditor
                 if (string.IsNullOrEmpty(cedsFilePath)) return;
 
                 bool hasFlag = currentDataEditor.CedsFileHasFlag;
-                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                CardListFormat format = hasFlag ? CardListFormat.YGOHasFlag : CardListFormat.YGONoFlag;
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath, format);
                 if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
@@ -3179,7 +3274,7 @@ namespace CardEditor
                 if (string.IsNullOrEmpty(cedsFilePath)) return;
 
                 bool hasFlag = currentOmegaDataEditor.CedsFileHasFlag;
-                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath, CardListFormat.OMEGA);
                 if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
@@ -3202,6 +3297,41 @@ namespace CardEditor
                 else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.SaveAs.ToText(), CMess.Ceds.ToText(), CMess.File.ToText())} {messageSaveAs}",
                     new[] { CMess.ok.ToText() });
+            }
+        }
+        #endregion
+
+        #region Save As BanListEditor
+        private async Task BanListSaveAsFile()
+        {
+            if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
+            {
+                if (string.IsNullOrWhiteSpace(currentBanListEditor.NewFolderPath) ||
+                    !Directory.Exists(currentBanListEditor.NewFolderPath) ||
+                    string.IsNullOrWhiteSpace(currentBanListEditor.NewFileName))
+                {
+                    currentBanListEditor.NewBanList();
+                }
+                else
+                {
+                    await currentBanListEditor.SaveAsBanList();
+                }
+            }
+        }
+        private async Task BanListSaveAsCedsFile()
+        {
+            if (currentUserControl != null && currentUserControl is BanListEditor currentBanListEditor)
+            {
+                if (string.IsNullOrWhiteSpace(currentBanListEditor.NewFolderPath) ||
+                    !Directory.Exists(currentBanListEditor.NewFolderPath) ||
+                    string.IsNullOrWhiteSpace(currentBanListEditor.NewFileName))
+                {
+                    currentBanListEditor.NewBanList();
+                }
+                else
+                {
+                    await currentBanListEditor.SaveAsBanListCeds();
+                }
             }
         }
         #endregion
@@ -3243,7 +3373,6 @@ namespace CardEditor
             }
             else return;
         }
-
         #endregion
 
         #endregion
@@ -4741,13 +4870,13 @@ namespace CardEditor
                         break;
 
                     default:
-                        newTab = new TabContent { Header = CMess.Home.ToText(), Content = new Home(this) };
+                        newTab = new TabContent { Header = $"🏠 {CMess.Home.ToText()}", Content = new Home(this) };
                         break;
                 }
             }
             else
             {
-                newTab = new TabContent { Header = CMess.Home.ToText(), Content = new Home(this) };
+                newTab = new TabContent { Header = $"🏠 {CMess.Home.ToText()}", Content = new Home(this) };
             }
 
             TabControlMain.SelectedItem = newTab;
@@ -4792,7 +4921,7 @@ namespace CardEditor
             else if (Tabs.Count == 1)
             {
                 Tabs.Remove(tabToClose);
-                var newHomeTab = new TabContent { Header = CMess.Home.ToText(), Content = new Home(this) };
+                var newHomeTab = new TabContent { Header = $"🏠 {CMess.Home.ToText()}", Content = new Home(this) };
                 Tabs.Add(newHomeTab);
                 TabControlMain.SelectedItem = newHomeTab;
 

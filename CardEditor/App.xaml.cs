@@ -101,7 +101,8 @@ namespace CardEditor
 
                 if (!string.IsNullOrWhiteSpace(filePath))
                 {
-                    target.HandleFileOpen(filePath);
+                    target.StartupFilePath = filePath;
+                    target.HandleFileOpen();
                 }
             });
         }

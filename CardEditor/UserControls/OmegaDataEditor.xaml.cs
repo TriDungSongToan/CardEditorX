@@ -1953,7 +1953,7 @@ namespace CardEditor.UserControls
                 string cedsFilePath = FileDiaLogHelper.SaveCeds();
                 if (string.IsNullOrEmpty(cedsFilePath)) return;
 
-                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath);
+                CreateCardListResult resultCreate = await CreateCedsService.CreateCedsCommand(cedsFilePath, CardListFormat.OMEGA);
                 if (!resultCreate.Result)
                 {
                     CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
@@ -5066,27 +5066,27 @@ namespace CardEditor.UserControls
 
             if (candidates.Count == 0) // Không tìm thấy ở đâu cả -> tạo mới
             {
-                // Nếu có archiveFilePath, script mới nên nằm trong temp (giữ hành vi cũ);
-                // ngược lại tạo trực tiếp trong DirectoryPath.
-                string createDir = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
-                    ? Path.Combine(Path.GetTempPath(), "CardEditorTemp", "script")
-                    : DirectoryPath;
+                //// Nếu có archiveFilePath, script mới nên nằm trong temp (giữ hành vi cũ);
+                //// ngược lại tạo trực tiếp trong DirectoryPath.
+                //string createDir = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
+                //    ? Path.Combine(Path.GetTempPath(), "CardEditorTemp", "script")
+                //    : DirectoryPath;
 
-                var (resultCreate, messageCreate) = CreateScriptFile(createDir, password, luaContent, Area);
-                if (resultCreate)
-                {
-                    string entryName = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
-                        ? $"script/{System.IO.Path.GetFileName(messageCreate)}"
-                        : null;
-                    await MainWindowService.OpenCodeEditorTab(messageCreate,
-                        entryName != null ? archiveFilePath : null, entryName);
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {messageCreate}",
-                        new[] { CMess.ok.ToText() });
-                }
+                //var (resultCreate, messageCreate) = CreateScriptFile(createDir, password, luaContent, Area);
+                //if (resultCreate)
+                //{
+                //    string entryName = !string.IsNullOrEmpty(archiveFilePath) && System.IO.File.Exists(archiveFilePath)
+                //        ? $"script/{System.IO.Path.GetFileName(messageCreate)}"
+                //        : null;
+                //    await MainWindowService.OpenCodeEditorTab(messageCreate,
+                //        entryName != null ? archiveFilePath : null, entryName);
+                //}
+                //else
+                //{
+                //    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                //        $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.Create.ToText(), CMess.Script.ToText(), CMess.File.ToText())} {messageCreate}",
+                //        new[] { CMess.ok.ToText() });
+                //}
             }
             else if (candidates.Count == 1) // Chỉ có 1 -> mở thẳng
             {
@@ -5167,9 +5167,8 @@ namespace CardEditor.UserControls
 
             var (luaContent, Area) = GetCardScriptContent();
 
-            await ScriptCardOMEGA(cardID, cardAlias, luaContent, Area);
-
             await ScriptCardYGO(cardID, cardAlias, luaContent, Area);
+            await ScriptCardOMEGA(cardID, cardAlias, luaContent, Area);
         }
 
         #endregion

@@ -315,7 +315,7 @@
 
                     <!--Save DataEditor-->
                     <MenuItem x:Name="menuSaveDataEditor" Header="{Lag:Localize Save}"
-                              Visibility="{Binding DataEditVisibility}" Margin="0" Padding="10,0,15,0" >
+                              Visibility="{Binding SaveDataEditVisibility}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Save/Save.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
@@ -354,7 +354,7 @@
 
                     <!--Save As DataEditor-->
                     <MenuItem x:Name="menuSaveAsDataEditor" Header="{Lag:Localize SaveAs}"
-                              Visibility="{Binding DataEditVisibility}" Margin="0" Padding="10,0,15,0" >
+                              Visibility="{Binding SaveAsDataEditVisibility}" Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveAs.ico" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
@@ -438,9 +438,30 @@
                         
                     </MenuItem>
 
+                    <MenuItem x:Name="menuSaveAsBanListEditor" Header="{Lag:Localize SaveAs}"
+                              Visibility="{Binding SaveAsBanListEditVisibility}" Margin="0" Padding="10,0,15,0" >
+                        <MenuItem.Icon>
+                            <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveAs.ico" Width="auto" Height="auto" Margin="0" />
+                        </MenuItem.Icon>
+
+                        <MenuItem x:Name="menuSaveAsBanFile" Header="{Lag:Localize BanList}" Margin="0" Padding="10,0,15,0"
+                                  Click="menuSaveAsBanFile_Click" >
+                            <MenuItem.Icon>
+                                <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveAs.ico" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+
+                        <MenuItem x:Name="menuSaveAsBanCEDS" Header="{Lag:Localize Ceds}" Margin="0" Padding="10,0,15,0"
+                                  ToolTip="{Lag:Localize toolSaveAsCeds}" Click="menuSaveAsBanCEDS_Click" >
+                            <MenuItem.Icon>
+                                <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveCeds.ico" Width="auto" Height="auto" Margin="0" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+
                     <!--save as-->
                     <MenuItem x:Name="menuSaveAs" Header="{Lag:Localize SaveAs}" InputGestureText="Ctrl + Shift + S  "
-                              Visibility="{Binding SaveVisibility}" Command="{x:Static Commands:CustomCommands.SaveAs}"
+                              Visibility="{Binding SaveAsVisibility}" Command="{x:Static Commands:CustomCommands.SaveAs}"
                               Margin="0" Padding="10,0,15,0" >
                         <MenuItem.Icon>
                             <Image Source="pack://application:,,,/Images/Menu/File/Save/SaveAs.ico" Width="auto" Height="auto" Margin="0" />
@@ -459,17 +480,17 @@
                 <MenuItem Header="{Lag:Localize Window}" Margin="0" Padding="10,0,10,0" >
                     <MenuItem Header="{Lag:Localize ImageEdit}" Margin="0" Padding="10,0,15,0" Click="menuimgeditor_Click" >
                         <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Win/Imageditor.ico" Width="auto" Height="auto" Margin="0" />
+                            <Image Source="pack://application:,,,/Images/Menu/Win/ImageEditor.png" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="{Lag:Localize DataEdit}" Margin="0" Padding="10,0,15,0" Click="menudataeditor_Click" >
                         <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Win/Dataeditor.ico" Width="auto" Height="auto" Margin="0" />
+                            <Image Source="pack://application:,,,/Images/Menu/Win/DataEditor.png" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Margin="0" Padding="10,0,15,0" Click="menuomegadataeditor_Click" >
                         <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Win/Dataeditor.ico" Width="auto" Height="auto" Margin="0" />
+                            <Image Source="pack://application:,,,/Images/Menu/Win/DataEditor.png" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                         <MenuItem.Header>
                             <StackPanel Orientation="Horizontal">
@@ -480,17 +501,17 @@
                     </MenuItem>
                     <MenuItem Header="{Lag:Localize DeckEdit}" Margin="0" Padding="10,0,15,0"  Click="menudeckeditor_Click" >
                         <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Win/Deckeditor.ico" Width="auto" Height="auto" Margin="0" />
+                            <Image Source="pack://application:,,,/Images/Menu/Win/DeckEditor.png" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="{Lag:Localize CodeEdit}" Margin="0" Padding="10,0,15,0" Click="menucodeeditor_Click" >
                         <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Win/Codeditor.ico" Width="auto" Height="auto" Margin="0" />
+                            <Image Source="pack://application:,,,/Images/Menu/Win/CodeEditor.png" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="{Lag:Localize BanListEdit}" Margin="0" Padding="10,0,15,0" Click="menubanlisteditor_Click" >
                         <MenuItem.Icon>
-                            <Image Source="pack://application:,,,/Images/Menu/Win/Banlisteditor.ico" Width="auto" Height="auto" Margin="0" />
+                            <Image Source="pack://application:,,,/Images/Menu/Win/BanListEditor.png" Width="auto" Height="auto" Margin="0" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="Chat Bot" Margin="0" Padding="10,0,15,0"  Click="menuchatbot_Click" >

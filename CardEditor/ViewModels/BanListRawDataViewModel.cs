@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Collections.Generic;
 using CardEditor.Models;
+using CardEditor.Services.SaveData;
 using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -263,6 +264,8 @@ namespace CardEditor.ViewModels
         {
             try
             {
+                if (banList == null) return (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.BanList.ToText()));
+
                 string filePath = (!string.IsNullOrWhiteSpace(path)) ? path : banList.FilePath;
                 if (!System.IO.Directory.Exists(Path.GetDirectoryName(filePath)))
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath));
@@ -315,10 +318,24 @@ namespace CardEditor.ViewModels
                 return (false, ex.Message);
             }
         }
+        public async Task<(bool, string)> SaveBanListCeds(BanList banList, string path = null)
+        {
+            if (banList == null) return (false, string.Format(CMess.PlaceholderInva.ToText(), CMess.BanList.ToText()));
 
-        public (List<CardBanList> banned, List<CardBanList> limited,
-            List<CardBanList> semiLimited, List<CardBanList> unLimited)
-        SplitCardList(Dictionary<ulong, CardBanList> cardList)
+            string filePath = (!string.IsNullOrWhiteSpace(path)) ? path : banList.FilePath;
+            if (!System.IO.Directory.Exists(Path.GetDirectoryName(filePath)))
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+            List<CardBanList> listCard = banList.CardList.Values.ToList();
+            if (listCard == null) return (false, CMess.noCardSave.ToText());
+
+            WriteResult resultSave = await SaveCedsBanlistService.SaveCardList(listCard, filePath);
+
+            return (resultSave.Result, resultSave.Messenger);
+        }
+
+        public (List<CardBanList> banned, List<CardBanList> limited, List<CardBanList> semiLimited, List<CardBanList> unLimited)
+            SplitCardList(Dictionary<ulong, CardBanList> cardList)
         {
             var banned = new List<CardBanList>();
             var limited = new List<CardBanList>();

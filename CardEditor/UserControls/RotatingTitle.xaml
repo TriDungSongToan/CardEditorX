@@ -1,0 +1,67 @@
+﻿<UserControl x:Class="CardEditor.UserControls.RotatingTitle"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:Controls="clr-namespace:CardEditor.Controls"
+             xmlns:ViewModels="clr-namespace:CardEditor.ViewModels"
+             xmlns:Lag="clr-namespace:CardEditor.Localization"
+             mc:Ignorable="d"
+             Background="Transparent"
+             UseLayoutRounding="True"
+             SnapsToDevicePixels="True"
+             Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+             d:DesignHeight="100" d:DesignWidth="450">
+    <Grid>
+        <TextBlock x:Name="RotatingTitleGradient"
+                   FontSize="22" FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,0"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"
+                   MaxWidth="900">
+            <TextBlock.Text>
+                <Binding Path="CurrentTitle" NotifyOnTargetUpdated="True"/>
+            </TextBlock.Text>
+            <TextBlock.Foreground>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <!-- Nền vàng đậm -->
+                    <GradientStop Color="#FFD700" Offset="0.00"/>
+                    <!-- Mép trái của vệt sáng -->
+                    <GradientStop x:Name="ShimmerStart" Color="#FFD700" Offset="-0.25"/>
+                    <!-- Tâm vệt sáng -->
+                    <GradientStop x:Name="ShimmerLight" Color="#FFF8C4" Offset="-0.05"/>
+                    <!-- Mép phải của vệt sáng -->
+                    <GradientStop x:Name="ShimmerEnd" Color="#FFD700" Offset="0.15"/>
+                    <!-- Nền vàng đậm -->
+                    <GradientStop Color="#FFD700" Offset="1.00"/>
+                </LinearGradientBrush>
+            </TextBlock.Foreground>
+            <TextBlock.Triggers>
+                <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <!-- Fade in -->
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             From="0" To="1" Duration="0:0:0.4"/>
+                            <!-- Vệt sáng -->
+                            <DoubleAnimation Storyboard.TargetName="ShimmerStart"
+                                             Storyboard.TargetProperty="Offset"
+                                             From="-0.25" To="1.00" Duration="0:0:2.5"
+                                             RepeatBehavior="Forever"/>
+                            <DoubleAnimation Storyboard.TargetName="ShimmerLight"
+                                             Storyboard.TargetProperty="Offset"
+                                             From="-0.05" To="1.20" Duration="0:0:2.5"
+                                             RepeatBehavior="Forever"/>
+                            <DoubleAnimation Storyboard.TargetName="ShimmerEnd"
+                                             Storyboard.TargetProperty="Offset"
+                                             From="0.15" To="1.40" Duration="0:0:2.5"
+                                             RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </TextBlock.Triggers>
+        </TextBlock>
+    </Grid>
+</UserControl>

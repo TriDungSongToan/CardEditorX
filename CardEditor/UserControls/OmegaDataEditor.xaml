@@ -154,7 +154,7 @@
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                              FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              d:FlowDirection="LeftToRight" >
-            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,1,0,2" >
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,1,0,1" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="2" />

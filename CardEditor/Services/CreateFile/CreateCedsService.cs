@@ -2,8 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using CardEditor.Enums;
 using CardEditor.Models;
+using CardEditor.Helpers;
 using CardEditor.Constants;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
@@ -12,7 +15,7 @@ namespace CardEditor.Services.CreateFile
 {
     public class CreateCedsService
     {
-        public static async Task<CreateCardListResult> CreateCedsCommand(string filePath)
+        public static async Task<CreateCardListResult> CreateCedsCommand(string filePath, CardListFormat format)
         {
             CreateCardListResult result = new();
 
@@ -35,7 +38,7 @@ namespace CardEditor.Services.CreateFile
                 string folderPath = System.IO.Path.GetDirectoryName(cedsFilePath);
                 string cdbFileName = System.IO.Path.GetFileName(cedsFilePath);
 
-                result = await Task.Run(() => CreateCeds(folderPath, cdbFileName));
+                result = await Task.Run(() => CreateCeds(folderPath, cdbFileName, format));
             }
             catch (Exception ex)
             {
@@ -44,7 +47,7 @@ namespace CardEditor.Services.CreateFile
             }
             return result;
         }
-        public static CreateCardListResult CreateCeds(string folderPath, string cedsFileName)
+        public static CreateCardListResult CreateCeds(string folderPath, string cedsFileName, CardListFormat format)
         {
             CreateCardListResult result = new();
 
@@ -61,7 +64,11 @@ namespace CardEditor.Services.CreateFile
 
             try
             {
-                File.WriteAllText(tempCedsFilePath, "[]", Encoding.UTF8);
+                JSONCeds ceds = new();
+                ceds.Format = format;
+
+                string json = JsonSerializer.Serialize(ceds, JsonStringHelper.SerializerCEDSOptions);
+                File.WriteAllText(tempCedsFilePath, json, Encoding.UTF8);
 
                 if (File.Exists(cedsFilePath)) File.Delete(cedsFilePath);
                 File.Move(tempCedsFilePath, cedsFilePath);
@@ -69,6 +76,8 @@ namespace CardEditor.Services.CreateFile
                 result.Result = true;
                 result.Messenger = string.Empty;
                 result.FilePath = cedsFilePath;
+                result.Format = format;
+                result.HasFlag = (format == CardListFormat.YGONoFlag) ? false : true;
             }
             catch (Exception ex)
             {

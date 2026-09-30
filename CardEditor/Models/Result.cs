@@ -75,10 +75,10 @@ namespace CardEditor.Models
     }
     public class JSONCeds
     {
+        public CardListFormat Format { get; set; } = CardListFormat.YGONoFlag;
         public List<Card> CardList { get; set; } = new();
         public List<CardOmega> CardOmegaList { get; set; } = new();
         public List<CardBanList> CardBanlistList { get; set; } = new();
-        public CardListFormat Format { get; set; }
     }
     public class SetClipboardResult
     {

@@ -1,22 +1,22 @@
 ﻿# Card Database Structure
 
-This document describes the data structures supported by CardEditorX for storing and exchanging card data.
+This document defines the card data structures supported by CardEditorX and the formats that can be used to store and exchange card data.
 
 DataEditor is a data management module of CardEditorX. It is designed to load, process, and exchange card data using several supported Card Database formats.
 
-Yu-Gi-Oh! game engines are designed to work with Card Database files using the SQLite `.cdb` format.
+Although Yu-Gi-Oh! game engines commonly use SQLite databases with the `.cdb` extension, DataEditor is not tied to the .cdb format. Instead, it works with a common Card List structure that can be represented by multiple file formats.
 
-However, **DataEditor** is not limited to `.cdb` files. It can load and process card data from the following file formats.
+As a result, a **Card List File** does not need to use a specific file extension to be compatible with **DataEditor**. The input only needs to provide the required card fields and follow the structure defined for the corresponding format.
 
 ## Supported Formats
 
 CardEditorX currently supports the following Card Database formats:
 
-|Format|Extension|
-|------|---------|
-|SQLite|`*.cdb`, `*.db`, `*.bytes`, `*.sqlite`|
-|Excel |`*.xlsx`, `*.xlsm`, `*.xltx`, `*.xltm`|
-|JSON  |`*.ceds`, `*.json`, `*.txt`|
+|    Format    |         Supported Extensions         |
+|--------------|--------------------------------------|
+|SQLite        |`*.cdb`, `*.db`, `*.bytes`, `*.sqlite`|
+|Excel         |`*.xlsx`, `*.xlsm`, `*.xltx`, `*.xltm`|
+|JSON          |`*.ceds`, `*.json`, `*.txt`           |
 
 The file format itself is not the primary requirement. As long as the file can provide a **compatible Card List structure**, DataEditor can use it as a card data source.
 
@@ -28,28 +28,106 @@ The following images illustrate the required Card List structure for each suppor
 
 ## I. SQLite Database (`*.db`, `*.cdb`, `*.sqlite`)
 
+DataEditor currently supports three SQLite Card Database formats:
 
-![SQLite Structure](Images/SQLiteStructure.png)
+- YGO without Flag
+- YGO with Flag
+- OMEGA 
 
-For SQLite-based databases, DataEditor requires at least two tables: **`texts`** and **`datas`**.
+Although these formats share the same general **Card Database** concept, their **table** structures are NOT identical. In particular, the `texts` table uses the same structure across all three formats, while the `datas` table has a different structure for each format.
 
-The **`texts`** table must contain at least the following columns:
+### `texts` Table
 
-|  Table  |  Required Columns  |
-|   ---   |         ---        |
-| `texts` | `id`, `name`, `desc`, `str1`, `str2`, ..., `str16` |
-| `datas` | `id`, `ot`, `alias`, `setcode`, `type`, `atk`, `def`, `level`, `race`, `attribute`, `category` |
+All three supported SQLite formats — `YGO Without Flag`, `YGO With Flag`, and `OMEGA` — use the same texts table structure.
 
-The `texts.id` and `datas.id` fields are used to associate the text and data records of the same card.
+![SQLite Text Structure](Images/SQLiteTextsStructure.png)
 
-A database is considered compatible as long as the required tables and columns are present.
-Additional tables or columns are allowed and do not affect compatibility with DataEditor.
+The texts table must contain at least the following columns:
 
-## II. Excel Database (`*.xlsx`)
+|  Column      |       Description       |
+|--------------|-------------------------|
+| id           |Unique card identifier   |
+| name         |Card name                |
+| desc         |Card description         |
+| str1 ~ str16 |Card String              |
 
-![DataEditor](Images/ExcelStructure.png)
+### `datas` Table
 
-For Excel databases, DataEditor expects the card data to be provided in a single worksheet with a fixed column structure.
+Each supported SQLite format uses a different datas table structure.
+
+### **1. YGO Without Flag**
+
+![SQLite YGO No Flag Structure](Images/SQLiteDatasNoFlagStructure.png)
+
+The YGO Without Flag format uses the original YGO datas table structure.
+
+The table must contain the following columns:
+
+```
+id, ot, alias, setcode, type, atk, def, level, race, attribute, category
+```
+
+### **2. YGO With Flag**
+
+![SQLite YGO Has Flag Structure](Images/SQLiteDatasHasFlagStructure.png)
+
+The YGO With Flag format uses the original YGO datas table structure, with an additional flag column added after the category column.
+
+The table must contain the following columns:
+
+```
+id, ot, alias, setcode, type, atk, def, level, race, attribute, category, flag
+```
+
+### **3. OMEGA**
+
+![SQLite OMEGA Structure](Images/SQLiteDatasOMEGAStructure.png)
+
+The table must contain the following columns:
+
+```
+id, ot, alias, setcode, type, atk, def, level, race, attribute, category, genre, script, support
+```
+
+This format is designed exclusively for YGO OMEGA. The datas table includes the following additional columns:
+
+- `genre` (YGO OMEGA Category)
+- `script` (YGO OMEGA stores Card Scripts directly in the database instead of separating them into external `*.lua` files)
+- `support` (additional support codes for Cards)
+- Additionally, the `category` column serves as the `flag` in this format.
+
+### Card Record Association
+
+For all supported SQLite formats, the id field is used to associate records between the texts and datas tables.
+
+For example:
+```text
+texts.id = 611000000
+datas.id = 611000000
+
+ Both records represent the same card.
+```
+
+A SQLite database is considered compatible with DataEditor as long as it provides the required texts and datas tables with the appropriate structure for one of the supported SQLite formats.
+
+Additional tables and columns are allowed, provided that they do not conflict with the required tables and columns. They do not affect compatibility with DataEditor.
+
+## II. Excel Database (`.xlsx`, `.xlsm`, `.xltx`, `.xltm`)
+
+For Excel databases, DataEditor expects card data to be stored in the first worksheet using a fixed column structure.
+
+The first row of the worksheet is treated as the header row. DataEditor uses this header to determine whether the worksheet conforms to the required structure.
+Card records start from row 2.
+
+DataEditor currently supports three Excel Database formats:
+
+- YGO without Flag
+- YGO with Flag
+- OMEGA 
+
+### **1. YGO Without Flag**
+
+![SQLite OMEGA Structure](Images/ExcelNoFlagStructure.png)
 
 > **Column Mapping**
 
@@ -123,13 +201,170 @@ The first row of the Excel file must contain the following headers:
 |  AB1 | `str15`      |
 |  AC1 | `str16`      |
 
-DataEditor reads card data from the first worksheet only.
+### **2. YGO With Flag**
 
-The first row of the worksheet is treated as the header row. DataEditor uses this header to determine whether the worksheet conforms to the required structure.
-Card records start from row 2.
+![SQLite OMEGA Structure](Images/ExcelHasFlagStructure.png)
+
+> **Column Mapping**
+
+Each Excel column corresponds to a field in the Card Database:
+
+| Excel Column | Card Database Field |
+|--------------|---------------------|
+| A            | `id`                |
+| B            | `name`              |
+| C            | `desc`              |
+| D            | `ot`                |
+| E            | `alias`             |
+| F            | `setcode`           |
+| G            | `type`              |
+| H            | `atk`               |
+| I            | `def`               |
+| J            | `level`             |
+| K            | `race`              |
+| L            | `attribute`         |
+| M            | `category`          |
+| N            | `flag`              |
+| O            | `str1`              |
+| P            | `str2`              |
+| Q            | `str3`              |
+| R            | `str4`              |
+| S            | `str5`              |
+| T            | `str6`              |
+| U            | `str7`              |
+| V            | `str8`              |
+| W            | `str9`              |
+| X            | `str10`             |
+| Y            | `str11`             |
+| Z            | `str12`             |
+| AA           | `str13`             |
+| AB           | `str14`             |
+| AC           | `str15`             |
+| AD           | `str16`             |
+
+> **Header Structure**
+
+The first row of the Excel file must contain the following headers:
+
+| Cell |    Header    |
+|------|--------------|
+|  A1  | `CardEditorX`|
+|  B1  | `name`       |
+|  C1  | `desc`       |
+|  D1  | `ot`         |
+|  E1  | `alias`      |
+|  F1  | `setcode`    |
+|  G1  | `type`       |
+|  H1  | `atk`        |
+|  I1  | `def`        |
+|  J1  | `level`      |
+|  K1  | `race`       |
+|  L1  | `attribute`  |
+|  M1  | `category`   |
+|  N1  | `flag`       |
+|  O1  | `str1`       |
+|  P1  | `str2`       |
+|  Q1  | `str3`       |
+|  R1  | `str4`       |
+|  S1  | `str5`       |
+|  T1  | `str6`       |
+|  U1  | `str7`       |
+|  V1  | `str8`       |
+|  W1  | `str9`       |
+|  X1  | `str10`      |
+|  Y1  | `str11`      |
+|  Z1  | `str12`      |
+|  AA1 | `str13`      |
+|  AB1 | `str14`      |
+|  AC1 | `str15`      |
+|  AD1 | `str16`      |
+
+### **3. OMEGA**
+
+![SQLite OMEGA Structure](Images/ExcelOMEGAStructure.png)
+
+> **Column Mapping**
+
+Each Excel column corresponds to a field in the Card Database:
+
+| Excel Column | Card Database Field |
+|--------------|---------------------|
+| A            | `id`                |
+| B            | `name`              |
+| C            | `desc`              |
+| D            | `ot`                |
+| E            | `alias`             |
+| F            | `setcode`           |
+| G            | `type`              |
+| H            | `atk`               |
+| I            | `def`               |
+| J            | `level`             |
+| K            | `race`              |
+| L            | `attribute`         |
+| M            | `category`          |
+| N            | `genre`             |
+| O            | `script`            |
+| P            | `support`           |
+| Q            | `str1`              |
+| R            | `str2`              |
+| S            | `str3`              |
+| T            | `str4`              |
+| U            | `str5`              |
+| V            | `str6`              |
+| W            | `str7`              |
+| X            | `str8`              |
+| Y            | `str9`              |
+| Z            | `str10`             |
+| AA           | `str11`             |
+| AB           | `str12`             |
+| AC           | `str13`             |
+| AD           | `str14`             |
+| AE           | `str15`             |
+| AF           | `str16`             |
+
+> **Header Structure**
+
+The first row of the Excel file must contain the following headers:
+
+| Cell |    Header    |
+|------|--------------|
+|  A1  | `CardEditorX`|
+|  B1  | `name`       |
+|  C1  | `desc`       |
+|  D1  | `ot`         |
+|  E1  | `alias`      |
+|  F1  | `setcode`    |
+|  G1  | `type`       |
+|  H1  | `atk`        |
+|  I1  | `def`        |
+|  J1  | `level`      |
+|  K1  | `race`       |
+|  L1  | `attribute`  |
+|  M1  | `category`   |
+|  N1  | `flag`       |
+|  O1  | `str1`       |
+|  P1  | `str2`       |
+|  Q1  | `str3`       |
+|  R1  | `str4`       |
+|  S1  | `str5`       |
+|  T1  | `str6`       |
+|  U1  | `str7`       |
+|  V1  | `str8`       |
+|  W1  | `str9`       |
+|  X1  | `str10`      |
+|  Y1  | `str11`      |
+|  Z1  | `str12`      |
+|  AA1 | `str13`      |
+|  AB1 | `str14`      |
+|  AC1 | `str15`      |
+|  AD1 | `str16`      |
+
+---
 
 > **Note:** The header row must follow this structure exactly. `A1` must contain `CardEditorX`.
 This value is used to identify the worksheet as a CardEditorX-compatible Card Database.
+
+---
 
 ## III. Text Database (`*.txt`, `*.ceds`)
 
