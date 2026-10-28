@@ -66,6 +66,7 @@ namespace CardEditor.ViewModels
 
         public RelayCommand BrowseDataSource { get; private set; }
         public RelayCommand BrowseBGImage { get; private set; }
+        public RelayCommand SetDefaultImageBg { get; private set; }
         public RelayCommand BrowseArtWork {  get; private set; }
         public RelayCommand BrowsePutPut {  get; private set; }
         public RelayCommand BrowseOriginal { get; private set; }
@@ -111,6 +112,7 @@ namespace CardEditor.ViewModels
 
             BrowseDataSource = new CardEditor.Commands.RelayCommand(_ => BrowseDataSourcePath());
             BrowseBGImage = new CardEditor.Commands.RelayCommand(_ => BrowseBGImagePath());
+            SetDefaultImageBg = new CardEditor.Commands.RelayCommand(_ => SetDefaultBg());
             BrowseArtWork = new CardEditor.Commands.RelayCommand(_ => BrowseArtWorkPath());
             BrowsePutPut = new CardEditor.Commands.RelayCommand(_ => BrowsePutPutPath());
             BrowseOriginal = new CardEditor.Commands.RelayCommand(_ => BrowseOriginalPath());
@@ -361,6 +363,10 @@ namespace CardEditor.ViewModels
                     displaySetting.BackgroundImagePath = message;
                 }
             }
+        }
+        private void SetDefaultBg()
+        {
+            displaySetting.BackgroundImagePath = "DefaultBg.png";
         }
         private void BrowseArtWorkPath()
         {

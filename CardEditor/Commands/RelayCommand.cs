@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows.Input;
 using System.Threading.Tasks;
 
 namespace CardEditor.Commands
@@ -9,17 +8,13 @@ namespace CardEditor.Commands
         private readonly Func<object, Task> _executeAsync;
         private readonly Func<object, bool> _canExecute;
 
-        public RelayCommand(
-            Func<object, Task> executeAsync,
-            Func<object, bool> canExecute = null)
+        public RelayCommand(Func<object, Task> executeAsync, Func<object, bool> canExecute = null)
         {
             _executeAsync = executeAsync ?? throw new ArgumentNullException(nameof(executeAsync));
             _canExecute = canExecute;
         }
 
-        public RelayCommand(
-            Action<object> execute,
-            Func<object, bool> canExecute = null)
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
             if (execute == null) throw new ArgumentNullException(nameof(execute));
             _executeAsync = param =>

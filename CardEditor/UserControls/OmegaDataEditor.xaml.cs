@@ -259,6 +259,8 @@ namespace CardEditor.UserControls
         public RelayCommand CreateImageCommand { get; set; }
         public RelayCommand SelectImageCommand { get; set; }
         public RelayCommand SelectedArtWorkCommand { get; set; }
+        public RelayCommand ReloadImageConfigCommand { get; set; }
+        public RelayCommand SaveImageConfigCommand { get; set; }
         public RelayCommand ViewImageCommand { get; set; }
         public RelayCommand OpenFileImageCommand { get; set; }
         public RelayCommand OpenKonamiDBCommand { get; set; }
@@ -315,6 +317,9 @@ namespace CardEditor.UserControls
             CreateImageCommand = new CardEditor.Commands.RelayCommand(async _ => await CreateImage(), _ => CurrentCardExists());
             SelectImageCommand = new CardEditor.Commands.RelayCommand(async _ => await SelectImage(), _ => CurrentCardExists());
             SelectedArtWorkCommand = new CardEditor.Commands.RelayCommand(async _ => await SelectArtwork(), _ => CurrentCardExists());
+            ReloadImageConfigCommand = new CardEditor.Commands.RelayCommand(_ => ReloadImageConfig());
+            SaveImageConfigCommand = new CardEditor.Commands.RelayCommand(_ => SaveImageConfig());
+
             ViewImageCommand = new CardEditor.Commands.RelayCommand(_ => ViewImage(), _ => CurrentCardExists());
             OpenFileImageCommand = new CardEditor.Commands.RelayCommand(_ => OpenFileImage(), _ => CurrentCardExists());
 
@@ -439,6 +444,14 @@ namespace CardEditor.UserControls
                 }
                 btnSort.ToolTip = toolTip;
             }
+            bool LoadConfig = GeneraImageViewModel.Instance.LoadImageConfig(ConfigViewModel.Instance.imageSetting.Series);
+            if (!LoadConfig)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    string.Format(CMess.ThreePlaceholderError.ToText(), CMess.load.ToText(), CMess.Image.ToText(), CMess.Config.ToText()),
+                    new[] { CMess.ok.ToText() });
+                return;
+            }
         }
         private void InitializeContentMenu()
         {
@@ -502,54 +515,68 @@ namespace CardEditor.UserControls
         {
             if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return;
 
+            LoadCardDataResult resultCard = new();
+
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
                     var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
                     var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
                     var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
                     _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
-
-                if (resultCard.Result && resultCard.CardList != null)
-                {
-                    switch (Path.GetExtension(filePath).ToLowerInvariant())
-                    {
-                        case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
-                            cdbFilePath = filePath;
-                            _cdbFileHasFlag = resultCard.HasFlag;
-                            break;
-
-                        case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
-                            xlsxFilePath = filePath;
-                            _xlsxFileHasFlag = resultCard.HasFlag;
-                            break;
-
-                        case var ext when ConstantExtension.CedsExtensions.Contains(ext):
-                            cedsFilePath = filePath;
-                            _cedsFileHasFlag = resultCard.HasFlag;
-                            break;
-                    }
-
-                    if (Cards == null) Cards = new();
-                    if (Cards.Count() == 0)
-                    {
-                        ImportCreateNew(resultCard.OmegaCardList);
-                        IsSaved = true;
-                    }
-                    else ImportCardList(resultCard.OmegaCardList);
-                    RebuildWindowTitle();
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        resultCard.Message, new[] { CMess.ok.ToText() });
-                }
             }
             catch (Exception ex)
             {
+                resultCard.Result = false;
+                resultCard.Message = ex.Message;
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (!resultCard.Result || resultCard.CardList == null)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    resultCard.Message, new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            try
+            {
+                switch (Path.GetExtension(filePath).ToLowerInvariant())
+                {
+                    case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                        cdbFilePath = filePath;
+                        _cdbFileHasFlag = resultCard.HasFlag;
+                        break;
+
+                    case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                        xlsxFilePath = filePath;
+                        _xlsxFileHasFlag = resultCard.HasFlag;
+                        break;
+
+                    case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                        cedsFilePath = filePath;
+                        _cedsFileHasFlag = resultCard.HasFlag;
+                        break;
+                }
+
+                if (Cards == null) Cards = new();
+                if (Cards.Count() == 0)
+                {
+                    ImportCreateNew(resultCard.OmegaCardList);
+                    IsSaved = true;
+                }
+                else ImportCardList(resultCard.OmegaCardList);
+                RebuildWindowTitle();
+            }
+            catch (Exception ex)
+            {
+                Mouse.OverrideCursor = null;
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
@@ -563,57 +590,71 @@ namespace CardEditor.UserControls
         {
             if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath)) return;
 
+            LoadCardDataResult resultCard = new();
+
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                LoadCardDataResult resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
+                resultCard = Path.GetExtension(filePath).ToLowerInvariant() switch
                 {
                     var ext when ConstantExtension.CardDBExtensions.Contains(ext) => await LoadDatabaseService.LoadDatabaseCard(filePath),
                     var ext when ConstantExtension.ExcelExtensions.Contains(ext) => await LoadExcelService.LoadExcelCard(filePath),
                     var ext when ConstantExtension.CedsExtensions.Contains(ext) => await LoadCedsService.LoadCedsCard(filePath),
                     _ => new LoadCardDataResult { Result = false, Message = string.Format(CMess.TwoPlaceholderInva.ToText(), CMess.File.ToText(), CMess.Format.ToText()) }
                 };
-
-                if (resultCard.Result && resultCard.CardList != null)
-                {
-                    switch (Path.GetExtension(filePath).ToLowerInvariant())
-                    {
-                        case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
-                            cdbFilePath = filePath;
-                            _cdbFileHasFlag = resultCard.HasFlag;
-                            break;
-
-                        case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
-                            xlsxFilePath = filePath;
-                            _xlsxFileHasFlag = resultCard.HasFlag;
-                            break;
-
-                        case var ext when ConstantExtension.CedsExtensions.Contains(ext):
-                            cedsFilePath = filePath;
-                            _cedsFileHasFlag = resultCard.HasFlag;
-                            break;
-                    }
-
-                    if (Cards == null) Cards = new();
-                    if (Cards.Count() == 0)
-                    {
-                        ImportCreateNew(resultCard.OmegaCardList);
-                        IsSaved = true;
-                    }
-                    else ImportCardList(resultCard.OmegaCardList);
-
-                    archiveFilePath = sourceArchivePath;
-                    archiveEntryName = sourceEntryName;
-                    RebuildWindowTitle();
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        resultCard.Message, new[] { CMess.ok.ToText() });
-                }
             }
             catch (Exception ex)
             {
+                resultCard.Result = false;
+                resultCard.Message = ex.Message;
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (!resultCard.Result || resultCard.CardList == null)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    resultCard.Message, new[] { CMess.ok.ToText() });
+                return;
+            }
+
+            try
+            {
+                switch (Path.GetExtension(filePath).ToLowerInvariant())
+                {
+                    case var ext when ConstantExtension.CardDBExtensions.Contains(ext):
+                        cdbFilePath = filePath;
+                        _cdbFileHasFlag = resultCard.HasFlag;
+                        break;
+
+                    case var ext when ConstantExtension.ExcelExtensions.Contains(ext):
+                        xlsxFilePath = filePath;
+                        _xlsxFileHasFlag = resultCard.HasFlag;
+                        break;
+
+                    case var ext when ConstantExtension.CedsExtensions.Contains(ext):
+                        cedsFilePath = filePath;
+                        _cedsFileHasFlag = resultCard.HasFlag;
+                        break;
+                }
+
+                if (Cards == null) Cards = new();
+                if (Cards.Count() == 0)
+                {
+                    ImportCreateNew(resultCard.OmegaCardList);
+                    IsSaved = true;
+                }
+                else ImportCardList(resultCard.OmegaCardList);
+
+                archiveFilePath = sourceArchivePath;
+                archiveEntryName = sourceEntryName;
+                RebuildWindowTitle();
+            }
+            catch (Exception ex)
+            {
+                Mouse.OverrideCursor = null;
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{CMess.errorOcc.ToText()} {ex.Message}", new[] { CMess.ok.ToText() });
             }
@@ -686,6 +727,10 @@ namespace CardEditor.UserControls
             bool isPendulum = FindIInfoService.CheckCardInfo(CurrentCard.type, CardType.Pendulum);
             bool isLink = FindIInfoService.CheckCardInfo(CurrentCard.type, CardType.Link);
             bool isSkill = FindIInfoService.CheckCardInfo(CurrentCard.type, CardType.Skill);
+
+            IsPendulumIntf = isPendulum;
+            IsLinkIntf = isLink;
+            IsSkillIntf = isSkill;
 
             #region Rule
             ulong rule = CurrentCard.ot;
@@ -829,6 +874,8 @@ namespace CardEditor.UserControls
             }
             txtrightscale.Text = ((CurrentCard.level >> 16) & 0xff).ToString();
             txtleftscale.Text = ((CurrentCard.level >> 24) & 0xff).ToString();
+
+            LoadPendulumLanguage();
 
             //if (isXyz && !isnonXyz)
             //{
@@ -1122,9 +1169,9 @@ namespace CardEditor.UserControls
             }
             return atk;
         }
-        private long GetDEF()
+        private long GetDEF(bool islinkFromForm)
         {
-            if (IsLinkIntf)
+            if (islinkFromForm)
             {
                 bool notHasATK = string.IsNullOrWhiteSpace(txtatk.Text);
                 long linkarrow = GetInfoService.GetLinkArrowValue(
@@ -1194,7 +1241,7 @@ namespace CardEditor.UserControls
              */
             #endregion
         }
-        private long? GetDEFNull()
+        private long? GetDEFNull(bool islinkFromForm)
         {
             long? defFromtext = null;
             bool notHasATK = string.IsNullOrWhiteSpace(txtatk.Text);
@@ -1210,7 +1257,7 @@ namespace CardEditor.UserControls
                 else defFromtext = -2;
             }
 
-            if (IsLinkIntf)
+            if (islinkFromForm)
             {
                 long linkarrow = GetInfoService.GetLinkArrowValue(
                     tbtntopleft.IsChecked ?? false,
@@ -1247,12 +1294,12 @@ namespace CardEditor.UserControls
              * Bit 31: Flag tồn tại def
              */
         }
-        private ulong GetLevel()
+        private ulong GetLevel(bool islinkFromForm)
         {
             ulong level;
             int cardlevel, linklevel, rightScale, leftScale;
 
-            if (IsLinkIntf)
+            if (islinkFromForm)
             {
                 if (string.IsNullOrWhiteSpace(txtlinkrating.Text) || !int.TryParse(txtlinkrating.Text, out cardlevel)) cardlevel = 0;
                 if (string.IsNullOrWhiteSpace(txtLvRk.Text) || !int.TryParse(txtLvRk.Text, out linklevel)) linklevel = 0;
@@ -1432,6 +1479,8 @@ namespace CardEditor.UserControls
         {
             try
             {
+                bool islinkFromForm = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Link);
+
                 return new CardEditor.Models.CardOmega
                 {
                     id = GetCardID(),
@@ -1460,8 +1509,8 @@ namespace CardEditor.UserControls
                     setcode = GetSetCode(),
                     type = GetCardType(),
                     atk = GetATK(),
-                    def = GetDEF(),
-                    level = GetLevel(),
+                    def = GetDEF(islinkFromForm),
+                    level = GetLevel(islinkFromForm),
                     race = GetCardRace(),
                     attribute = GetCardAttribue(),
                     category = GetCardCategoryOmega(),
@@ -1496,7 +1545,6 @@ namespace CardEditor.UserControls
                     CurrentCard = null;
                     ClearAll();
                 }
-                LoadPendulumLanguage();
             }
             catch (Exception ex)
             {
@@ -1551,6 +1599,10 @@ namespace CardEditor.UserControls
         {
             if (cmbcardtype.SelectedItems != null && cmbcardtype.SelectedItems.Count > 0) tbtype.Visibility = Visibility.Collapsed;
             else tbtype.Visibility = Visibility.Visible;
+
+            IsLinkIntf = false;
+            IsPendulumIntf = false;
+            IsSkillIntf = false;
 
             //if (!isChangedGrid)
             {
@@ -2377,6 +2429,7 @@ namespace CardEditor.UserControls
                 txtlinkrating.Text = string.Empty;
                 txtleftscale.Text = string.Empty;
                 txtrightscale.Text = string.Empty;
+                txtGenesysPoint.Text = string.Empty;
                 txtatk.Text = string.Empty;
                 txtdef.Text = string.Empty;
                 txtid.Text = string.Empty;
@@ -2405,6 +2458,11 @@ namespace CardEditor.UserControls
                 SetImageCardDefault();
 
                 SetArtWorkToNull();
+
+                IsPendulumIntf = false;
+                IsLinkIntf = false;
+                IsSkillIntf = false;
+
                 //SetArtWorkDefault();
                 //ShowArtWork();
             }
@@ -2584,76 +2642,76 @@ namespace CardEditor.UserControls
         #region Copy
         public async Task CopySelectedCard()
         {
-            if (datagrMain.SelectedItems == null)
+            var selectedItems = datagrMain.SelectedItems?.Cast<CardEditor.Models.CardOmega>().ToList();
+            if (selectedItems == null || !selectedItems.Any())
             {
                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
                     CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
                 return;
             }
 
+            SetClipboardResult result;
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var selectedItems = datagrMain.SelectedItems.Cast<CardEditor.Models.CardOmega>().ToList();
-                if (!selectedItems.Any())
-                {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-                    return;
-                }
-
-                SetClipboardResult result = await CopyCardsCommand(selectedItems);
-                if (result.Result)
-                {
-                    MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
-                }
+                result = await CopyCardsCommand(selectedItems);
             }
             catch (Exception ex)
             {
+                result = new SetClipboardResult { Result = false, Messenger = ex.Message };
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (result.Result)
+            {
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(),
+                    selectedItems.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
+            }
+            else
+            {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}",
+                    new[] { CMess.ok.ToText() });
             }
         }
         public async Task CopyAllFilterCard()
         {
-            if (CollectionViewCollection == null || !CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().Any())
+            var filteredItems = CollectionViewCollection?.Cast<CardEditor.Models.CardOmega>().ToList();
+            if (filteredItems == null || !filteredItems.Any())
             {
                 CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
                     CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
                 return;
             }
 
+            SetClipboardResult result;
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                var filteredItems = CollectionViewCollection.Cast<CardEditor.Models.CardOmega>().ToList();
-                if (!filteredItems.Any())
-                {
-                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                        CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-                    return;
-                }
-
-                SetClipboardResult result = await CopyCardsCommand(filteredItems);
-                if (result.Result)
-                {
-                    MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
-                }
+                result = await CopyCardsCommand(filteredItems);
             }
             catch (Exception ex)
             {
+                result = new SetClipboardResult { Result = false, Messenger = ex.Message };
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (result.Result)
+            {
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(),
+                    filteredItems.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
+            }
+            else
+            {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}",
+                    new[] { CMess.ok.ToText() });
             }
         }
         public async Task CopyAllCard()
@@ -2665,24 +2723,33 @@ namespace CardEditor.UserControls
                 return;
             }
 
+            var allItems = Cards.ToList();
+
+            SetClipboardResult result;
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                SetClipboardResult result = await CopyCardsCommand(Cards.ToList());
-                if (result.Result)
-                {
-                    MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), Cards.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
-                }
-                else
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}", new[] { CMess.ok.ToText() });
-                }
+                result = await CopyCardsCommand(allItems);
             }
             catch (Exception ex)
             {
+                result = new SetClipboardResult { Result = false, Messenger = ex.Message };
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (result.Result)
+            {
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(),
+                    allItems.Count.ToString(), CMess.Card.ToText(), CMess.Copy.ToText()));
+            }
+            else
+            {
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}",
+                    new[] { CMess.ok.ToText() });
             }
         }
 
@@ -2693,10 +2760,10 @@ namespace CardEditor.UserControls
                 SetClipboardResult result = new SetClipboardResult
                 {
                     Result = false,
-                    Messenger = CMess.noCardExport.ToText()
+                    Messenger = CMess.noCardCopy.ToText()
                 };
             }
-           return await Task.Run(() => CopyCardService.CopyCardOmegaToJSON(cardList, HasFlag));
+           return await CopyCardService.CopyCardOmegaToJSON(cardList, HasFlag);
         }
 
         private async Task CopyCardDescExecute()
@@ -3485,6 +3552,8 @@ namespace CardEditor.UserControls
             bool ignorePunctuation = (advancedSettings & 0x40) == 0x40;
             bool ignoreWhitespace = (advancedSettings & 0x80) == 0x80;
 
+            bool islinkFromForm = cmbcardtype.SelectedItems.Cast<TypeItem>().Any(item => item.TypeCode == (ulong)CardType.Link);
+
             var filterId = GetCardIDNull();
             var fillerName = GetCardname();
             var fillerDesc = GetCardDesc();
@@ -3509,7 +3578,7 @@ namespace CardEditor.UserControls
             var fillerSetCode = GetSetCode();
             var fillerType = GetCardType();
             var fillerATK = GetATKNull();
-            var fillerDEF = GetDEFNull();
+            var fillerDEF = GetDEFNull(islinkFromForm);
             var fillerLevel = GetLevelNull();
             var fillerright = GetRightScaleNull();
             var fillerleft = GetLeftScaleNull();
@@ -4550,6 +4619,38 @@ namespace CardEditor.UserControls
                         CMess.notImage.ToText(), new[] { CMess.ok.ToText() });
                 }
             }
+        }
+
+        private void ReloadImageConfig()
+        {
+            cmbFormatName.SelectedIndex = ConfigViewModel.Instance.imageSetting.FormatName;
+            cmbFormatEffect.SelectedIndex = ConfigViewModel.Instance.imageSetting.FormatEffect;
+            txtimgWidth.Text = ConfigViewModel.Instance.imageSize.WidthString;
+            txtimgHeight.Text = ConfigViewModel.Instance.imageSize.HeightString;
+
+            txtAWFullOpaqueY.Text = ConfigViewModel.Instance.imageSetting.YAWFullOpaqueString;
+            txtAWFullOpaqueHeight.Text = ConfigViewModel.Instance.imageSetting.HeightFullOpaqueString;
+            txtAWFullTransparentY.Text = ConfigViewModel.Instance.imageSetting.YAWFullTransString;
+            txtAWFullTransparentHeight.Text = ConfigViewModel.Instance.imageSetting.HeightFullTransString;
+        }
+        private void SaveImageConfig()
+        {
+            ConfigViewModel.Instance.imageSetting.FormatName = cmbFormatName.SelectedIndex;
+            ConfigViewModel.Instance.imageSetting.FormatEffect = cmbFormatEffect.SelectedIndex;
+            ConfigViewModel.Instance.imageSize.WidthString = txtimgWidth.Text;
+            ConfigViewModel.Instance.imageSize.HeightString = txtimgHeight.Text;
+
+            ConfigViewModel.Instance.imageSetting.YAWFullOpaqueString = txtAWFullOpaqueY.Text;
+            ConfigViewModel.Instance.imageSetting.HeightFullOpaqueString = txtAWFullOpaqueHeight.Text;
+            ConfigViewModel.Instance.imageSetting.YAWFullTransString = txtAWFullTransparentY.Text;
+            ConfigViewModel.Instance.imageSetting.HeightFullTransString = txtAWFullTransparentHeight.Text;
+
+            var (result, message) = ConfigViewModel.Instance.SaveSingleSettingFile("ImageSetting", ConfigViewModel.Instance.imageSetting);
+            if (result) CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                string.Format(CMess.TwoPlaceholderSuccess.ToText(), CMess.Save.ToText(), CMess.Setting.ToText()), new[] { CMess.ok.ToText() });
+            else CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Save.ToText(), CMess.Setting.ToText())} {message}",
+                new[] { CMess.ok.ToText() });
         }
         #endregion
 

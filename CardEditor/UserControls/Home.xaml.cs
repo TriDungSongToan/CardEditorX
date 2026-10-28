@@ -7,8 +7,8 @@ using System.Windows.Threading;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Models;
 using CardEditor.Commands;
 using CardEditor.Services;
@@ -24,7 +24,7 @@ namespace CardEditor.UserControls
     public partial class Home : UserControl, INotifyPropertyChanged
     {
         #region Variable
-        private CancellationTokenSource? _resizeCts;
+        private CancellationTokenSource _resizeCts;
         #endregion
 
         #region Property
@@ -73,8 +73,8 @@ namespace CardEditor.UserControls
             InitializeComponent();
 
             this.DataContext = this;
-            GridRoot.AddHandler(UIElement.MouseWheelEvent,
-                new MouseWheelEventHandler(GridRoot_MouseWheel), true);
+            GridTop.AddHandler(UIElement.MouseWheelEvent,
+                new MouseWheelEventHandler(GridTop_MouseWheel), true);
         }
         public Home(IMainWindowService service) : this()
         {
@@ -89,7 +89,8 @@ namespace CardEditor.UserControls
         }
         private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            
+            _resizeCts?.Cancel();
+            _resizeCts = null;
         }
         public void LoadConfig()
         {
@@ -107,7 +108,7 @@ namespace CardEditor.UserControls
         private void UpdateGridRowHeights()
         {
             double gridRootHeight = GridRoot.ActualHeight;
-            if (gridRootHeight <= 0) return; // phòng trường hợp control chưa có kích thước
+            if (gridRootHeight <= 0) return;
 
             bool hasDataSource =
                 !string.IsNullOrWhiteSpace(ConfigViewModel.Instance.userSetting.DataSource) &&
@@ -121,42 +122,9 @@ namespace CardEditor.UserControls
             else
             {
                 Welcome = "Welcome to";
-                GridTopRow.Height = new GridLength(440, GridUnitType.Pixel);
+                GridTopRow.Height = new GridLength(420, GridUnitType.Pixel);
             }
             GridRoot.UpdateLayout();
-
-
-
-            //const double middleRowHeight = 15; // đúng bằng RowDefinition thứ 2 trong XAML
-            //double availableHeight = Math.Max(0, gridRootHeight - middleRowHeight);
-
-
-
-            //double topRatio, bottomRatio;
-            //if (hasDataSource)
-            //{
-            //    Welcome = "Welcome back to";
-
-            //    topRatio = 3.0;
-            //    bottomRatio = 1.0;
-            //}
-            //else
-            //{
-            //    Welcome = "Welcome to";
-
-            //    topRatio = 1.5;
-            //    bottomRatio = 1.0;
-            //}
-
-            //double rawTopHeight = availableHeight * (topRatio / (topRatio + bottomRatio));
-
-            //// Làm tròn về bội số của 20
-            //double roundedTopHeight = Math.Round(rawTopHeight / 20.0) * 20.0;
-
-            //GridTopRow.Height = new GridLength(roundedTopHeight, GridUnitType.Pixel);
-            //GridBottomRow.Height = new GridLength(bottomRatio, GridUnitType.Star);
-
-            //GridRoot.UpdateLayout();
         }
         private async Task UpdateGridTopVisibilityAsync(CancellationToken token)
         {
@@ -169,7 +137,7 @@ namespace CardEditor.UserControls
                 double height = GridTop.ActualHeight;
 
                 GrGetStarted.Visibility =
-                    height > 380 ? Visibility.Visible : Visibility.Collapsed;
+                    height > 360 ? Visibility.Visible : Visibility.Collapsed;
 
                 GrWelcome.Visibility =
                     height > 240 ? Visibility.Visible : Visibility.Collapsed;
@@ -182,26 +150,20 @@ namespace CardEditor.UserControls
             }
             catch (OperationCanceledException)
             {
-                // Ignore: một lần resize mới đã cancel lần trước.
+                ///
             }
         }
-
-        private void GridRoot_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void GridTop_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            Debug.WriteLine($"Grid Top Height Before: {GridTopRow.ActualHeight}");
-
-            // Nếu nguồn phát sinh từ 1 ScrollViewer mà nó còn "room" để cuộn theo hướng đó
-            // thì để nó tự xử lý, GridRoot không can thiệp
             if (CanInnerControlScroll(e.OriginalSource as DependencyObject, e.Delta))
                 return;
 
-            double current = GridTopRow.Height.Value;
+            double current = GridTopRow.ActualHeight;
             double next = current + (e.Delta > 0 ? 20 : -20);
-            next = Math.Max(0, Math.Min(440, next));
 
-            GridTopRow.Height = new GridLength(next);
+            next = Math.Max(10, Math.Min(420, next));
+            GridTopRow.Height = new GridLength(next, GridUnitType.Pixel);
 
-            Debug.WriteLine($"Grid Top Height After: {GridTopRow.ActualHeight}");
             e.Handled = true;
         }
         private bool CanInnerControlScroll(DependencyObject source, int delta)
@@ -244,14 +206,47 @@ namespace CardEditor.UserControls
         #endregion
 
         #region Event
+        private void FeatureCard_ItemOpened(object sender, RecentItem item)
+        {
+            switch (item.FileType)
+            {
+                case RecentFileType.Archive: MainWindowService.OpenArchiveCommand(item.Url); break;
+                case RecentFileType.Database: MainWindowService.OpenDatabaseCommand(item.Url); break;
+                case RecentFileType.Script: MainWindowService.OpenScriptCommand(item.Url); break;
+                case RecentFileType.Deck: MainWindowService.OpenDeckCommand(item.Url); break;
+                case RecentFileType.BanList: MainWindowService.OpenBanListCommand(item.Url); break;
+                default: return; break;
+            }
+        }
+        private void FeatureCard_CardTypeSelected(object sender, CardEditor.Enums.RecentFileType e)
+        {
+            switch (e)
+            {
+                case RecentFileType.Archive: MainWindowService.OpenArchive(); break;
+                case RecentFileType.Database: MainWindowService.OpenDataEditor(); break;
+                case RecentFileType.Script: MainWindowService.OpenCodeEditor(); break;
+                case RecentFileType.Deck: MainWindowService.OpenDeckEditor(); break;
+                case RecentFileType.BanList: MainWindowService.OpenBanListEditor(); break;
+                default: return; break;
+            }
+        }
         private async void GridTop_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             _resizeCts?.Cancel();
-            _resizeCts?.Dispose();
+            var cts = new CancellationTokenSource();
+            _resizeCts = cts;
 
-            _resizeCts = new CancellationTokenSource();
+            try
+            {
+                await UpdateGridTopVisibilityAsync(cts.Token);
+            }
+            finally
+            {
+                if (ReferenceEquals(_resizeCts, cts))
+                    _resizeCts = null;
 
-            _ = UpdateGridTopVisibilityAsync(_resizeCts.Token);
+                cts.Dispose();
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -260,5 +255,6 @@ namespace CardEditor.UserControls
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
+
     }
 }

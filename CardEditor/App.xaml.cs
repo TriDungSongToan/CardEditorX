@@ -33,33 +33,46 @@ namespace CardEditor
         #region Startup
         protected override async void OnStartup(StartupEventArgs e)
         {
-            base.OnStartup(e);
+            var originalShutdownMode = ShutdownMode;
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            UpgradeSettingsIfNeeded();
-            EnsureDefaultPassword();
-
-            _instanceManager = new SingleInstanceManager();
-            _instanceManager.FileReceived += OnFileReceivedFromAnotherInstance;
-            bool isFirstInstance = _instanceManager.TryStart(e.Args);
-            if (!isFirstInstance)
+            try
             {
-                // Đã forward file (nếu có) sang instance đang chạy, thoát ngay.
-                Environment.Exit(0);
-                return;
+                base.OnStartup(e);
+
+                UpgradeSettingsIfNeeded();
+                EnsureDefaultPassword();
+
+                _instanceManager = new SingleInstanceManager();
+                _instanceManager.FileReceived += OnFileReceivedFromAnotherInstance;
+                bool isFirstInstance = _instanceManager.TryStart(e.Args);
+                if (!isFirstInstance)
+                {
+                    // Đã forward file (nếu có) sang instance đang chạy, thoát ngay.
+                    Environment.Exit(0);
+                    return;
+                }
+
+                var result = await CheckDataFolder();
+                await LoadSettings();
+
+                // LanguageManager.Initialize();
+
+                MainWindow mainWindow = e.Args.Length > 0 ? new MainWindow(e.Args) : new MainWindow();
+                RegisterWindow(mainWindow);
+                mainWindow.Show();
+                Application.Current.MainWindow = mainWindow;
+
+                ShutdownMode = originalShutdownMode;
+
+                UpdateApplicationIcon();
+                if (result) ShowCmdNotification();
             }
-
-            var result = await CheckDataFolder();
-            await LoadSettings();
-
-            // LanguageManager.Initialize();
-
-            MainWindow mainWindow = e.Args.Length > 0 ? new MainWindow(e.Args) : new MainWindow();
-            RegisterWindow(mainWindow);
-            mainWindow.Show();
-            Application.Current.MainWindow = mainWindow;
-
-            UpdateApplicationIcon();
-            if (result) ShowCmdNotification();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Startup error: {ex.Message}", "Error");
+                Shutdown();
+            }
         }
         #endregion
 
@@ -193,9 +206,9 @@ namespace CardEditor
             #if DEBUG
             LanguageManager.ValidateLocalizationEnum();
             #endif
-            string currentLanguage = ConfigViewModel.Instance.userSetting.Language;
+            //string currentLanguage = ConfigViewModel.Instance.userSetting.Language;
             LanguageManager.Initialize();
-            LanguageManager.Instance.LoadLanguage(currentLanguage);
+            //LanguageManager.Instance.LoadLanguage(currentLanguage);
         }
 
         private async Task<bool> CheckDataFolder()

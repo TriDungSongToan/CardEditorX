@@ -390,27 +390,28 @@
 
                     <materialDesign:DrawerHost.RightDrawerContent>
                         <Grid Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                              HorizontalAlignment="Stretch"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                               Width="{Binding ActualWidth, ElementName=RareManager}" >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*" />
                                 <RowDefinition Height="auto" />
                                 <RowDefinition Height="auto" />
                             </Grid.RowDefinitions>
-
-                            <Border Grid.Row="0" Margin="0" Padding="0" BorderThickness="1"
-                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="415" Width="742"
+                            
+                            <Border Grid.Row="0" CornerRadius="7" Margin="3,0,3,0" Padding="0" BorderThickness="1"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                     Panel.ZIndex="0" >
-                                <DataGrid x:Name="datagrRareList" BorderThickness="1" Margin="0" Padding="0"
+                                <DataGrid x:Name="datagrRareList" BorderThickness="1" Margin="1" Padding="0"
                                           Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                          IsReadOnly="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"
-                                          CanUserDeleteRows="False" CanUserResizeColumns="True" CanUserSortColumns="False"
-                                          CanUserAddRows="False"
+                                          IsReadOnly="True" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                          CanUserDeleteRows="False" CanUserAddRows="False"
+                                          CanUserResizeColumns="True" CanUserSortColumns="False"
                                           CanUserReorderColumns="True" CanUserResizeRows="True"
                                           ItemsSource="{Binding RareItemsView, Mode=OneWay}"
                                           SelectedItem="{Binding SelectedRareItem, Mode=TwoWay}"
@@ -436,12 +437,13 @@
                                                                            ElementStyle="{StaticResource LeftDataGridCellElementStyle}"
                                                                            CellStyle="{StaticResource CellWithBorderStyle}" />
                                         <materialDesign:DataGridTextColumn Header="{Lag:Localize RarityCode}" Binding="{Binding DisplayCode}"
-                                                                           Width="140" MinWidth="120" MaxWidth="160"
+                                                                           Width="120" MinWidth="110" MaxWidth="140"
                                                                            EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
                                                                            HeaderStyle="{StaticResource CustomDataGridHeaderStyle}"
                                                                            ElementStyle="{StaticResource LeftDataGridCellElementStyle}"
                                                                            CellStyle="{StaticResource CellWithBorderStyle}" />
                                         <materialDesign:DataGridTextColumn Header="{Lag:Localize RarityImgPath}" Binding="{Binding ImagePath}"
+                                                                           Width="*"
                                                                            EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}"
                                                                            HeaderStyle="{StaticResource CustomDataGridHeaderStyle}"
                                                                            ElementStyle="{StaticResource LeftDataGridCellElementStyle}"
@@ -456,7 +458,7 @@
                                 </DataGrid>
                             </Border>
 
-                            <Grid Grid.Row="1" Margin="8,5,8,5" >
+                            <Grid Grid.Row="1" Margin="3,5,3,5" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto" />
                                     <ColumnDefinition Width="3" />
@@ -468,7 +470,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Grid Grid.Column="0" >
-                                    <TextBox x:Name="txtIdRare" Height="48" Width="80" Padding="8,10,3,2" Margin="0"
+                                    <TextBox x:Name="txtIdRare" Height="48" Width="70" Padding="8,10,3,2" Margin="0"
                                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -509,7 +511,7 @@
                                 </Grid>
 
                                 <Grid Grid.Column="4" >
-                                    <TextBox x:Name="txtRareCode" Height="48" Width="80" Padding="8,10,3,2" Margin="0"
+                                    <TextBox x:Name="txtRareCode" Height="48" Width="70" Padding="8,10,3,2" Margin="0"
                                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left" BorderThickness="0.7"
                                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -577,7 +579,7 @@
                                 </Grid>
                             </Grid>
 
-                            <Grid Grid.Row="2" Margin="8,0,8,5" >
+                            <Grid Grid.Row="2" Margin="5,0,5,3" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="5" />

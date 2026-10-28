@@ -71,6 +71,7 @@
 0x115	Remove
 0x116	RollBack
 0x117	Preview
+0x118	Default
 
 0x121	Read
 0x122	Write
@@ -102,9 +103,9 @@
 0x206	Browser Path
 
 0x211	Display Settings
-0x212	Background Image
-0x213	Use Image as Background App
-0x214	Use Image as CodeEditor BG
+0x212	Background Image Path
+0x213	Use Image Background
+0x214	Use Image CodeEditor
 0x215	Background
 0x216	Foreground
 0x217	Theme

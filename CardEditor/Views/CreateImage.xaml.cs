@@ -252,7 +252,7 @@ namespace CardEditor
         {
             try
             {
-                Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+                Mouse.OverrideCursor = Cursors.Wait;
                 await Save();
                 await Task.Delay(100);
                 var (checkResult, checkMessage) = await ImageValidate.CheckValidate();
@@ -266,6 +266,7 @@ namespace CardEditor
             }
             catch (Exception ex)
             {
+                Mouse.OverrideCursor = null;
                 CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                     $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Create.ToText(), CMess.Image.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
             }

@@ -1410,6 +1410,7 @@
                                                 <RowDefinition Height="auto" />
                                                 <RowDefinition Height="auto" />
                                                 <RowDefinition Height="auto" />
+                                                <RowDefinition Height="auto" />
                                             </Grid.RowDefinitions>
 
                                             <Button x:Name="btnCloseImageSetting" Grid.Row="0" Margin="0,2,5,0" Padding="0"
@@ -1456,7 +1457,7 @@
                                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                          SelectedIndex="{Binding imageSetting.FormatName, Source={x:Static ViewModels:ConfigViewModel.Instance}}"
+                                                          SelectedIndex="{Binding imageSetting.FormatName, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                                           VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
                                                           materialDesign:ColorZoneAssist.Mode="Custom"
@@ -1477,7 +1478,7 @@
                                                           Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                           FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                           FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                          SelectedIndex="{Binding imageSetting.FormatEffect, Source={x:Static ViewModels:ConfigViewModel.Instance}}"
+                                                          SelectedIndex="{Binding imageSetting.FormatEffect, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                                           VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
                                                           materialDesign:ColorZoneAssist.Mode="Custom"
@@ -1506,7 +1507,7 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBox x:Name="txtimgWidth" Grid.Column="0" Height="auto" Padding="10,13,3,0" BorderThickness="0.7"
-                                                         Text="{Binding imageSize.WidthString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Text="{Binding imageSize.WidthString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1529,7 +1530,7 @@
                                                          materialDesign:ThemeAssist.Theme="Dark" />
 
                                                 <TextBox x:Name="txtimgHeight" Grid.Column="2" Height="auto" Padding="10,13,3,0" BorderThickness="0.7"
-                                                         Text="{Binding imageSize.HeightString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Text="{Binding imageSize.HeightString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                          BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -1592,7 +1593,7 @@
                                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         Text="{Binding imageSetting.YAWFullOpaqueString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Text="{Binding imageSetting.YAWFullOpaqueString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                          IsEnabled="{Binding imageSetting.FullArt, Source={x:Static ViewModels:ConfigViewModel.Instance}}"
                                                          Behaviors:NumericOnlyBehavior.Enable="True"
                                                          materialDesign:HintAssist.Hint="Y"
@@ -1613,7 +1614,7 @@
                                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         Text="{Binding imageSetting.HeightFullOpaqueString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Text="{Binding imageSetting.HeightFullOpaqueString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                          IsEnabled="{Binding imageSetting.FullArt, Source={x:Static ViewModels:ConfigViewModel.Instance}}"
                                                          Behaviors:NumericOnlyBehavior.Enable="True"
                                                          materialDesign:HintAssist.Hint="{Lag:Localize cardHeight}"
@@ -1634,7 +1635,7 @@
                                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         Text="{Binding imageSetting.YAWFullTransString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Text="{Binding imageSetting.YAWFullTransString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                          IsEnabled="{Binding imageSetting.FullArt, Source={x:Static ViewModels:ConfigViewModel.Instance}}"
                                                          Behaviors:NumericOnlyBehavior.Enable="True"
                                                          materialDesign:HintAssist.Hint="Y"
@@ -1655,7 +1656,7 @@
                                                          FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                          Style="{StaticResource CustomMaterialDesignFilledTextBox}"
-                                                         Text="{Binding imageSetting.HeightFullTransString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Text="{Binding imageSetting.HeightFullTransString, Source={x:Static ViewModels:ConfigViewModel.Instance}, Mode=OneWay}"
                                                          IsEnabled="{Binding imageSetting.FullArt, Source={x:Static ViewModels:ConfigViewModel.Instance}}"
                                                          Behaviors:NumericOnlyBehavior.Enable="True"
                                                          materialDesign:HintAssist.Hint="{Lag:Localize cardHeight}"
@@ -1666,6 +1667,47 @@
                                                          materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
                                                          materialDesign:ThemeAssist.Theme="Dark" />
                                             </Grid>
+
+                                            <Grid Grid.Row="6" Margin="0,8,0,0" HorizontalAlignment="Center" >
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="5" />
+                                                    <ColumnDefinition Width="auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Button Grid.Column="0" Width="auto" Height="30"
+                                                        BorderThickness="0" Padding="10,5,10,5"
+                                                        BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                        materialDesign:ButtonAssist.CornerRadius="5"
+                                                        Style="{StaticResource ButtonDanger}"
+                                                        Command="{Binding ReloadImageConfigCommand}" >
+                                                    <Viewbox Stretch="Uniform" StretchDirection="Both" Width="auto" >
+                                                        <TextBlock Text="{Lag:Localize tlReload}" FontSize="15"
+                                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                    </Viewbox>
+                                                </Button>
+
+                                                <Button Grid.Column="4" Width="auto" Height="30"
+                                                        BorderThickness="0" Padding="10,5,10,5"
+                                                        BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                        FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                        materialDesign:ButtonAssist.CornerRadius="5"
+                                                        Style="{StaticResource ButtonSuccess}"
+                                                        Command="{Binding SaveImageConfigCommand}" >
+                                                    <Viewbox Stretch="Uniform" StretchDirection="Both" Width="auto" >
+                                                        <TextBlock Text="{Lag:Localize Save}" FontSize="15"
+                                                                   FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                    </Viewbox>
+                                                </Button>
+                                            </Grid>
+
                                         </Grid>
                                     </Border>
                                 </Popup>

@@ -50,9 +50,11 @@ namespace CardEditor.ViewModels
                 {
                     _genesysCards = value;
                     OnPropertyChanged();
+                    FilterCardCommand?.RaiseCanExecuteChanged();
                     SortCardCommand?.RaiseCanExecuteChanged();
                     SaveAllCommand?.RaiseCanExecuteChanged();
                     DeleteAllCardCommand?.RaiseCanExecuteChanged();
+
                 }
             }
         }
@@ -1399,6 +1401,7 @@ namespace CardEditor.ViewModels
         #region Event
         private void GenesysCards_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            FilterCardCommand?.RaiseCanExecuteChanged();
             SortCardCommand?.RaiseCanExecuteChanged();
             SaveAllCommand?.RaiseCanExecuteChanged();
             DeleteAllCardCommand?.RaiseCanExecuteChanged();

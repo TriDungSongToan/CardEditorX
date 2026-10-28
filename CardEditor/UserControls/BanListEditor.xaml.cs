@@ -1,29 +1,28 @@
 ﻿using System;
 using System.IO;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
-using System.Data.SQLite;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Threading.Tasks;
-using System.ComponentModel;
+using System.Windows.Controls;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using MaterialDesignThemes.Wpf;
 using CardEditor.Enums;
+using CardEditor.Models;
 using CardEditor.Helpers;
 using CardEditor.Services;
 using CardEditor.Services.SaveData;
-using CardEditor.Collections;
-using CardEditor.Models;
+using CardEditor.Services.ClipboardData;
 using CardEditor.ViewModels;
+using CardEditor.Collections;
 using CardEditor.Localization;
 using CMess = CardEditor.Localization.Language;
 using RelayCommand = CardEditor.Commands.RelayCommand;
@@ -387,15 +386,6 @@ namespace CardEditor.UserControls
             OpenKonamiDBCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenKonamiDB(), _ => SelectedCardExist());
             OpenYugipediaCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenYugipedia(), _ => SelectedCardExist());
             OpenYGOResourcesCommand = new CardEditor.Commands.RelayCommand(async _ => await OpenYGOResources(), _ => SelectedCardExist());
-        }
-        private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
-        private static JsonSerializerOptions CreateSerializerOptions()
-        {
-            return new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
         }
         #endregion
 
@@ -1319,6 +1309,7 @@ namespace CardEditor.UserControls
             LimitedCards.AddRange(LimitedList);
             SemiLimitedCards.AddRange(SemiLimitedList);
             UnLimitedCards.AddRange(UnLimitedList);
+
             Mouse.OverrideCursor = null;
         }
 
@@ -1538,99 +1529,134 @@ namespace CardEditor.UserControls
         #region Copy
         public async Task CopySelectedCard()
         {
-            if (SelectedCards.Any())
-            {
-                try
-                {
-                    await CopyCards(SelectedCards);
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task CopyAllFilterCard()
-        {
-            var allFilteredCards = new List<CardEditor.Models.CardBanList>();
-            allFilteredCards.AddRange(ForbiddenCardsView.Cast<CardBanList>());
-            allFilteredCards.AddRange(LimitedCardsView.Cast<CardBanList>());
-            allFilteredCards.AddRange(SemiLimitedCardsView.Cast<CardBanList>());
-            allFilteredCards.AddRange(UnLimitedCardsView.Cast<CardBanList>());
+            SetClipboardResult result;
 
-            if (allFilteredCards.Any())
-            {
-                try
-                {
-                    await CopyCards(allFilteredCards);
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-            }
-        }
-        public async Task CopyAllCard()
-        {
-            var allCards = new List<CardEditor.Models.CardBanList>();
-            allCards.AddRange(ForbiddenCards);
-            allCards.AddRange(LimitedCards);
-            allCards.AddRange(SemiLimitedCards);
-            allCards.AddRange(UnLimitedCards);
-
-
-            if (allCards != null && allCards.Any())
-            {
-                try
-                {
-                    await CopyCards(allCards);
-                }
-                catch (Exception ex)
-                {
-                    CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                        $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
-                }
-            }
-            else
-            {
-                CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
-                    CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
-            }
-        }
-        private async Task CopyCards(IEnumerable<CardEditor.Models.CardBanList> SelectedItems)
-        {
-            Mouse.OverrideCursor = Cursors.Wait;
             try
             {
-                string json = await Task.Run(() =>
-                    JsonSerializer.Serialize(SelectedItems, SerializerOptions)
-                );
+                Mouse.OverrideCursor = Cursors.Wait;
 
-                Clipboard.SetText(json);
-
-                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedItems.Count(), CMess.Card.ToText(), CMess.Copy.ToText()));
+                if (SelectedCards == null || !SelectedCards.Any())
+                {
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                    return;
+                }
+                result = await CopyCards(SelectedCards);
             }
             catch (Exception ex)
             {
-                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
-                    $"{string.Format(CMess.PlaceholderError.ToText(), CMess.Copy.ToText())} {ex.Message}", new[] { CMess.ok.ToText() });
+                result = new SetClipboardResult { Result = false, Messenger = ex.Message };
             }
             finally
             {
                 Mouse.OverrideCursor = null;
             }
+
+            if (result.Result)
+            {
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), SelectedCards.Count(), CMess.Card.ToText(), CMess.Copy.ToText()));
+            }
+            else
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}",
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+        public async Task CopyAllFilterCard()
+        {
+            SetClipboardResult result;
+            var allFilteredCards = new List<CardEditor.Models.CardBanList>();
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                allFilteredCards.AddRange(ForbiddenCardsView.Cast<CardBanList>());
+                allFilteredCards.AddRange(LimitedCardsView.Cast<CardBanList>());
+                allFilteredCards.AddRange(SemiLimitedCardsView.Cast<CardBanList>());
+                allFilteredCards.AddRange(UnLimitedCardsView.Cast<CardBanList>());
+
+                if (allFilteredCards == null || !allFilteredCards.Any())
+                {
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                    return;
+                }
+                result = await CopyCards(allFilteredCards);
+            }
+            catch (Exception ex)
+            {
+                result = new SetClipboardResult { Result = false, Messenger = ex.Message };
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (result.Result)
+            {
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), allFilteredCards.Count(), CMess.Card.ToText(), CMess.Copy.ToText()));
+            }
+            else
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}",
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+        public async Task CopyAllCard()
+        {
+            SetClipboardResult result;
+            var allCards = new List<CardEditor.Models.CardBanList>();
+
+            try
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                allCards.AddRange(ForbiddenCards);
+                allCards.AddRange(LimitedCards);
+                allCards.AddRange(SemiLimitedCards);
+                allCards.AddRange(UnLimitedCards);
+
+                if (allCards == null || !allCards.Any())
+                {
+                    CMSG.Show(CMess.notifi.ToText(), CMSG.MessageBoxIconType.Notification,
+                        CMess.noCardCopy.ToText(), new[] { CMess.ok.ToText() });
+                    return;
+                }
+                result = await CopyCards(allCards);
+            }
+            catch (Exception ex)
+            {
+                result = new SetClipboardResult { Result = false, Messenger = ex.Message };
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (result.Result)
+            {
+                MessageNotifi.Enqueue(string.Format(CMess.ThreePlaceholderSuccess.ToText(), allCards.Count(), CMess.Card.ToText(), CMess.Copy.ToText()));
+            }
+            else
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholderError.ToText(), CMess.Copy.ToText(), CMess.Card.ToText())} {result.Messenger}",
+                    new[] { CMess.ok.ToText() });
+            }
+        }
+        private async Task<SetClipboardResult> CopyCards(List<CardEditor.Models.CardBanList> SelectedItems)
+        {
+            if (SelectedItems == null || !SelectedItems.Any())
+            {
+                return new SetClipboardResult
+                {
+                    Result = false,
+                    Messenger = CMess.noCardCopy.ToText()
+                };
+            }
+
+            return await CopyCardService.CopyCardBanlistToJSON(SelectedItems);
         }
         #endregion
 

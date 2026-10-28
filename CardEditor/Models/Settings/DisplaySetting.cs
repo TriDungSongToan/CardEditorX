@@ -73,7 +73,7 @@ namespace CardEditor.Models.Settings
     }
     public class DisplaySetting : INotifyPropertyChanged
     {
-        private string _backgroundImagePath = string.Empty;
+        private string _backgroundImagePath = "DefaultBg.png";
         public string BackgroundImagePath
         {
             get => _backgroundImagePath;
@@ -86,7 +86,7 @@ namespace CardEditor.Models.Settings
                 }
             }
         }
-        private bool _useBackgroundImage = false;
+        private bool _useBackgroundImage = true;
         public bool UseBackgroundImage
         {
             get => _useBackgroundImage;

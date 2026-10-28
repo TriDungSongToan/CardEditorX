@@ -377,20 +377,14 @@ namespace CardEditor.ImageGene
         TCG,
     }
 
-    public readonly record struct TextLayoutOption(
-        TextFormat Format,
-        bool IsNormal,
-        bool UseItalic,
-        int DefaultSizeLevel,
-        int TargetCondenseThreshold,
-        int MinCondenseThreshold)
+    public readonly record struct TextLayoutOption(TextFormat Format, bool IsNormal, bool UseItalic,
+        int DefaultSizeLevel, int TargetCondenseThreshold, int MinCondenseThreshold)
     {
         public static TextLayoutOption Default(TextFormat format, bool isNormal, bool useItalic = false)
             => new(format, isNormal, useItalic, DefaultSizeLevel: 0, TargetCondenseThreshold: 600, MinCondenseThreshold: 200);
     }
 
-    public sealed record EffectFontProfile(
-        IReadOnlyList<EffectFontLevel> FontLevels,
+    public sealed record EffectFontProfile( IReadOnlyList<EffectFontLevel> FontLevels,
         Func<EffectFontLevel, bool, SKPaint> CreatePaint);
 
     public readonly record struct EffectFontLevel(float FontSize, float LineHeight, int LineCount);
@@ -402,27 +396,13 @@ namespace CardEditor.ImageGene
 
     public readonly record struct EffectLineLayout(string Content, float XRatio, bool IsLastInParagraph = true);
 
-    public sealed record EffectLayoutResult(
-        IReadOnlyList<EffectLineLayout> Lines,
-        float LineHeight,
-        int TotalLineCount,
-        float XRatio,
-        int FontLevelIndex,
-        int EffectiveMedian,
-        Func<SKPaint> PaintFactory,
-        TextFormat Format,
-        bool EnableJustify)
+    public sealed record EffectLayoutResult(IReadOnlyList<EffectLineLayout> Lines, float LineHeight, int TotalLineCount,
+        float XRatio, int FontLevelIndex, int EffectiveMedian, Func<SKPaint> PaintFactory, TextFormat Format, bool EnableJustify)
     {
-        public static EffectLayoutResult Empty => new(
-            Array.Empty<EffectLineLayout>(),
-            0,
-            0,
-            1,
-            0,
-            TextLayoutEngine.MaxCondenseThreshold,
-            () => new SKPaint(),
-            TextFormat.TCG,
-            EnableJustify: true);
+        public static EffectLayoutResult Empty =>
+            new(Array.Empty<EffectLineLayout>(), 0, 0, 1, 0,
+                TextLayoutEngine.MaxCondenseThreshold, () => new SKPaint(),
+                TextFormat.TCG, EnableJustify: true);
     }
 }
 #pragma warning restore CS0612

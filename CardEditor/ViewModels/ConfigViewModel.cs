@@ -9,6 +9,8 @@ using CardEditor.Models;
 using CardEditor.Models.Settings;
 using CardEditor.Services;
 using CardEditor.Services.CreateFile;
+using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 using CardAppContext = CardEditor.Models.AppContext;
 
 namespace CardEditor.ViewModels
@@ -185,12 +187,22 @@ namespace CardEditor.ViewModels
         }
         private void SetArtWorkFullSquareRect()
         {
-            var opaqueRect = new SKRect(left: 46, top: imageSetting.YAWFullOpaque,
-                right: 46 + 1296, bottom: imageSetting.YAWFullOpaque + imageSetting.HeightFullOpaque);
-            var transparentRect = new SKRect(left: 0, top: imageSetting.YAWFullTrans,
-                right: 1388, bottom: imageSetting.YAWFullTrans + imageSetting.HeightFullTrans);
-            GeneraImageViewModel.Instance.CurrentImageInfo.AWFullSquareOpaqueRect = opaqueRect;
-            GeneraImageViewModel.Instance.CurrentImageInfo.AWFullSquareTransparenRect = transparentRect;
+            try
+            {
+                var opaqueRect = new SKRect(left: 46, top: imageSetting.YAWFullOpaque,
+                    right: 46 + 1296, bottom: imageSetting.YAWFullOpaque + imageSetting.HeightFullOpaque);
+                var transparentRect = new SKRect(left: 0, top: imageSetting.YAWFullTrans,
+                    right: 1388, bottom: imageSetting.YAWFullTrans + imageSetting.HeightFullTrans);
+
+                GeneraImageViewModel.Instance.CurrentImageInfo.AWFullSquareOpaqueRect = opaqueRect;
+                GeneraImageViewModel.Instance.CurrentImageInfo.AWFullSquareTransparenRect = transparentRect;
+            }
+            catch (Exception ex)
+            {
+                CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
+                    $"{string.Format(CMess.TwoPlaceholder.ToText(), CMess.Image.ToText(), CMess.Config.ToText())} {ex.Message}",
+                    new[] { CMess.ok.ToText() });
+            }
         }
         private void ImageSize_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -249,18 +261,32 @@ namespace CardEditor.ViewModels
         }
         public T LoadSetting<T>(string key, string _connectionString) where T : new()
         {
-            using var connection = new SQLiteConnection(_connectionString);
-            connection.Open();
+            try
+            {
+                using var connection = new SQLiteConnection(_connectionString);
+                connection.Open();
 
-            string query = "SELECT Value FROM Settings WHERE Key = @key";
+                string query = "SELECT Value FROM Settings WHERE Key = @key";
 
-            using var command = new SQLiteCommand(query, connection);
-            command.Parameters.AddWithValue("@key", key);
+                using var command = new SQLiteCommand(query, connection);
+                command.Parameters.AddWithValue("@key", key);
 
-            var result = command.ExecuteScalar();
-            if (result == null) return new T(); // Trả về instance mới nếu chưa có
+                var result = command.ExecuteScalar();
 
-            return JsonSerializer.Deserialize<T>(result.ToString()) ?? new T();
+                // Không tồn tại Key hoặc Value là SQL NULL
+                if (result == null || result == DBNull.Value) return new T();
+
+                string json = result.ToString();
+                // Dữ liệu rỗng
+                if (string.IsNullOrWhiteSpace(json)) return new T();
+
+                // Deserialize thất bại sẽ chuyển xuống catch
+                return JsonSerializer.Deserialize<T>(json) ?? new T();
+            }
+            catch (Exception)
+            {
+                return new T();
+            }
         }
 
         public (bool, string) SaveSingleSettingFile<T>(string key, T settingObject)

@@ -31,17 +31,17 @@
                              FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              d:FlowDirection="LeftToRight" >
             
-            <Grid x:Name="GridRoot" Margin="20,0,20,20"
+            <Grid x:Name="GridRoot" Margin="20,0,20,10"
                   Background="Transparent" IsHitTestVisible="True" >
                 <Grid.RowDefinitions>
                     <RowDefinition x:Name="GridTopRow" />
-                    <RowDefinition Height="15" />
+                    <RowDefinition Height="5" />
                     <RowDefinition x:Name="GridBottomRow" />
                 </Grid.RowDefinitions>
 
                 <Grid x:Name="GridTop" Grid.Row="0" Background="Transparent"
                       SizeChanged="GridTop_SizeChanged" >
-                    <Border Margin="0,15,0,0" CornerRadius="50"
+                    <Border x:Name="BrIdentity" Margin="0,10,0,0" CornerRadius="50"
                             BorderBrush="#0535e2" BorderThickness="2"
                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -224,462 +224,95 @@
                     </Border>
                 </Grid>
 
-                <Grid Grid.Row="2" Background="Transparent" IsHitTestVisible="True" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Hidden">
+                    <Grid Background="Transparent" IsHitTestVisible="True" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="150" />
+                            <RowDefinition Height="5" />
+                            <RowDefinition Height="150" />
+                        </Grid.RowDefinitions>
 
-                    <!--Behaviors:GlowBorder.IsEnabled="True"
-                    Behaviors:GlowBorder.GlowColor="#3dbdfd"-->
+                        <Border Grid.Column="0" Grid.Row="0" CornerRadius="20"
+                                BorderBrush="#0535e2" BorderThickness="1"
+                                Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <UserControls:FeatureCard HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                      Icon="/Images/Menu/File/Open/Archive.png"
+                                                      ItemsSource="{Binding Archives , Source={x:Static ViewModels:OpenHistoryViewModel.Instance}}"
+                                                      FeatureType="Archive" FeatureName="{Lag:Localize CardArchive}" EmptyText="Empty"
+                                                      ItemOpened="FeatureCard_ItemOpened"
+                                                      CardTypeSelected="FeatureCard_CardTypeSelected" />
+                        </Border>
 
-                    <Border x:Name="BrDataEditor" Grid.Column="0" Margin="0" CornerRadius="50"
-                            BorderBrush="#0535e2" BorderThickness="1.5"
-                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
+                        <Border Grid.Column="2" Grid.Row="0" CornerRadius="20"
+                                BorderBrush="#0535e2" BorderThickness="1"
+                                Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <UserControls:FeatureCard HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                      Icon="/Images/Menu/Win/DataEditor.png"
+                                                      ItemsSource="{Binding Databases , Source={x:Static ViewModels:OpenHistoryViewModel.Instance}}"
+                                                      FeatureType="Database" FeatureName="{Lag:Localize CardDB}" EmptyText="Empty"
+                                                      ItemOpened="FeatureCard_ItemOpened"
+                                                      CardTypeSelected="FeatureCard_CardTypeSelected" />
+                        </Border>
 
-                            <Grid x:Name="GrDataEditor" Grid.Row="0" Cursor="Hand"
-                                  Height="{Binding ActualWidth, ElementName=BrDataEditor}" >
-                                <Image Grid.Row="0" Margin="0" Stretch="Uniform"
-                                       Width="120" Height="120"
-                                       Source="/Images/Menu/Win/DataEditor.png"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5" >
-                                    <Image.RenderTransform>
-                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                    </Image.RenderTransform>
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Opacity" Value="0.6"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrDataEditor}" Value="True">
-                                                    <Setter Property="Opacity" Value="1"/>
-                                                    <DataTrigger.EnterActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.EnterActions>
-                                                    <DataTrigger.ExitActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.ExitActions>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
-                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
-                                                  Anchor="Center" Spacing="1" Side="Inside"
-                                                  FitMode="SpacingThenFontSize"
-                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                                  RenderTransformOrigin="0.5,0.5"
-                                                  Text="DataEditor"
-                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
-                                    <Controls:ArcText.Style>
-                                        <Style TargetType="Controls:ArcText">
-                                            <Setter Property="Foreground"
-                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
-                                                    <Setter Property="Foreground" Value="#FFC107" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Controls:ArcText.Style>
-                                    <Controls:ArcText.RenderTransform>
-                                        <RotateTransform />
-                                    </Controls:ArcText.RenderTransform>
-                                    <Controls:ArcText.Triggers>
-                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Controls:ArcText.Triggers>
-                                </Controls:ArcText>
-                            </Grid>
-                        </Grid>
-                    </Border>
+                        <Border Grid.Column="4" Grid.Row="0" CornerRadius="20"
+                                BorderBrush="#0535e2" BorderThickness="1"
+                                Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <UserControls:FeatureCard HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                      Icon="/Images/Menu/Win/CodeEditor.png"
+                                                      ItemsSource="{Binding Scripts , Source={x:Static ViewModels:OpenHistoryViewModel.Instance}}"
+                                                      FeatureType="Script" FeatureName="{Lag:Localize CardScript}" EmptyText="Empty"
+                                                      ItemOpened="FeatureCard_ItemOpened"
+                                                      CardTypeSelected="FeatureCard_CardTypeSelected" />
+                        </Border>
 
-                    <Border x:Name="BrCodeEditor" Grid.Column="2" Margin="0" CornerRadius="50"
-                            BorderBrush="#0535e2" BorderThickness="1.5"
-                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
+                        <Border Grid.Column="0" Grid.Row="2" CornerRadius="20"
+                                BorderBrush="#0535e2" BorderThickness="1"
+                                Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <UserControls:FeatureCard HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                      Icon="/Images/Menu/Win/DeckEditor.png"
+                                                      ItemsSource="{Binding Decks , Source={x:Static ViewModels:OpenHistoryViewModel.Instance}}"
+                                                      FeatureType="Deck" FeatureName="{Lag:Localize Deck}" EmptyText="Empty"
+                                                      ItemOpened="FeatureCard_ItemOpened"
+                                                      CardTypeSelected="FeatureCard_CardTypeSelected" />
+                        </Border>
 
-                            <Grid x:Name="GrCodeEditor" Grid.Row="0" Cursor="Hand"
-                                  Height="{Binding ActualWidth, ElementName=BrCodeEditor}" >
-                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
-                                       Width="120" Height="120"
-                                       Source="/Images/Menu/Win/CodeEditor.png"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5">
-                                    <Image.RenderTransform>
-                                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                                    </Image.RenderTransform>
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Opacity" Value="0.6"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrCodeEditor}" Value="True">
-                                                    <Setter Property="Opacity" Value="1"/>
-                                                    <DataTrigger.EnterActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.EnterActions>
-                                                    <DataTrigger.ExitActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.ExitActions>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
-                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
-                                                  Anchor="Center" Spacing="1" Side="Inside"
-                                                  FitMode="SpacingThenFontSize"
-                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                                  RenderTransformOrigin="0.5,0.5"
-                                                  Text="CodeEditor"
-                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
-                                    <Controls:ArcText.Style>
-                                        <Style TargetType="Controls:ArcText">
-                                            <Setter Property="Foreground"
-                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
-                                                    <Setter Property="Foreground" Value="#FFC107" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Controls:ArcText.Style>
-                                    <Controls:ArcText.RenderTransform>
-                                        <RotateTransform />
-                                    </Controls:ArcText.RenderTransform>
-                                    <Controls:ArcText.Triggers>
-                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Controls:ArcText.Triggers>
-                                </Controls:ArcText>
-                            </Grid>
-                        </Grid>
-                    </Border>
+                        <Border Grid.Column="2" Grid.Row="2" CornerRadius="20"
+                                BorderBrush="#0535e2" BorderThickness="1"
+                                Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <UserControls:FeatureCard HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                      Icon="/Images/Menu/Win/BanListEditor.png"
+                                                      ItemsSource="{Binding BanLists , Source={x:Static ViewModels:OpenHistoryViewModel.Instance}}"
+                                                      FeatureType="BanList" FeatureName="{Lag:Localize BanList}" EmptyText="Empty"
+                                                      ItemOpened="FeatureCard_ItemOpened"
+                                                      CardTypeSelected="FeatureCard_CardTypeSelected" />
+                        </Border>
 
-                    <Border x:Name="BrDeckEditor" Grid.Column="4" Margin="0" CornerRadius="50"
-                            BorderBrush="#0535e2" BorderThickness="1.5"
-                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-
-                            <Grid x:Name="GrDeckEditor" Grid.Row="0" Cursor="Hand"
-                                  Height="{Binding ActualWidth, ElementName=BrDeckEditor}" >
-                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
-                                       Width="120" Height="120"
-                                       Source="/Images/Menu/Win/DeckEditor.png"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5">
-                                    <Image.RenderTransform>
-                                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                                    </Image.RenderTransform>
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Opacity" Value="0.6"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=BrDeckEditor}" Value="True">
-                                                    <Setter Property="Opacity" Value="1"/>
-                                                    <DataTrigger.EnterActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.EnterActions>
-                                                    <DataTrigger.ExitActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.ExitActions>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
-                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
-                                                  Anchor="Center" Spacing="1" Side="Inside"
-                                                  FitMode="SpacingThenFontSize"
-                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                                  RenderTransformOrigin="0.5,0.5"
-                                                  Text="DeckEditor"
-                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
-                                    <Controls:ArcText.Style>
-                                        <Style TargetType="Controls:ArcText">
-                                            <Setter Property="Foreground"
-                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
-                                                    <Setter Property="Foreground" Value="#FFC107" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Controls:ArcText.Style>
-                                    <Controls:ArcText.RenderTransform>
-                                        <RotateTransform />
-                                    </Controls:ArcText.RenderTransform>
-                                    <Controls:ArcText.Triggers>
-                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Controls:ArcText.Triggers>
-                                </Controls:ArcText>
-                            </Grid>
-                        </Grid>
-                    </Border>
-
-                    <Border x:Name="BrBanListEditor" Grid.Column="6" Margin="0" CornerRadius="50"
-                            BorderBrush="#0535e2" BorderThickness="1.5"
-                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-
-                            <Grid x:Name="GrBanListEditor" Grid.Row="0" Cursor="Hand"
-                                  Height="{Binding ActualWidth, ElementName=BrBanListEditor}" >
-                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
-                                       Width="120" Height="120"
-                                       Source="/Images/Menu/Win/BanListEditor.png"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5">
-                                    <Image.RenderTransform>
-                                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                                    </Image.RenderTransform>
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Opacity" Value="0.6"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrBanListEditor}" Value="True">
-                                                    <Setter Property="Opacity" Value="1"/>
-                                                    <DataTrigger.EnterActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.EnterActions>
-                                                    <DataTrigger.ExitActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.ExitActions>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
-                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
-                                                  Anchor="Center" Spacing="1" Side="Inside"
-                                                  FitMode="SpacingThenFontSize"
-                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                                  RenderTransformOrigin="0.5,0.5"
-                                                  Text="BanListEditor"
-                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
-                                    <Controls:ArcText.Style>
-                                        <Style TargetType="Controls:ArcText">
-                                            <Setter Property="Foreground"
-                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
-                                                    <Setter Property="Foreground" Value="#FFC107" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Controls:ArcText.Style>
-                                    <Controls:ArcText.RenderTransform>
-                                        <RotateTransform />
-                                    </Controls:ArcText.RenderTransform>
-                                    <Controls:ArcText.Triggers>
-                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Controls:ArcText.Triggers>
-                                </Controls:ArcText>
-                            </Grid>
-                        </Grid>
-                    </Border>
-
-                    <Border x:Name="BrScriptSupport" Grid.Column="8" Margin="0" CornerRadius="50"
-                            BorderBrush="#0535e2" BorderThickness="1.5"
-                            Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-
-                            <Grid x:Name="GrScriptSupport" Grid.Row="0" Cursor="Hand"
-                                  Height="{Binding ActualWidth, ElementName=BrScriptSupport}" >
-                                <Image Grid.Row="0" Margin="0,0,0,0" Stretch="Uniform"
-                                       Width="110" Height="110"
-                                       Source="/Images/SSS.ico"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       RenderTransformOrigin="0.5,0.5">
-                                    <Image.RenderTransform>
-                                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                                    </Image.RenderTransform>
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Opacity" Value="0.6"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=GrScriptSupport}" Value="True">
-                                                    <Setter Property="Opacity" Value="1"/>
-                                                    <DataTrigger.EnterActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1.08" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.EnterActions>
-                                                    <DataTrigger.ExitActions>
-                                                        <BeginStoryboard>
-                                                            <Storyboard>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                                <DoubleAnimation Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)"
-                                                                                 To="1" Duration="0:0:0.2"/>
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </DataTrigger.ExitActions>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <Controls:ArcText Grid.Row="0" FontSize="25" Margin="10"
-                                                  Angle="180" IsOverlay="False" MaxSweepAngle="340"
-                                                  Anchor="Center" Spacing="1" Side="Inside"
-                                                  FitMode="SpacingThenFontSize"
-                                                  HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                                  RenderTransformOrigin="0.5,0.5"
-                                                  Text="Script Support"
-                                                  FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}">
-                                    <Controls:ArcText.Style>
-                                        <Style TargetType="Controls:ArcText">
-                                            <Setter Property="Foreground"
-                                                    Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=Card}" Value="True">
-                                                    <Setter Property="Foreground" Value="#FFC107" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Controls:ArcText.Style>
-                                    <Controls:ArcText.RenderTransform>
-                                        <RotateTransform />
-                                    </Controls:ArcText.RenderTransform>
-                                    <Controls:ArcText.Triggers>
-                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
-                                                                     From="0" To="360" Duration="0:0:12" RepeatBehavior="Forever" />
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Controls:ArcText.Triggers>
-                                </Controls:ArcText>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                </Grid>
+                        <Border Grid.Column="4" Grid.Row="2" CornerRadius="20"
+                                BorderBrush="#0535e2" BorderThickness="1"
+                                Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <UserControls:FeatureCard HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                      Icon="/Images/Menu/Win/DataEditor.png"
+                                                      ItemsSource="{Binding Archives , Source={x:Static ViewModels:OpenHistoryViewModel.Instance}}"
+                                                      FeatureName="Docs" EmptyText="Empty"
+                                                      ItemOpened="FeatureCard_ItemOpened"
+                                                      CardTypeSelected="FeatureCard_CardTypeSelected" />
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
             </Grid>
         </materialDesign:Card>
     </Grid>

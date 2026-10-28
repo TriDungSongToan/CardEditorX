@@ -468,6 +468,8 @@ namespace CardEditor.UserControls
         #region Load
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            MainWindowService.StartLoading();
+
             LoadConfig();
             InitializeContentMenu();
             UpdateCardListItemSize();
@@ -499,6 +501,8 @@ namespace CardEditor.UserControls
             if (!reslutLoadDeck) CMSG.Show(CMess.error.ToText(), CMSG.MessageBoxIconType.Error,
                 $"{string.Format(CMess.ThreePlaceholderError.ToText(), CMess.tlReload.ToText(), CMess.Card.ToText(), CMess.Image.ToText())} {messageLoadDeck}",
                 new[] { CMess.ok.ToText() });
+
+            await MainWindowService.FinishLoading();
         }
         private void InitializeContentMenu()
         {

@@ -1,8 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.ComponentModel;
+using CardEditor.Enums;
 using CardEditor.Localization;
+using CMess = CardEditor.Localization.Language;
 
 namespace CardEditor.Models
 {
@@ -122,5 +125,20 @@ namespace CardEditor.Models
     {
         public string EntryFullName { get; set; }
         public string TempPath { get; set; }
+    }
+
+    public class RecentItem
+    {
+        public RecentItem(RecentFileType fileType, DateTime time, string url)
+        {
+            FileType = fileType;
+            Time = time;
+            Url = url;
+        }
+        public RecentFileType FileType { get; }
+        public DateTime Time { get; }
+        public string Url { get; }
+        public string FileName => System.IO.Path.GetFileName(Url);
+        public string ToolTipText => $"{Url}\n({CMess.Open.ToText()}: {Time})";
     }
 }

@@ -71,6 +71,7 @@
 0x115	Gỡ Bỏ
 0x116	Khôi phục
 0x117	Xem trước
+0x118	Mặc định
 
 0x121	Đọc
 0x122	Ghi
@@ -102,9 +103,9 @@
 0x206	Trình Duyệt
 
 0x211	Cài đặt Hiển thị
-0x212	Ảnh Nền
-0x213	Dùng Ảnh làm nền App
-0c214	Dùng Ảnh làm nền CodeEditor
+0x212	Đường dẫn ảnh nền
+0x213	Sử dụng ảnh nền
+0x214	Sử dụng anh nền Mã
 0x215	Màu Nền
 0x216	Màu Chữ
 0x217	Chủ Đề

@@ -92,6 +92,11 @@ namespace CardEditor.Models
         public string Message { get; set; } = string.Empty;
     }
 
+    public class OverallResult
+    {
+        public bool Result { get; set; }
+        public string Messenger { get; set; }
+    }
     public class WriteResult
     {
         public bool Result { get; set; }

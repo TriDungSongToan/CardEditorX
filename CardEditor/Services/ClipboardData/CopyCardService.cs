@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Windows;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using CardEditor.Enums;
 using CardEditor.Models;
@@ -33,7 +34,7 @@ namespace CardEditor.Services.ClipboardData
 
                 string json = await Task.Run(() => JsonSerializer.Serialize(jsonCeds, JsonStringHelper.SerializerCEDSOptions));
 
-                Clipboard.SetText(json);
+                await SetTextAsync(json);
 
                 result.Result = true;
                 result.Messenger = string.Empty;
@@ -67,7 +68,7 @@ namespace CardEditor.Services.ClipboardData
 
                 string json = await Task.Run(() => JsonSerializer.Serialize(jsonCeds, JsonStringHelper.SerializerCEDSOptions));
 
-                Clipboard.SetText(json);
+                await SetTextAsync(json);
 
                 result.Result = true;
                 result.Messenger = string.Empty;
@@ -101,7 +102,7 @@ namespace CardEditor.Services.ClipboardData
 
                 string json = await Task.Run(() => JsonSerializer.Serialize(jsonCeds, JsonStringHelper.SerializerCEDSOptions));
 
-                Clipboard.SetText(json);
+                await SetTextAsync(json);
 
                 result.Result = true;
                 result.Messenger = string.Empty;
@@ -112,6 +113,24 @@ namespace CardEditor.Services.ClipboardData
                 result.Messenger = ex.Message;
             }
             return result;
+        }
+
+        private static async Task SetTextAsync(string text, int retries = 10, int delayMs = 100)
+        {
+            var dispatcher = Application.Current.Dispatcher;
+
+            for (int i = 0; i < retries; i++)
+            {
+                try
+                {
+                    await dispatcher.InvokeAsync(() => Clipboard.SetDataObject(text, true));
+                    return;
+                }
+                catch (COMException ex) when ((uint)ex.ErrorCode == 0x800401D0 && i < retries - 1)
+                {
+                    await Task.Delay(delayMs);
+                }
+            }
         }
     }
 }

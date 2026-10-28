@@ -1,6 +1,6 @@
-﻿using CardEditor.Models;
+﻿using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using CardEditor.Models;
 
 namespace CardEditor.Services
 {
@@ -10,6 +10,26 @@ namespace CardEditor.Services
     }
     public interface IMainWindowService
     {
+        void StartLoading();
+        Task FinishLoading();
+
+        Task OpenArchiveCommand(string url = null);
+        Task OpenDatabaseCommand(string url = null);
+        Task OpenScriptCommand(string url = null);
+        Task OpenDeckCommand(string url = null);
+        Task OpenBanListCommand(string url = null);
+
+
+        void OpenArchive();
+        void OpenImageEditor();
+        void OpenDataEditor();
+        void OpenOmegaDataEditor();
+        void OpenDeckEditor();
+        void OpenCodeEditor();
+        void OpenBanListEditor();
+        void OpenChatBot();
+        void OpenScriptSupport();
+
         (bool, List<CardEditor.Models.FileItem>) SelectFileToOpen(IReadOnlyList<(string fullPath, string archiveFilePath, string archiveEntryName)> entries);
 
         Task OpenDataEditorTab(IEnumerable<string> filePaths, ulong id);

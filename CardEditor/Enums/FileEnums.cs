@@ -13,6 +13,14 @@
         Excel = 1,
         Ceds = 2,
     }
+    public enum RecentFileType
+    {
+        Archive = 0,
+        Database = 1,
+        Script = 2,
+        Deck = 3,
+        BanList = 4
+    }
     public enum FileLocation
     {
         PhysicalFile = 0,

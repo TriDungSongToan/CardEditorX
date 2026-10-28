@@ -95,6 +95,7 @@ namespace CardEditor.Localization
         Remove = 0x115,         //Remove
         RollBack = 0x116,       //RollBack
         PreView = 0x117,        //Preview
+        Default = 0x118,         //Default
 
         Read = 0x121,           //Read
         Write = 0x122,          //Write
@@ -129,7 +130,7 @@ namespace CardEditor.Localization
         browserPath = 0x206,        //Browser Path
 
         DisplaySetting = 0x211,     //Display Settings
-        BackgroundImage = 0x212,    //Background Image File Path
+        BackgroundImage = 0x212,    //Background Image Path
         UseBgImage = 0x213,         //Use Background Image
         UseBGImageCode = 0x214,     //Use Background Code
         Background = 0x215,         //Background

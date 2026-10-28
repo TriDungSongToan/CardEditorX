@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using CardEditor.Models;
 
 namespace CardEditor.Services
 {
@@ -25,16 +26,22 @@ namespace CardEditor.Services
         /// <summary>
         /// Tải file releaseName từ bản Release mới nhất của repoURL, giải nén vào folderPath.
         /// </summary>
-        public async Task<(bool resultDownload, string messageDownload)> DownloadGithubRelease(
+        public async Task<OverallResult> DownloadGithubRelease(
             string repoURL, string releaseName, string folderPath)
         {
+            OverallResult result = new();
+
             string tempZipPath = null;
             try
             {
                 // 1. Parse owner/repo từ URL dạng https://github.com/{owner}/{repo}.git
                 var match = Regex.Match(repoURL, @"github\.com/([^/]+)/([^/\.]+)(\.git)?/?$");
                 if (!match.Success)
-                    return (false, $"Không parse được owner/repo từ URL: {repoURL}");
+                {
+                    result.Result = false;
+                    result.Messenger = $"Could not parse owner/repo from URL: {repoURL}";
+                    return result;
+                }
 
                 string owner = match.Groups[1].Value;
                 string repo = match.Groups[2].Value;
@@ -46,7 +53,10 @@ namespace CardEditor.Services
                 if (!releaseResponse.IsSuccessStatusCode)
                 {
                     string errBody = await releaseResponse.Content.ReadAsStringAsync();
-                    return (false, $"Lỗi gọi GitHub API ({(int)releaseResponse.StatusCode}): {errBody}");
+
+                    result.Result = false;
+                    result.Messenger = $"GitHub API call error ({(int)releaseResponse.StatusCode}): {errBody}";
+                    return result;
                 }
 
                 string releaseJson = await releaseResponse.Content.ReadAsStringAsync();
@@ -54,7 +64,11 @@ namespace CardEditor.Services
                 JArray assets = (JArray)root["assets"];
 
                 if (assets == null || assets.Count == 0)
-                    return (false, "The latest release contains no assets.");
+                {
+                    result.Result = false;
+                    result.Messenger = "The latest release contains no assets.";
+                    return result;
+                }
 
                 // 3. Tìm asset có tên trùng releaseName
                 string downloadUrl = null;
@@ -69,14 +83,22 @@ namespace CardEditor.Services
                 }
 
                 if (downloadUrl == null)
-                    return (false, $"Asset named '{releaseName}' not found in the latest release.");
+                {
+                    result.Result = false;
+                    result.Messenger = $"Asset named '{releaseName}' not found in the latest release.";
+                    return result;
+                }
 
                 // 4. Tải file zip về vị trí tạm
                 tempZipPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}_{releaseName}");
                 using (var zipResponse = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
                 {
                     if (!zipResponse.IsSuccessStatusCode)
-                        return (false, $"Error loading asset file ({(int)zipResponse.StatusCode}).");
+                    {
+                        result.Result = false;
+                        result.Messenger = $"Error loading asset file ({(int)zipResponse.StatusCode}).";
+                        return result;
+                    }
 
                     using (var fs = new FileStream(tempZipPath, FileMode.Create, FileAccess.Write, FileShare.None))
                     {
@@ -109,11 +131,15 @@ namespace CardEditor.Services
                     }
                 }
 
-                return (true, $"Successfully downloaded and extracted to: {folderPath}");
+                result.Result = true;
+                result.Messenger = $"Successfully downloaded and extracted to: {folderPath}";
+                return result;
             }
             catch (Exception ex)
             {
-                return (false, ex.Message);
+                result.Result = false;
+                result.Messenger = ex.Message;
+                return result;
             }
             finally
             {
