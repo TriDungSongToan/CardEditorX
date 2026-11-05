@@ -53,6 +53,9 @@ namespace CardEditor.Localization
         ExpoZIP = 0x47,         //Export as zip
 
         Manager = 0x55,         //Manager
+        Translation = 0x5a,     //Translation
+        TranslationEdit = 0x5b, //Translation Editor
+        StringsEdit = 0x5c,     //Strings Editor
 
         Help = 0x6a,            //Help
         LinScript = 0x6b,       //Linter Script
@@ -114,9 +117,12 @@ namespace CardEditor.Localization
         noSave = 0x12e,         //Don't Save
         noAsk = 0x12f,          //Don’t ask again
         CopyInfo = 0x130,       //Copy Info
+        Merge = 0x131,          //Merge Files
 
         ConvertFormat = 0x135,  //Convert Format
         OpenCompatible = 0x136,  //Open Compatibility Tab
+
+
         #endregion
 
         #endregion
@@ -481,18 +487,37 @@ namespace CardEditor.Localization
         scaleRight = 0x5ef,     //Right
         #endregion
 
+        #region Translation
+        SourceFile = 0x5f0,         //Source File
+        TranslationFile = 0x5f1,    //Translation File
+
+        Translated = 0x5f2,         //Translated: 
+        UnTranslated = 0x5f3,       //UnTranslated: 
+        NewTranslation = 0x5f4,     //New: 
+        DeletedTranslation = 0x5f5, //Deleted: 
+        DisabledTranslation = 0x5f6,  //Disabled: 
+
+        Disable = 0x5f7,            //Off
+        StringType = 0x5f8,         //Type
+        SourceContent = 0x5f9,      //Source Content
+        TranslationContent = 0x5fa, //Translation Content
+        TranslationStatus = 0x5fb,  //Status
+
+        DragDropTool = 0x5fc,       //Drag into a group in the list to move.
+        #endregion
+
         #region Script Support
-        CardText = 0x5f7,       //Card Text
-        CardData = 0x5f8,       //Card Data
-        CardImage = 0x5f9,      //Card Image
-        CardInfo = 0x5fa,       //Card Information
+        CardText = 0x610,       //Card Text
+        CardData = 0x611,       //Card Data
+        CardImage = 0x612,      //Card Image
+        CardInfo = 0x613,       //Card Information
 
-        SearchCard = 0x5fb,     //Search Card
-        SearchScript = 0x5fc,   //Search Script
-        SearchScrapiName = 0x5fd,   //Search Scrapi Name
-        SearchScrapiDesc = 0x5fe,   //Search Scrapi Desc
+        SearchCard = 0x614,     //Search Card
+        SearchScript = 0x615,   //Search Script
+        SearchScrapiName = 0x616,   //Search Scrapi Name
+        SearchScrapiDesc = 0x617,   //Search Scrapi Desc
 
-        ColonChar = 0x5ff,      //Colon Character
+        ColonChar = 0x618,      //Colon Character
         #endregion
 
         #region Mess

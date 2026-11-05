@@ -31,6 +31,9 @@
 0x47	Export as zip
 
 0x55	Manager
+0x5a	Translation
+0x5b	Translation Editor
+0x5c	Strings Editor
 
 0x6a	Help
 0x6b	Linter Script
@@ -90,6 +93,7 @@
 0x12e	Don't Save
 0x12f	Don’t ask again
 0x130	Copy Info
+0x131	Merge
 
 0x135	Convert Format
 0x136	Open Compatibility Tab
@@ -443,18 +447,33 @@
 --0x2ae	Sort cards in the list in order:
 --0x2af	Right click to sort by default.
 
+#=======Translation=======#
+0x5f0	Source File
+0x5f1	Translation File
+0x5f2	Translated: 
+0x5f3	UnTranslated: 
+0x5f4	New: 
+0x5f5	Deleted: 
+0x5f6	Disabled: 
+0x5f7	Off
+0x5f8	Type
+0x5f9	Source Content
+0x5fa	Translation Content
+0x5fb	Status
+0x5fc	Drag into a group in the list to move.
+
 #=======Script Support=======#
-0x5f7	Card Text
-0x5f8	Card Data
-0x5f9	Card Image
-0x5fa	Card Information
+0x610	Card Text
+0x611	Card Data
+0x612	Card Image
+0x613	Card Information
 
-0x5fb	Search Card
-0x5fc	Search Script
-0x5fd	Search Scrapi Name
-0x5fe	Search Scrapi Desc
+0x614	Search Card
+0x615	Search Script
+0x616	Search Scrapi Name
+0x617	Search Scrapi Desc
 
-0x5ff	: 
+0x618	: 
 
 #=======Message=======#
 0x621	Error

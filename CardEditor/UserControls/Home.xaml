@@ -21,6 +21,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/FlatTwoStateToggleStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -220,6 +221,29 @@
                                     </Button.Template>
                                 </Button>
                             </Grid>
+
+                            <Controls:FlatTwoStateToggle Grid.Row="0" Panel.ZIndex="10"
+                                                         Width="50" Height="50"
+                                                         BackgroundBrush="White"
+                                                         HoverBackgroundBrush="Yellow"
+                                                         ForegroundBrush="Blue"
+                                                         
+                                                         BorderBrush="Green"
+                                                         BorderThickness="5"
+                                                         BorderCornerRadius="5"
+                                                         
+                                                         >
+                                <Controls:FlatTwoStateToggle.FalseContent>
+                                    <materialDesign:PackIcon Kind="ChevronDoubleUp" Width="50" Height="50"
+                                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Controls:FlatTwoStateToggle.FalseContent>
+                                <Controls:FlatTwoStateToggle.TrueContent>
+                                    <materialDesign:PackIcon Kind="ChevronDoubleDown" Width="50" Height="50"
+                                                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Controls:FlatTwoStateToggle.TrueContent>
+
+                            </Controls:FlatTwoStateToggle>
+
                         </Grid>
                     </Border>
                 </Grid>

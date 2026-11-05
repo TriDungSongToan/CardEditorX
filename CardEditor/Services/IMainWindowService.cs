@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Windows.Controls;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using CardEditor.Models;
 
@@ -50,6 +51,7 @@ namespace CardEditor.Services
         void UpdateWindowSavedFlag(bool isSaved);
 
         void UpdateTabItemHeader(string title);
+        void UpdateTabItemHeader(UserControl control, string header);
 
         void ImportDataCreateNewDataEdit(IEnumerable<CardEditor.Models.Card> importedCards);
         void ImportDataCreateNewDataEdit(IEnumerable<CardEditor.Models.CardOmega> importedCards);

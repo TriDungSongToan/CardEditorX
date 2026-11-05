@@ -418,10 +418,12 @@
     </ApplicationDefinition>
     <Compile Include="Abstract\ChangeTrackingMargin.cs" />
     <Compile Include="Behaviors\AvalonEditShare.cs" />
+    <Compile Include="Behaviors\BindingProxy.cs" />
     <Compile Include="Behaviors\BoolToVisibilityConverter.cs" />
     <Compile Include="Behaviors\FileDropBehavior.cs" />
     <Compile Include="Behaviors\FireBorderAdorner.cs" />
     <Compile Include="Behaviors\GlowBorder.cs" />
+    <Compile Include="Behaviors\InsertionAdorner.cs" />
     <Compile Include="Behaviors\IsExternalInit.cs" />
     <Compile Include="Behaviors\ListBoxMultiSelectBehavior.cs" />
     <Compile Include="Behaviors\ListViewDragDropBehavior.cs" />
@@ -436,6 +438,7 @@
     <Compile Include="Controls\ArcText.cs" />
     <Compile Include="Converter\BitToBoolConverter.cs" />
     <Compile Include="Converter\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converter\BoolToGridLengthConverter.cs" />
     <Compile Include="Converter\CardConverter.cs" />
     <Compile Include="Converter\ColorWithOpacityConverter.cs" />
     <Compile Include="Converter\EmptyToCollapsedConverter.cs" />
@@ -470,6 +473,7 @@
     <Compile Include="Enums\FileEnums.cs" />
     <Compile Include="Enums\ImageEnums.cs" />
     <Compile Include="Enums\MDEnums.cs" />
+    <Compile Include="Enums\TranslationEnums.cs" />
     <Compile Include="Enums\WindowEnums.cs" />
     <Compile Include="Events\ScrollEventArgs.cs" />
     <Compile Include="Generator\HyperlinkElement.cs" />
@@ -493,6 +497,8 @@
     <Compile Include="Interfaces\IFileInterface.cs" />
     <Compile Include="Interfaces\IMasterDuelAPIInterface.cs" />
     <Compile Include="Interfaces\IRegulationInterface.cs" />
+    <Compile Include="Interfaces\StringInterface.cs" />
+    <Compile Include="Interfaces\TranslationInterface.cs" />
     <Compile Include="Manager\SingleInstanceManager.cs" />
     <Compile Include="Models\AppContext.cs" />
     <Compile Include="Models\CardMasterDuel.cs" />
@@ -507,6 +513,8 @@
     <Compile Include="Models\ScanAPI.cs" />
     <Compile Include="Models\SearchOptions.cs" />
     <Compile Include="Models\Settings\FilterSetting.cs" />
+    <Compile Include="Models\StringsConf.cs" />
+    <Compile Include="Models\Translations.cs" />
     <Compile Include="Services\CheckData\CheckCeds.cs" />
     <Compile Include="Services\CheckData\CheckDatabase.cs" />
     <Compile Include="Services\CheckData\CheckExcel.cs" />
@@ -555,6 +563,8 @@
     <Compile Include="Services\LoadData\LoadCedsService.cs" />
     <Compile Include="Services\LoadData\LoadRarityService.cs" />
     <Compile Include="Services\LoadData\LoadScriptService.cs" />
+    <Compile Include="Services\LoadData\LoadStringService.cs" />
+    <Compile Include="Services\LoadData\LoadTranslationService.cs" />
     <Compile Include="Services\MasterDuelAPIService.cs" />
     <Compile Include="Services\RegulationService.cs" />
     <Compile Include="Services\SaveData\SaveArchiveService.cs" />
@@ -595,6 +605,12 @@
     </Compile>
     <Compile Include="UserControls\ScriptDescription.xaml.cs">
       <DependentUpon>ScriptDescription.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\StringEditor.xaml.cs">
+      <DependentUpon>StringEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\TranslationEditor.xaml.cs">
+      <DependentUpon>TranslationEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\BanListRawDataViewModel.cs" />
     <Compile Include="ViewModels\CreditsViewModel.cs" />
@@ -739,6 +755,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Styles\FlatTwoStateToggleStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles\TriStateToggleStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -789,6 +809,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\ScriptDescription.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\StringEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\TranslationEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

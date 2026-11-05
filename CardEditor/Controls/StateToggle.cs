@@ -176,6 +176,97 @@ namespace CardEditor.Controls
             }
         }
     }
+    public class FlatTwoStateToggle : ToggleButton
+    {
+        static FlatTwoStateToggle()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(FlatTwoStateToggle),
+                new FrameworkPropertyMetadata(typeof(FlatTwoStateToggle)));
+            IsThreeStateProperty.OverrideMetadata(
+                typeof(FlatTwoStateToggle),
+                new FrameworkPropertyMetadata(false));
+        }
+        public FlatTwoStateToggle() { }
+
+        #region Display
+        public Brush BackgroundBrush
+        {
+            get => (Brush)GetValue(BackgroundBrushProperty);
+            set => SetValue(BackgroundBrushProperty, value);
+        }
+        public static readonly DependencyProperty BackgroundBrushProperty =
+            DependencyProperty.Register(nameof(BackgroundBrush), typeof(Brush), typeof(FlatTwoStateToggle), new PropertyMetadata(Brushes.Red));
+        public Brush HoverBackgroundBrush
+        {
+            get => (Brush)GetValue(HoverBackgroundBrushProperty);
+            set => SetValue(HoverBackgroundBrushProperty, value);
+        }
+        public static readonly DependencyProperty HoverBackgroundBrushProperty =
+            DependencyProperty.Register(nameof(HoverBackgroundBrush), typeof(Brush), typeof(FlatTwoStateToggle), new PropertyMetadata(Brushes.Pink));
+
+        public Brush ForegroundBrush
+        {
+            get => (Brush)GetValue(ForegroundBrushProperty);
+            set => SetValue(ForegroundBrushProperty, value);
+        }
+        public static readonly DependencyProperty ForegroundBrushProperty =
+            DependencyProperty.Register(nameof(ForegroundBrush), typeof(Brush), typeof(FlatTwoStateToggle), new PropertyMetadata(Brushes.White));
+
+        public CornerRadius BorderCornerRadius
+        {
+            get => (CornerRadius)GetValue(BorderCornerRadiusProperty);
+            set => SetValue(BorderCornerRadiusProperty, value);
+        }
+        public static readonly DependencyProperty BorderCornerRadiusProperty =
+            DependencyProperty.Register(nameof(BorderCornerRadius), typeof(CornerRadius), typeof(FlatTwoStateToggle), new PropertyMetadata(new CornerRadius(8)));
+        #endregion
+
+        #region Content
+        public object FalseContent
+        {
+            get => GetValue(FalseContentProperty);
+            set => SetValue(FalseContentProperty, value);
+        }
+        public static readonly DependencyProperty FalseContentProperty =
+            DependencyProperty.Register(nameof(FalseContent), typeof(object), typeof(FlatTwoStateToggle), new PropertyMetadata(null));
+        public object TrueContent
+        {
+            get => GetValue(TrueContentProperty);
+            set => SetValue(TrueContentProperty, value);
+        }
+        public static readonly DependencyProperty TrueContentProperty =
+            DependencyProperty.Register(nameof(TrueContent), typeof(object), typeof(FlatTwoStateToggle), new PropertyMetadata(null));
+
+        public Thickness PaddingContent
+        {
+            get => (Thickness)GetValue(PaddingContentProperty);
+            set => SetValue(PaddingContentProperty, value);
+        }
+        public static readonly DependencyProperty PaddingContentProperty =
+            DependencyProperty.Register(nameof(PaddingContent), typeof(Thickness), typeof(FlatTwoStateToggle), new PropertyMetadata(new Thickness(0)));
+        #endregion
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+        }
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+        }
+        protected override void OnToggle()
+        {
+            if (IsChecked == false)
+            {
+                IsChecked = true;
+            }
+            else
+            {
+                IsChecked = false;
+            }
+        }
+    }
 
     public class TriStateToggle : ToggleButton
     {

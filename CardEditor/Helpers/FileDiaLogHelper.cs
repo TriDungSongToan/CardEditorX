@@ -486,6 +486,54 @@ namespace CardEditor.Helpers
             }    
             else return string.Empty;
         }
+        public static string SaveConfig(string fileName = "")
+        {
+            CommonSaveFileDialog saveFileDialog = new CommonSaveFileDialog
+            {
+                Title = string.Format(CMess.TwoPlaceholderSave.ToText(), CMess.Config.ToText(), CMess.File.ToText()),
+                DefaultFileName = fileName,
+                DefaultExtension = "conf",
+                AlwaysAppendDefaultExtension = false,
+                EnsurePathExists = true,
+                OverwritePrompt = true,
+            };
+
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.Config.ToText())}", "*.conf"));
+            saveFileDialog.Filters.Add(new CommonFileDialogFilter($"{string.Format(CMess.PlaceholderFIle.ToText(), CMess.All.ToText())}", "*.*"));
+
+            Window owner = WindowHelper.GetActiveWindow();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
+
+            int allFilesIndex = saveFileDialog.Filters.Count;
+
+            if (saveFileDialog.ShowDialog(handle) == CommonFileDialogResult.Ok)
+            {
+                string path = saveFileDialog.FileName;
+                string ext = System.IO.Path.GetExtension(path);
+                bool hasUserExtension = !string.IsNullOrWhiteSpace(ext);
+                int selected = saveFileDialog.SelectedFileTypeIndex;
+
+                string finalPath;
+
+                if (hasUserExtension)
+                    finalPath = path;
+                else
+                {
+                    if (selected == allFilesIndex)
+                    {
+                        finalPath = path + "." + saveFileDialog.DefaultExtension;
+                    }
+                    else
+                    {
+                        string filterExt = saveFileDialog.Filters[selected - 1].Extensions.First().TrimStart('*', '.');
+                        finalPath = path + "." + filterExt;
+                    }
+                }
+
+                return finalPath;
+            }
+            else return string.Empty;
+        }
         public static string SaveRes()
         {
             CommonSaveFileDialog saveFileDialog = new CommonSaveFileDialog

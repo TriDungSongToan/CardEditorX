@@ -195,7 +195,7 @@
     </UserControl.Resources>
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <materialDesign:Card Margin="0" Background="Transparent"
+        <materialDesign:Card Margin="0,1,0,0" Background="Transparent"
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                              FlowDirection="{Binding FlowDirectionC, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              d:FlowDirection="LeftToRight" >

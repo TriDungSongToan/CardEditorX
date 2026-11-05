@@ -32,7 +32,7 @@ namespace CardEditor.UserControls
 
                     if (MainWindowService == null) return;
                     MainWindowService.UpdateWindowTitle(MainWindowTitle);
-                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
+                    MainWindowService.UpdateTabItemHeader(this, MainWindowTitle.DisplayTabItemHeader);
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace CardEditor.UserControls
 
             if (MainWindowService != null)
             {
-                MainWindowService.UpdateTabItemHeader(ConfigViewModel.Instance.imageSetting.SelectedCardMaker.DisplayName);
+                MainWindowService.UpdateTabItemHeader(this, ConfigViewModel.Instance.imageSetting.SelectedCardMaker.DisplayName);
             }
         }
 

@@ -768,6 +768,21 @@
                     </MenuItem>
                 </MenuItem>
 
+                <MenuItem Header="{Lag:Localize Translation}" Margin="0" Padding="10,0,10,0" >
+                    <MenuItem Header="Translation Config" Margin="0" Padding="10,0,15,0"
+                              Click="menuTranslationConfig_Click" >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="GoogleTranslate" Width="auto" Height="auto" Margin="0" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Strings Config" Margin="0" Padding="10,0,15,0"
+                              Click="menuStringsConfig_Click">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="StickerTextOutline" Width="auto" Height="auto" Margin="0" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </MenuItem>
+
                 <MenuItem Header="{Lag:Localize Manager}" Margin="0" Padding="10,0,10,0" >
                     <MenuItem Header="{Lag:Localize RarityManager}" Margin="0" Padding="10,0,15,0"
                               ToolTip="{Lag:Localize toolRarityManager}" Click="menuRarity_Click" >

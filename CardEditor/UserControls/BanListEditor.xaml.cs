@@ -49,7 +49,7 @@ namespace CardEditor.UserControls
 
                     if (MainWindowService == null) return;
                     MainWindowService.UpdateWindowTitle(MainWindowTitle);
-                    MainWindowService.UpdateTabItemHeader(MainWindowTitle.DisplayTabItemHeader);
+                    MainWindowService.UpdateTabItemHeader(this, MainWindowTitle.DisplayTabItemHeader);
                 }
             }
         }

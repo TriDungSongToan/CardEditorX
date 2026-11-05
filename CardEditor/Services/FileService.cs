@@ -69,5 +69,14 @@ namespace CardEditor.Services
 
             return appTitle;
         }
+
+        public static AppTitle BuildTitleTranslation(string translationFilePath, string sourceName, string translationName)
+        {
+            var appTitle = new AppTitle();
+            appTitle.PhysicalFullPath = translationFilePath;
+            appTitle.DisplayTitle = translationFilePath;
+            appTitle.DisplayTabItemHeader = $"{sourceName} → {translationName}";
+            return appTitle;
+        }
     }
 }

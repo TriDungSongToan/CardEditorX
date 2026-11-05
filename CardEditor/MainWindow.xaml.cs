@@ -173,6 +173,36 @@ namespace CardEditor
                 }
             }
         }
+        private Visibility _translationEditVisibility = Visibility.Collapsed;
+        public Visibility TranslationEditVisibility
+        {
+            get => _translationEditVisibility;
+            set
+            {
+                if (_translationEditVisibility != value)
+                {
+                    _translationEditVisibility = value;
+                    OnPropertyChanged(nameof(TranslationEditVisibility));
+                    OnPropertyChanged(nameof(SaveVisibility));
+                    OnPropertyChanged(nameof(SaveAsVisibility));
+                }
+            }
+        }
+        private Visibility _stringEditVisibility = Visibility.Collapsed;
+        public Visibility StringEditVisibility
+        {
+            get => _stringEditVisibility;
+            set
+            {
+                if (_stringEditVisibility != value)
+                {
+                    _stringEditVisibility = value;
+                    OnPropertyChanged(nameof(StringEditVisibility));
+                    OnPropertyChanged(nameof(SaveVisibility));
+                    OnPropertyChanged(nameof(SaveAsVisibility));
+                }
+            }
+        }
 
         // Save for DataEditor, OmegaDataEditor
         public Visibility SaveDataEditVisibility
@@ -230,7 +260,9 @@ namespace CardEditor
                 return (
                     ScriptEditVisibility == Visibility.Visible ||
                     DeckEditVisibility == Visibility.Visible ||
-                    BanListEditVisibility == Visibility.Visible)
+                    BanListEditVisibility == Visibility.Visible ||
+                    TranslationEditVisibility == Visibility.Visible ||
+                    StringEditVisibility == Visibility.Visible)
 
                     ? Visibility.Visible : Visibility.Collapsed;
             }
@@ -239,7 +271,9 @@ namespace CardEditor
         {
             get
             {
-                return (ScriptEditVisibility == Visibility.Visible)
+                return (ScriptEditVisibility == Visibility.Visible ||
+                    TranslationEditVisibility == Visibility.Visible ||
+                    StringEditVisibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
             }
         }
@@ -1275,6 +1309,33 @@ namespace CardEditor
 
         #endregion
 
+        #region Translation
+        private void menuTranslationConfig_Click(object sender, RoutedEventArgs e)
+        {
+            var translationEditor = new TranslationEditor(this);
+            var newTab = new TabContent
+            {
+                Header = CMess.TranslationEdit.ToText(),
+                Content = translationEditor
+            };
+
+            Tabs.Add(newTab);
+            TabControlMain.SelectedItem = newTab;
+        }
+        private void menuStringsConfig_Click(object sender, RoutedEventArgs e)
+        {
+            var stringsEditor = new StringEditor(this);
+            var newTab = new TabContent
+            {
+                Header = CMess.StringsEdit.ToText(),
+                Content = stringsEditor
+            };
+
+            Tabs.Add(newTab);
+            TabControlMain.SelectedItem = newTab;
+        }
+        #endregion
+
         #region Manager
         private void menuRarity_Click(object sender, RoutedEventArgs e)
         {
@@ -1405,7 +1466,9 @@ namespace CardEditor
                     currentUserControl is DataEditor ||
                     currentUserControl is DeckEditor ||
                     currentUserControl is CodeEditor ||
-                    currentUserControl is BanListEditor)
+                    currentUserControl is BanListEditor ||
+                    currentUserControl is TranslationEditor ||
+                    currentUserControl is StringEditor)
                 {
                     e.CanExecute = true;
                 }
@@ -1420,7 +1483,9 @@ namespace CardEditor
                 if (currentUserControl is ImageEditor ||
                     currentUserControl is CodeEditor ||
                     currentUserControl is DeckEditor ||
-                    currentUserControl is BanListEditor)
+                    currentUserControl is BanListEditor ||
+                    currentUserControl is TranslationEditor ||
+                    currentUserControl is StringEditor)
                 {
                     e.CanExecute = true;
                 }
@@ -3054,6 +3119,14 @@ namespace CardEditor
                 {
                     await currentBanListEditor.SaveBanListFile();
                 }
+                else if (currentUserControl is TranslationEditor currentTranslationEditor)
+                {
+                    await currentTranslationEditor.Save();
+                }
+                else if (currentUserControl is StringEditor currentStringEditor)
+                {
+                    await currentStringEditor.Save();
+                }
                 else if (currentUserControl is ImageEditor currentImageEditor)
                 {
                     ///
@@ -3341,6 +3414,14 @@ namespace CardEditor
                 {
                     await currentBanListEditor.SaveAsBanList();
                 }
+            }
+            else if (currentUserControl is TranslationEditor currentTranslationEditor)
+            {
+                await currentTranslationEditor.SaveAs();
+            }
+            else if (currentUserControl is StringEditor currentStringEditor)
+            {
+                await currentStringEditor.SaveAs();
             }
             else return;
         }
@@ -5040,6 +5121,8 @@ namespace CardEditor
                         case OmegaDataEditor currentOmegaDataEditor: UpdateWindowTitle(currentOmegaDataEditor.MainWindowTitle); break;
                         case DeckEditor currentDeckEditor: UpdateWindowTitle(currentDeckEditor.MainWindowTitle); break;
                         case ImageEditor currentImageEditor: UpdateWindowTitle(currentImageEditor.MainWindowTitle); break;
+                        case TranslationEditor currentTranslationEditor: UpdateWindowTitle(currentTranslationEditor.MainWindowTitle); break;
+                        case StringEditor currentStringEditor: UpdateWindowTitle(currentStringEditor.MainWindowTitle); break;
                         case Home currentHome: UpdateWindowTitle(currentHome.MainWindowTitle); break;
                     }
                 }
@@ -5082,6 +5165,8 @@ namespace CardEditor
                 ScriptEditVisibility = (currentUserControl is CodeEditor) ? Visibility.Visible : Visibility.Collapsed;
                 DeckEditVisibility = (currentUserControl is DeckEditor) ? Visibility.Visible : Visibility.Collapsed;
                 BanListEditVisibility = (currentUserControl is BanListEditor) ? Visibility.Visible : Visibility.Collapsed;
+                TranslationEditVisibility = (currentUserControl is TranslationEditor) ? Visibility.Visible : Visibility.Collapsed;
+                StringEditVisibility = (currentUserControl is StringEditor) ? Visibility.Visible : Visibility.Collapsed;
             }
             else
             {
@@ -5089,6 +5174,8 @@ namespace CardEditor
                 ScriptEditVisibility = Visibility.Collapsed;
                 DeckEditVisibility = Visibility.Collapsed;
                 BanListEditVisibility = Visibility.Collapsed;
+                TranslationEditVisibility = Visibility.Collapsed;
+                StringEditVisibility = Visibility.Collapsed;
             }
         }
 
@@ -5103,21 +5190,17 @@ namespace CardEditor
         public void UpdateTabItemHeader(string title)
         {
             var currentTab = Tabs.FirstOrDefault(t => t.Content == currentUserControl);
-            if (currentTab == null)
-            {
-                string defaultTitle = string.Empty;
 
-                if (currentUserControl is BanListEditor) defaultTitle = CMess.BanListEdit.ToText();
-                else if (currentUserControl is CodeEditor) defaultTitle = CMess.CodeEdit.ToText();
-                else if (currentUserControl is DataEditor) defaultTitle = CMess.DataEdit.ToText();
-                else if (currentUserControl is OmegaDataEditor) defaultTitle = $"{CMess.DataEdit.ToText()} Ω";
-                else if (currentUserControl is DeckEditor) defaultTitle = CMess.DeckEdit.ToText();
-                else if (currentUserControl is ImageEditor) defaultTitle = CMess.ImageEdit.ToText();
-                else if (currentUserControl is Home) defaultTitle = CMess.Home.ToText();
+            if (currentTab == null) return;
+            currentTab.Header = title;
+        }
+        public void UpdateTabItemHeader(UserControl control, string header)
+        {
+            var tab = Tabs.FirstOrDefault(x => ReferenceEquals(x.Content, control));
 
-                currentTab.Header = defaultTitle;
-            }
-            else currentTab.Header = title;
+            if (tab == null) return;
+
+            tab.Header = header;
         }
 
         private void MetroWindow_SizeChanged(object sender, SizeChangedEventArgs e)
