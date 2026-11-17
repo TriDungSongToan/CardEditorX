@@ -488,22 +488,22 @@
                                             </ComboBox>
 
                                             <ComboBox x:Name="cmbTextAlignment" Grid.Column="2" Height="43"
-                                                  BorderThickness="0.7" IsEditable="False" Padding="10,18,12,5"
-                                                  BorderBrush="{Binding UIConfig.ThemeColor}"
-                                                  Background="{Binding UIConfig.Background}"
-                                                  Foreground="{Binding UIConfig.Foreground}"
-                                                  FontFamily="{Binding UIConfig.FontFamily}"
-                                                  FontSize="{Binding UIConfig.FontSize}"
-                                                  SelectedIndex="{Binding displaySetting.TextAlignmentC}"
-                                                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                                  VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
-                                                  materialDesign:ColorZoneAssist.Mode="Custom"
-                                                  materialDesign:HintAssist.Hint="{Localization:Lang TextAlignment}"
-                                                  Style="{StaticResource MaterialDesignFilledComboBox}"
-                                                  TextOptions.TextFormattingMode="Display"
-                                                  TextOptions.TextRenderingMode="ClearType"
-                                                  materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
-                                                  materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
+                                                      BorderThickness="0.7" IsEditable="False" Padding="10,18,12,5"
+                                                      BorderBrush="{Binding UIConfig.ThemeColor}"
+                                                      Background="{Binding UIConfig.Background}"
+                                                      Foreground="{Binding UIConfig.Foreground}"
+                                                      FontFamily="{Binding UIConfig.FontFamily}"
+                                                      FontSize="{Binding UIConfig.FontSize}"
+                                                      SelectedIndex="{Binding displaySetting.TextAlignmentC}"
+                                                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                      VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                      materialDesign:ColorZoneAssist.Mode="Custom"
+                                                      materialDesign:HintAssist.Hint="{Localization:Lang TextAlignment}"
+                                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                                      TextOptions.TextFormattingMode="Display"
+                                                      TextOptions.TextRenderingMode="ClearType"
+                                                      materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                                      materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
                                                 <ComboBoxItem Content="{Localization:Lang AligLeft}" />
                                                 <ComboBoxItem Content="{Localization:Lang AligRight}" />
                                                 <ComboBoxItem Content="{Localization:Lang AligJustify}" />
@@ -730,7 +730,7 @@
                                           Foreground="{Binding UIConfig.Foreground}" >
                                     <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="0,2,0,0" >
 
-                                        <Border Width="500" Height="auto" Padding="0,6,0,6" BorderThickness="0.5" CornerRadius="5"
+                                        <Border Width="500" Height="auto" Padding="0,0,0,0" BorderThickness="0.5" CornerRadius="5"
                                                 BorderBrush="{Binding UIConfig.ThemeColor}" >
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -738,7 +738,7 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <Grid Grid.Column="0" >
+                                                <Grid Grid.Column="0" Visibility="Collapsed" >
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*" />
                                                         <ColumnDefinition Width="auto" />
@@ -779,7 +779,32 @@
                                                     </ToggleButton>
                                                 </Grid>
 
-                                                <Grid Grid.Column="1" >
+                                                <Grid Grid.Column="0" >
+                                                    <ComboBox Height="40"
+                                                              BorderThickness="0.7" IsEditable="False" Padding="10,16,12,3"
+                                                              BorderBrush="{Binding UIConfig.ThemeColor}"
+                                                              Background="{Binding UIConfig.Background}"
+                                                              Foreground="{Binding UIConfig.Foreground}"
+                                                              FontFamily="{Binding UIConfig.FontFamily}"
+                                                              FontSize="{Binding UIConfig.FontSize}"
+                                                              SelectedIndex="{Binding dataHandlingSetting.FilterMode}"
+                                                              VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                                              VerticalContentAlignment="Stretch" HorizontalContentAlignment="Left"
+                                                              materialDesign:ColorZoneAssist.Mode="Custom"
+                                                              materialDesign:HintAssist.Hint="{Localization:Lang FilterMode}"
+                                                              Style="{StaticResource MaterialDesignFilledComboBox}"
+                                                              TextOptions.TextFormattingMode="Display"
+                                                              TextOptions.TextRenderingMode="ClearType"
+                                                              materialDesign:TextFieldAssist.TextFieldCornerRadius="5"
+                                                              materialDesign:TextFieldAssist.UnderlineCornerRadius="0,0,10,10" >
+                                                        <ComboBoxItem Content="{Localization:Lang PureAND}" />
+                                                        <ComboBoxItem Content="{Localization:Lang PureOR}" />
+                                                        <ComboBoxItem Content="{Localization:Lang MixedANDOR}" />
+                                                        <ComboBoxItem Content="{Localization:Lang MixedORAND}" />
+                                                    </ComboBox>
+                                                </Grid>
+
+                                                <Grid Grid.Column="1" Margin="0,6,0,6" >
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*" />
                                                         <ColumnDefinition Width="auto" />

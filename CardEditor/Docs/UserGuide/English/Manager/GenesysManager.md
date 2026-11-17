@@ -77,6 +77,12 @@ After reviewing the imported data, click Save to save the entire list currently 
 
 ---
 
-[← Previous: DeckEditor](../Windows/DeckEditor.md)&nbsp;&nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;[Next: Rarity Manager →](../Manager/RarityManager.md)
+Next: [Rarity Manager →](../Manager/RarityManager.md)
+
+Previous:
+
+[← Translation Config Editor](../Translations/TranslationConf.md)
+
+[← Strings Config Editor](../Translations/StringsConf.md)
 
 [← Getting Started](../GettingStarted.md)

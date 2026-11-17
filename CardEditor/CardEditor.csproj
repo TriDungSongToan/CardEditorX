@@ -1015,6 +1015,8 @@
     <None Include="Docs\UserGuide\English\GettingStarted.md" />
     <None Include="Docs\UserGuide\English\Manager\GenesysManager.md" />
     <None Include="Docs\UserGuide\English\Manager\RarityManager.md" />
+    <None Include="Docs\UserGuide\English\Translations\StringsConf.md" />
+    <None Include="Docs\UserGuide\English\Translations\TranslationConf.md" />
     <None Include="Docs\UserGuide\English\Windows\BanListEditor.md" />
     <None Include="Docs\UserGuide\English\Windows\CodeEditor.md" />
     <None Include="Docs\UserGuide\English\Settings\Configuration.md" />
@@ -1133,6 +1135,15 @@
     <None Include="Docs\Images\English\Managers\Genesys\Genesys.png" />
     <None Include="Docs\Images\Japanese\Managers\Genesys\Genesys.png" />
     <None Include="Docs\Images\Vietnamese\Managers\Genesys\Genesys.png" />
+    <None Include="Docs\Images\English\Translations\StringsConf.png" />
+    <None Include="Docs\Images\English\Translations\TranslationConf.png" />
+    <None Include="Docs\Images\Japanese\Translations\StringsConf.png" />
+    <None Include="Docs\Images\Japanese\Translations\TranslationConf.png" />
+    <None Include="Docs\Images\Vietnamese\Translations\StringsConf.png" />
+    <None Include="Docs\Images\Vietnamese\Translations\TranslationConf.png" />
+    <None Include="Docs\Images\English\Windows\ScriptSupport\ScriptSupport.png" />
+    <None Include="Docs\Images\Japanese\Windows\ScriptSupport\ScriptSupport.png" />
+    <None Include="Docs\Images\Vietnamese\Windows\ScriptSupport\ScriptSupport.png" />
     <Content Include="Images\DefaultBg.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

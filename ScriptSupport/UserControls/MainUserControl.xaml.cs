@@ -25,6 +25,7 @@ namespace ScriptSupport.UserControls
         private readonly IScriptInterface _scriptInterface;
         private readonly IImageCardInterface _imageCardInterface;
         private readonly IKonamiIDInterface _konamiIDInterface;
+        private readonly IGenesysInterface _genesysInterface;
         private readonly IScrapiInterface _scrapiInterface;
         private readonly IScrapiyardInterface _scrapiyardInterface;
         private readonly ISpecialCharInterface _specialCharInterface;
@@ -38,7 +39,8 @@ namespace ScriptSupport.UserControls
             MainViewModel vm, CardFilter cardFilter, ResultView resultView,
             IUIConfigInterface uIConfigInterface, ICardElelemtInterface cardElement,
             ICardInterface cardInterface, IScriptInterface scriptInterface, IImageCardInterface imageCardInterface,
-            IKonamiIDInterface konamiIDInterface, IScrapiInterface scrapiInterface, IScrapiyardInterface scrapiyardInterface,
+            IKonamiIDInterface konamiIDInterface, IGenesysInterface genesysInterface,
+            IScrapiInterface scrapiInterface, IScrapiyardInterface scrapiyardInterface,
             ISpecialCharInterface specialCharInterface,
             IDataFolderInterface dataFolderInterface, IFloatingPanelInterface panelService,
             PanelFactory panelPactory,
@@ -51,6 +53,7 @@ namespace ScriptSupport.UserControls
             _scriptInterface = scriptInterface;
             _imageCardInterface = imageCardInterface;
             _konamiIDInterface = konamiIDInterface;
+            _genesysInterface = genesysInterface;
             _scrapiInterface = scrapiInterface;
             _scrapiyardInterface = scrapiyardInterface;
             _specialCharInterface = specialCharInterface;
@@ -114,6 +117,7 @@ namespace ScriptSupport.UserControls
             {
                 var (SuccessDB, MessageDB) = await _cardInterface.LoadCardDBAsync();
                 var (SuccessSc, MessageSc) = await _scriptInterface.LoadScriptsAsync();
+                var (SuccessGP, MessageGP) = await _genesysInterface.LoadGenesysDB();
                 var (SuccessImg, MessageImg) = await _imageCardInterface.LoadCardImagesAsync();
                 if (!SuccessDB)
                 {
@@ -135,6 +139,19 @@ namespace ScriptSupport.UserControls
                         Title = CMess.warning.ToText(),
                         IconType = MessageBoxIconType.Warning,
                         Message = MessageSc,
+                        Buttons = new[] { CMess.ok.ToText() },
+                        DefaultButtonIndex = 0,
+                        ResponseSource = new TaskCompletionSource<int>()
+                    };
+                    await _dialogInterface.ShowMessage(request);
+                }
+                if (!SuccessGP)
+                {
+                    var request = new MessageBoxRequest
+                    {
+                        Title = CMess.warning.ToText(),
+                        IconType = MessageBoxIconType.Warning,
+                        Message = MessageGP,
                         Buttons = new[] { CMess.ok.ToText() },
                         DefaultButtonIndex = 0,
                         ResponseSource = new TaskCompletionSource<int>()
@@ -167,7 +184,7 @@ namespace ScriptSupport.UserControls
                     ResponseSource = new TaskCompletionSource<int>()
                 };
                 await _dialogInterface.ShowMessage(request);
-            }    
+            }
 
             #region Scrapiyard
             var (SuccessScrapiyard, MessageScrapiyard) = await _scrapiyardInterface.LoadSymbols();

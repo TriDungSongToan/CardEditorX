@@ -18,10 +18,13 @@ I'm completely clueless!
 
 
 ---
-[Rarity Manager →](../Manager/RarityManager.md)
 
-[Genesys Manager →](../Manager/GenesysManager.md)
+Next:
 
-[← Previous: BanListEditor](./BanListEditor.md)
+[Translation Config Editor →](../Translations/TranslationConf.md)
+
+[Strings Config Editor →](../Translations/StringsConf.md)
+
+[← Previous: BanListEditor](../Windows/BanListEditor.md)
 
 [← Getting Started](../GettingStarted.md)

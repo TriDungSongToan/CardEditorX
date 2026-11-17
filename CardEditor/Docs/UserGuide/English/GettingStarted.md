@@ -1,4 +1,5 @@
 ﻿# Getting Started
+
 This guide walks you through setting up CardEditorX for the first time and performing a basic card-data workflow.
 If you are looking for project build instructions, see the README.
 
@@ -46,7 +47,14 @@ For detailed instructions on creating and editing BanList using the built-in Ban
 
 For detailed instructions on creating and editing Deck using the built-in DeckEditor, please refer to [DeckEditor](./Windows/DeckEditor.md).
 
-## VI. Manager
+## VI. Translation Editor
+
+For detailed instructions on managing game translations, synchronizing translation files with the latest source files, and updating translation config, please refer to [Translation Config Editor](Translations/TranslationConf.md).
+
+For detailed instructions on managing game strings, synchronizing string files with the latest source files, and updating strings config, please refer to [Strings Config Editor](Translations/StringsConf.md).
+
+
+## VII. Manager
 
 **Rarity Manager:** For detailed instructions on managing Rarity levels, assigning Rarities to individual Cards, and generating images with Rarity Labels, see [Rarity Manager](./Manager/RarityManager.md).
 

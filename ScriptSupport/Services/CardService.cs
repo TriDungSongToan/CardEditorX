@@ -23,19 +23,22 @@ namespace ScriptSupport.Services
         private readonly CardStore _cardStore;
         private FilterCardState _filterState { get; }
         private FilterConfigState _filterConfig { get; }
+        private IGenesysInterface _genesysService;
         private CardDataFilter CurrentData = new();
         private CardTextFilter CurrentText = new();
         private bool CurrentIsLink = false;
         #endregion
 
         public CardService(AppEnvironment env, ConfigStore config,
-            CardStore cardStore, FilterCardState filterState, FilterConfigState filterConfig)
+            CardStore cardStore, FilterCardState filterState,
+            FilterConfigState filterConfig, IGenesysInterface genesysService)
         {
             _env = env;
             _config = config;
             _cardStore = cardStore;
             _filterState = filterState;
             _filterConfig = filterConfig;
+            _genesysService = genesysService;
         }
 
         #region Load Data
@@ -375,6 +378,11 @@ namespace ScriptSupport.Services
             }
 
             //if (CurrentData.GPoint.HasValue && card.GPoint != CurrentData.GPoint.Value) return false;
+            if (CurrentData.GPoint.HasValue)
+            {
+                var gPoint = _genesysService.GetGPoint(card.id);
+                if (gPoint.HasValue && gPoint.Value != CurrentData.GPoint) return false;
+            } 
 
             //if (!MatchString(card.BaseCard.name, CurrentData.CardDesc) && !MatchString(card.BaseCard.desc, CurrentData.CardDesc)) return false;
 
@@ -422,6 +430,12 @@ namespace ScriptSupport.Services
                 if (CurrentData.Atk.Value < 0 && card.atk < 0) return true;
             }
 
+            if (CurrentData.GPoint.HasValue)
+            {
+                var gPoint = _genesysService.GetGPoint(card.id);
+                if (gPoint.HasValue && gPoint.Value == CurrentData.GPoint) return true;
+            }
+
             //if (CurrentData.GPoint.HasValue && card.GPoint == CurrentData.GPoint.Value) return true;
             //if (MatchString(card.BaseCard.name, CurrentData.CardDesc)) return true;
             //if (MatchString(card.BaseCard.desc, CurrentData.CardDesc)) return true;
@@ -460,6 +474,13 @@ namespace ScriptSupport.Services
             // Nhóm Flag
             if (CurrentData.Flag != 0)
                 if ((cd.flag & CurrentData.Flag) == 0) return false;
+
+            // Nhóm Genesys Point
+            if (CurrentData.GPoint.HasValue && CurrentData.GPoint.Value != 0)
+            {
+                var gPoint = _genesysService.GetGPoint(cd.id);
+                if (gPoint.HasValue && gPoint.Value == CurrentData.GPoint) return true;
+            }
 
             // Nhóm Level / Scale — bất kỳ sub-field nào khớp là nhóm này pass
             bool hasLevelFilter = CurrentData.Level.HasValue ||
@@ -557,6 +578,13 @@ namespace ScriptSupport.Services
             // Nhóm Flag
             if (CurrentData.Flag != 0)
                 if ((cd.flag & CurrentData.Flag) == CurrentData.Flag) return true;
+
+            // Nhóm Genesys Point
+            if (CurrentData.GPoint.HasValue && CurrentData.GPoint.Value != 0)
+            {
+                var gPoint = _genesysService.GetGPoint(cd.id);
+                if (gPoint.HasValue && gPoint.Value == CurrentData.GPoint) return true;
+            }
 
             // Nhóm Level / Scale — tất cả sub-field được đặt đều phải khớp
             bool hasLevelFilter = CurrentData.Level.HasValue ||

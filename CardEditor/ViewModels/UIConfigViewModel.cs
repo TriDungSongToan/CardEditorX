@@ -28,7 +28,8 @@ namespace CardEditor.ViewModels
         private Brush _themeColor = Brushes.Purple;
         private IHighlightingDefinition _syntaxHighlighting;
         private FontFamily _fontFamily = new FontFamily("Consolas");
-        private int _fontSize = 12;
+        private int _fontSize = 14;
+        private int _fontSizeGrid = 14;
 
         private FlowDirection _flowDirection = FlowDirection.LeftToRight;
         private TextAlignment _textAlignment = TextAlignment.Left;
@@ -148,6 +149,18 @@ namespace CardEditor.ViewModels
                 }
             }
         }
+        public int FontSizeGrid
+        {
+            get => _fontSizeGrid;
+            set
+            {
+                if (_fontSizeGrid != value)
+                {
+                    _fontSizeGrid = value;
+                    OnPropertyChanged(nameof(FontSizeGrid));
+                }
+            }
+        }
 
         public FlowDirection FlowDirectionC
         {
@@ -263,6 +276,7 @@ namespace CardEditor.ViewModels
 
                 FontFamily = new FontFamily(ConfigViewModel.Instance.displaySetting.FontFamily);
                 FontSize = ConfigViewModel.Instance.displaySetting.FontSize.Value;
+                FontSizeGrid = FontSize - 2;
                 FlowDirectionC = ConfigViewModel.Instance.displaySetting.FlowDirectionC == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 
                 switch (ConfigViewModel.Instance.displaySetting.TextAlignmentC)

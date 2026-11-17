@@ -62,6 +62,7 @@ namespace ScriptSupport
                 builder.Services.AddSingleton<IConfigInterface, ConfigService>();
                 builder.Services.AddSingleton<ICardElelemtInterface, CardElelemtService>();
                 builder.Services.AddSingleton<ICardInterface, CardService>();
+                builder.Services.AddSingleton<IGenesysInterface, GenesysService>();
                 builder.Services.AddSingleton<IScriptInterface, ScriptService>();
                 builder.Services.AddSingleton<IScrapiInterface, ScrapiService>();
                 builder.Services.AddSingleton<IScrapiyardInterface, ScrapiyardService>();

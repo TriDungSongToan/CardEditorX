@@ -163,7 +163,7 @@ Write Mode determines how CardEditorX handles data when writing or importing rec
 
 ### Filter Mode
 
-Filter Mode determines how multiple filter conditions are combined.
+Filter Mode determines how multiple filter conditions are combined during filtering.
 
 |Mode|Description|
 |:---|:---|

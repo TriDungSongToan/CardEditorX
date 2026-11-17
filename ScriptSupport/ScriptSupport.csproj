@@ -183,6 +183,7 @@
 
   <ItemGroup>
     <Folder Include="bin\Debug\net8.0-windows\data\CardData\Images\" />
+    <Folder Include="Docs\Structure\" />
   </ItemGroup>
 
 </Project>

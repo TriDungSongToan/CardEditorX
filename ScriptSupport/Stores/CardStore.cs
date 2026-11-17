@@ -7,9 +7,11 @@ namespace ScriptSupport.Stores
         private Dictionary<ulong, CardData> _cardDatas = new();
         private Dictionary<ulong, IReadOnlyList<CardText>> _cardTexts = new();
         private Dictionary<ulong, IReadOnlyList<CardData>> _aliasIndex = new();
+        private Dictionary<ulong, int> _genesysData = new();
         public IReadOnlyDictionary<ulong, CardData> CardDatas => _cardDatas;
         public IReadOnlyDictionary<ulong, IReadOnlyList<CardText>> CardTexts => _cardTexts;
         public IReadOnlyDictionary<ulong, IReadOnlyList<CardData>> AliasIndex => _aliasIndex;
+        public IReadOnlyDictionary<ulong, int> GenesysData => _genesysData;
 
         public async Task SetCardDatas(Dictionary<ulong, CardData> cardDatas)
         {
@@ -38,6 +40,11 @@ namespace ScriptSupport.Stores
         {
             if (cardTexts == null) return;
             Interlocked.Exchange(ref _cardTexts, cardTexts);
+        }
+        public void SetGenesysData(Dictionary<ulong, int> cardGenesys)
+        {
+            if (cardGenesys == null) return;
+            Interlocked.Exchange(ref _genesysData, cardGenesys);
         }
 
         public void Dispose()

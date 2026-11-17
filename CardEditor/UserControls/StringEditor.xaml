@@ -50,7 +50,7 @@
             </ObjectDataProvider>
             <Style x:Key="ReadOnlyTextStyle" TargetType="TextBlock">
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="FontSize" Value="{Binding FontSizeGrid, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
                 <Setter Property="VerticalAlignment" Value="Top"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
@@ -62,7 +62,7 @@
                 <Setter Property="IsReadOnly" Value="True"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="FontSize" Value="{Binding FontSizeGrid, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>
                 <Setter Property="VerticalAlignment" Value="Top"/>
@@ -165,7 +165,7 @@
                              Padding="5,12,3,0" BorderThickness="0.7" IsReadOnly="True"
                              Text="{Binding SourceFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -198,7 +198,7 @@
                              Padding="5,12,3,0" BorderThickness="0.7" IsReadOnly="True"
                              Text="{Binding TranslationFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                             Background="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                             Background="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              Foreground="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              FontFamily="{Binding FontFamily, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                              FontSize="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
@@ -312,8 +312,8 @@
 
                     <Controls:FlatTwoStateToggle x:Name="tbtnFilepath" Grid.Column="2" Panel.ZIndex="3" Width="25" Height="24"
                                                  HorizontalAlignment="Right" VerticalAlignment="Stretch"
-                                                 BackgroundBrush="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
-                                                 HoverBackgroundBrush="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                 BackgroundBrush="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
+                                                 HoverBackgroundBrush="{Binding Background, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                  ForegroundBrush="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                  BorderBrush="{Binding ThemeColor, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                  BorderThickness="1" BorderCornerRadius="5"
@@ -414,7 +414,8 @@
                                                     ToolTip="{Lag:Localize DragDropTool}"
                                                     PreviewMouseLeftButtonDown="RowHandle_PreviewMouseLeftButtonDown"
                                                     PreviewMouseMove="RowHandle_PreviewMouseMove" >
-                                                <TextBlock Text="⋮⋮" FontSize="12" Opacity="0.5" Margin="0,2,0,0"
+                                                <TextBlock Text="⋮⋮" Opacity="0.5" Margin="0,2,0,0"
+                                                           FontSize="{Binding FontSizeGrid, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"
                                                            HorizontalAlignment="Center" VerticalAlignment="Top" />
                                             </Border>
                                         </DataTemplate>
@@ -468,7 +469,7 @@
                                         <Style TargetType="TextBox">
                                             <Setter Property="Background" Value="Transparent"/>
                                             <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
-                                            <Setter Property="FontSize" Value="12"/>
+                                            <Setter Property="FontSize" Value="{Binding FontSize, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
                                             <Setter Property="TextWrapping" Value="Wrap"/>
                                             <Setter Property="AcceptsReturn" Value="False"/>
                                             <Setter Property="VerticalContentAlignment" Value="Top"/>
@@ -482,9 +483,9 @@
                             </DataGrid.Columns>
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
-                                    <Setter Property="Background" Value="{Binding BackgroundControl, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
+                                    <Setter Property="Background" Value="Transparent"/>
                                     <Setter Property="Foreground" Value="{Binding Foreground, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
-                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="FontSize" Value="{Binding FontSizeGrid, Source={x:Static ViewModels:UIConfigViewModel.Instance}}"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Left"/>
                                     <Setter Property="VerticalContentAlignment" Value="Center"/>

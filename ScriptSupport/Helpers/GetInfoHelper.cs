@@ -77,24 +77,21 @@ namespace ScriptSupport.Helpers
             return (linkarrow, deffromtext, notHasATK);
         }
 
-        public static T? ParseProperty<T>(string input) where T : struct, IConvertible
+        public static T? ParseProperty<T>(string? input) where T : struct, IConvertible
         {
             if (string.IsNullOrWhiteSpace(input)) return null;
 
-            var normalized = input.Trim().Replace(',', '.');
-            var integerPart = normalized.Split('.')[0];
+            var s = input.Trim();
+            var ci = CultureInfo.InvariantCulture;
 
-            try
-            {
-                if (typeof(T) == typeof(int) && int.TryParse(integerPart, out var i)) return (T)(object)i;
-                if (typeof(T) == typeof(long) && long.TryParse(integerPart, out var l)) return (T)(object)l;
-                if (typeof(T) == typeof(ulong) && ulong.TryParse(integerPart, out var ul)) return (T)(object)ul;
-            }
-            catch
-            {
-                return default(T);
-            }
-            return default(T);
+            if (typeof(T) == typeof(ulong) && ulong.TryParse(s, NumberStyles.None, ci, out var ul))
+                return (T)(object)ul;
+            if (typeof(T) == typeof(int) && int.TryParse(s, NumberStyles.AllowLeadingSign, ci, out var i))
+                return (T)(object)i;
+            if (typeof(T) == typeof(long) && long.TryParse(s, NumberStyles.AllowLeadingSign, ci, out var l))
+                return (T)(object)l;
+
+            return null; // parse thất bại hoặc T không được hỗ trợ
         }
         public static long? ParsePowerProperty(string input)
         {

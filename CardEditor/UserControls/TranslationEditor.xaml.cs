@@ -335,6 +335,15 @@ namespace CardEditor.UserControls
                     return (Source: source, Translation: translation, Combine: _service.Merge(source, translation));
                 });
 
+                if (CombineData != null)
+                {
+                    foreach (var s in CombineData.Sections)
+                        foreach (var r in s.Content)
+                            r.PropertyChanged -= Row_PropertyChanged;
+
+                    CombineData = null;
+                }
+
                 SourceFileData = result.Source;
                 TranslationFileData = result.Translation;
                 SelectedSection = null;
@@ -789,13 +798,16 @@ namespace CardEditor.UserControls
         #region IDisposable
         public void Dispose()
         {
-            foreach (var s in CombineData.Sections)
-                foreach (var r in s.Content)
-                    r.PropertyChanged -= Row_PropertyChanged;
+            if (CombineData != null)
+            {
+                foreach (var s in CombineData.Sections)
+                    foreach (var r in s.Content)
+                        r.PropertyChanged -= Row_PropertyChanged;
+            }
 
             SourceFileData = null;
             TranslationFileData = null;
-            CombineData = new TranslationCombine();
+            CombineData = null;
             SelectedSection = null;
         }
         #endregion

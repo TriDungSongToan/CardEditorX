@@ -84,6 +84,3 @@ Unregistering CardEditor X does not uninstall or remove the application.
 [← BanListEditor](../Windows/BanListEditor.md)
 
 [← DeckEditor](../Windows/DeckEditor.md)
-
-
-

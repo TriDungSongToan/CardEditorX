@@ -168,6 +168,12 @@ The resulting images can be used wherever rarity-specific card artwork is requir
 
 ---
 
-[← Previous: DeckEditor](../Windows/DeckEditor.md)&nbsp;&nbsp;&nbsp;||&nbsp;&nbsp;&nbsp;[Next: Genesys Manager →](../Manager/GenesysManager.md)
+Next: [Genesys Manager →](../Manager/GenesysManager.md)
+
+Previous:
+
+[← Translation Config Editor](../Translations/TranslationConf.md)
+
+[← Strings Config Editor](../Translations/StringsConf.md)
 
 [← Getting Started](../GettingStarted.md)
