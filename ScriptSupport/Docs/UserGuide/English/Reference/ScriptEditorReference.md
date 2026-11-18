@@ -1,4 +1,4 @@
-﻿# Script Editor Reference
+﻿# Script Editor
 
 ## 1. Overview
 
@@ -43,7 +43,7 @@ This restriction helps protect existing game scripts from accidental modificatio
 
 For more information, see [Configuration](../Settings/Configuration.md).
 
-## 3. Code Editor Features
+## 3. Code Editor
 
 ### 3.1. Syntax Highlighting
 
@@ -88,19 +88,38 @@ The Script Editor uses a tab-based interface to manage multiple open files.
 
 ### 4.1. Temporary and Permanent Tabs
 
-The editor supports two types of tabs:
+The Editor supports two types of Tabs:
 
-- **Temporary Tab:** Used to preview content without permanently occupying a tab.
-- **Permanent Tab:** Remains open until explicitly closed.
+**Temporary Tab**
 
-Only one Temporary Tab can exist at a time. It is always positioned at the rightmost end of the tab collection, and its header is displayed in italic.
+- Allows users to quickly preview the contents of multiple files without manually closing Tabs.
+- The Tab title is always positioned at the far right of the Tab Control.
+- The Tab title is displayed in *italic* text.
+- Only one Temporary Tab can exist at a time.
+- When another Script Card is opened, the current Temporary Tab is replaced with the newly selected Script Card.
 
-Opening another item replaces the existing Temporary Tab, if one exists. Permanent Tabs are not affected.
+**Permanent Tab**
 
-A Temporary Tab can be promoted to a Permanent Tab in either of the following ways:
+- The Tab remains open for long-term viewing.
+- The Tab title is positioned on the left side of the Tab Control.
+- The Tab title is displayed in regular (non-italic) text.
+- Multiple Permanent Tabs can exist at the same time.
+- The Tab remains open when the user selects another Script Card.
+- Its contents are not replaced by newly opened Script Cards.
+- The Tab remains open until the user explicitly closes it.
 
-- Double-click its tab header.
-- Modify the displayed content.
+If no Temporary Tab is currently open, the next Item opened with a Single Click will create a new Temporary Tab.
+
+When another Tab is opened, the current Temporary Tab, if any, will be replaced. Permanent Tabs remain unaffected.
+
+#### Converting a Temporary Tab into a Permanent Tab
+
+A Temporary Tab can be converted into a Permanent Tab in either of the following ways:
+
+1. **Double-click the Tab title.**
+2. **Edit the displayed content.** Any modification to the content will automatically convert the Temporary Tab into a Permanent Tab.
+
+Once converted, the Tab remains open and will no longer be replaced when the user selects another Script Card.
 
 ### 4.2. Tab Management
 
@@ -112,7 +131,6 @@ Users can also tear off tabs and merge them into other tab groups, allowing the 
 
 Previous:
 
-[← Scrapi Reference](../Reference/ScrapiReference.md)
+[← Scrapyard](../Reference/ScrapiReference.md)
 
 [← Getting Started](../GettingStarted.md)
-

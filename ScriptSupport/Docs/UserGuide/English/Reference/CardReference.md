@@ -1,4 +1,4 @@
-﻿# Card Reference
+﻿# Card 
 
 ## 1. Overview
 
@@ -30,8 +30,8 @@ The loading process produces two main groups of data:
 
 The standard YGO Database uses two primary tables to store Card information:
 
-| Table | Description |
-|---|---|
+| Table   | Description |
+|---------|-------------|
 | `datas` | Stores Card Data, including `scope`, `type`, `race`, `attribute`, and other gameplay properties. |
 | `texts` | Stores Card Text, including `name`, `desc`, and `str`. |
 
@@ -110,11 +110,11 @@ The search is performed across all loaded Card Text records belonging to all Car
 
 The following fields are searched:
 
-| Field | Description |
-|---|---|
+| Field  | Description |
+|--------|-------------|
 | `Name` | Card name. |
 | `Desc` | Card description and effect text. |
-| `Str` | Additional Card text. |
+| `Str`  | Additional Card text. |
 
 Because each Card ID can contain multiple Card Text records, the search includes every loaded record in every Card's `List<CardText>`.
 
@@ -136,8 +136,8 @@ Both search methods display matching Cards in their respective result lists.
 
 Users can open a result using the following mouse interactions:
 
-| Mouse Interaction | Behavior |
-|---|---|
+| Mouse Interaction | Behavior     |
+|-------------------|--------------|
 | Single Left-click | Opens the selected content in a Temporary Tab. |
 | Double Left-click | Opens the selected content in a Permanent Tab. |
 
@@ -157,12 +157,13 @@ The Card Text section allows users to search Cards using textual information.
 
 Available search fields include:
 
-| Field | Description |
-|---|---|
-| Card ID / Alias | Searches using the Card ID or Alias. |
-| Card Name | Searches using the Card Name. |
-| Card Desc | Searches within Card Description. |
-| Card Str | Searches within additional Card text. |
+| Field       | Description          |
+|-------------|----------------------|
+| Card ID     | Searches using the Card ID. |
+| Card Alias  | Searches using the Card Alias. |
+| Card Name   | Searches using the Card Name. |
+| Card Desc   | Searches within Card Description. |
+| Card Str    | Searches within additional Card text. |
 
 These fields provide more specific search options than the basic Card Description Search.
 
@@ -217,6 +218,8 @@ The selection is based on the available loaded records. Script Support does not 
 
 When a Card is selected, Script Support uses its Card ID to look up the corresponding Script File paths in `CardScripts`.
 
+<!--
+
 The lookup operation is conceptually equivalent to:
 
 ```csharp
@@ -225,6 +228,7 @@ if (CardScripts.TryGetValue(cardId, out var paths))
     // Display the corresponding Script Files.
 }
 ```
+-->
 
 Each path represents an individual Script File.
 
@@ -236,22 +240,6 @@ Therefore:
 - If a Card ID has multiple associated Script Files, multiple TabItems are displayed.
 - If no Script File is associated with the Card ID, there is no corresponding Script content to display.
 
-The Script Result supports both Temporary and Permanent Tabs.
-
-**Temporary Tabs**
-
-- Only one Temporary Tab can exist at a time.
-- A Temporary Tab is always positioned at the rightmost side of the Tab Control.
-- Its header is displayed in italic.
-- Opening another Card Script replaces the existing Temporary Tab.
-- Double-clicking the Temporary Tab header or modifying its displayed content promotes it to a Permanent Tab.
-
-**Permanent Tabs**
-
-- Permanent Tabs remain open when another Card is selected.
-- They are not replaced when new Card Scripts are displayed.
-- Users can keep multiple Script Files open simultaneously for reference.
-
 ---
 
 Next: [Scrapi Reference →](../Reference/ScrapiReference.md)
@@ -261,4 +249,3 @@ Previous:
 [← Interface Overview](../Interface/InterfaceOverview.md)
 
 [← Getting Started](../GettingStarted.md)
-

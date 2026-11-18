@@ -1,8 +1,8 @@
-﻿# Scrapi Reference
+﻿# Scrapyard
 
 ## 1. Overview
 
-Scrapi Reference provides documentation for the functions, constants, namespaces, enums, tags, and types defined by the YGO OCG-Core.
+Scrapyard provides documentation for the functions, constants, namespaces, enums, tags, and types defined by the YGO OCG-Core.
 
 Script Support organizes these components into searchable categories, allowing users to look up their names, descriptions, and related documentation without having to search through the source files manually.
 
@@ -12,14 +12,14 @@ The Scrapi data is presented through the **Scrapi Books** section in the Navigat
 
 Script Support organizes Scrapi into six categories:
 
-| Category | Description |
-|---|---|
-| Functions | Functions provided by YGO OCG-Core. |
-| Constants | Constant values defined by YGO OCG-Core. |
-| Namespaces | Namespaces used to organize related components. |
-| Enums | Enumerations and their associated members. |
-| Tags | Tags defined by YGO OCG-Core. |
-| Types | Types referenced by the Scrapi definitions. |
+| Category    | Description        |
+|-------------|--------------------|
+| Functions   | Functions provided by YGO OCG-Core. |
+| Constants   | Constant values defined by YGO OCG-Core. |
+| Namespaces  | Namespaces used to organize related components. |
+| Enums       | Enumerations and their associated members. |
+| Tags        | Tags defined by YGO OCG-Core. |
+| Types       | Types referenced by the Scrapi definitions. |
 
 These categories are collectively referred to as **Scrapi** throughout this User Guide.
 
@@ -66,6 +66,7 @@ To enable or disable this feature, navigate to:
 When Auto Search is disabled, selecting a Scrapi entry does not automatically trigger a related Card Script search.
 
 ---
+
 Next: [Script Editor Reference →](../Reference/ScriptEditorReference.md)
 
 Previous:

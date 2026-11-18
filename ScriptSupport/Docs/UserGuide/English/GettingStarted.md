@@ -1,19 +1,25 @@
 ﻿# Getting Started
 
 This guide walks you through setting up Script Support for the first time and performing a basic workflow with the Card Data Lookup Library.
-If you are looking for project build instructions, see the README.
+
+If you are looking for project build instructions, see the [README](../../../README.md).
 
 ## Prerequisites
+
 Before starting, make sure you have:
+
 - **OS:** Windows 7, 10 or 11
 - **Runtime:** .NET 8
 - **Internet connection:** Required for downloading the required data packages during initial setup
 
 ## Download Data Package
+
 When ScriptSupport is launched for the first time, it will need to download and initialize the necessary data packages.
+
 Make sure you have an active Internet connection and allow the initialization process to complete before using the application.
 
 Do not close the application while the initial data pack download is in progress.
+
 Once the required packages have been installed, ScriptSupport is ready for configuration.
 
 ---
@@ -58,7 +64,7 @@ To search for a Card Script:
 
 You can also select a Card to view its associated Card Scripts in **Script Result**, if available.
 
-For more information about Card Data, Card Text, Card Scripts, and search options, see [Card Reference](./Reference/CardReference.md).
+For more information about Card Data, Card Text, Card Scripts, and search options, see [Card](./Reference/CardReference.md).
 
 ### 2. Explore Scrapi
 
@@ -74,7 +80,7 @@ You can also use the Scr Desc tab to search for Scrapi entries by their descript
 
 If **Auto Search** is enabled, selecting a Scrapi entry automatically searches the available Lua scripts for its name. Matching scripts are displayed in **Script Result**.
 
-For more information, see [Scrapi Reference](./Reference/ScrapiReference.md).
+For more information, see [Scrapyard](./Reference/ScrapiReference.md).
 
 ### 3. Open and Edit a Script
 
@@ -107,7 +113,6 @@ If you only intend to use Script Support for browsing and referencing game data,
 
 This helps prevent accidental changes to existing game scripts and avoids creating additional files unintentionally.
 
-For more information about editing scripts and managing editor tabs, see [Script Editor Reference](./Reference/ScriptEditorReference.md).
-
+For more information about editing scripts and managing editor tabs, see [Script Editor](./Reference/ScriptEditorReference.md).
 
 ---

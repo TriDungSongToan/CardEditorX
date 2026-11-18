@@ -1,6 +1,8 @@
 ﻿# Interface Overview
 
-The Script Support interface is organized into three main areas: the **Navigation Panel**, the **Result Panel**, and the **Advanced Panel**. Each area provides access to different resources and functionalities, allowing users to search, browse, and explore Card Information, Card Scripts, and Scrapi Books within a unified workspace.
+The Script Support interface is organized into three main areas:
+the **Navigation Panel**, the **Result Panel**, and the **Advanced Panel**.
+Each area provides access to different resources and functionalities, allowing users to search, browse, and explore Card Information, Card Scripts, and Scrapi Books within a unified workspace.
 
 ![Script Support Interface](../../../Images/English/OverView/ScriptSupport.png)
 
@@ -47,7 +49,7 @@ Items in the search results can be opened using either of the following interact
 - **Single Click:** Opens the selected item's content in a Temporary Tab.
 - **Double Click:** Opens the selected item's content in a Permanent Tab.
 
-The behavior of Temporary and Permanent Tabs is described in the [Tab Management](./Workspace/TabManagement.md) documentation.
+The behavior of Temporary and Permanent Tabs is described in the [Script Editor Reference](../Reference/ScriptEditorReference.md) documentation.
 
 ### III. Scrapi Books
 
@@ -103,34 +105,6 @@ The lower section displays Card Scripts in a Tab-based interface.
 
 Each opened Card Script is displayed in its own Tab, allowing users to switch between multiple scripts within the same workspace.
 
-#### Temporary and Permanent Tabs
-
-Script Support supports two types of Tabs:
-
-**Permanent Tabs**
-
-- Their Tab Headers are positioned on the left side of the Tab Control.
-- They remain open when another Card Script is selected.
-- They are not replaced by newly opened Card Scripts.
-
-**Temporary Tabs**
-
-- At most one Temporary Tab can exist at a time.
-- A Temporary Tab is always positioned at the rightmost position of the Tab Control.
-- Its Tab Header is displayed in *italic* text.
-- When another Card Script is opened, the existing Temporary Tab is replaced by the newly selected Card Script.
-
-If no Temporary Tab is currently open, the next item opened with a Single Click creates one.
-
-#### Promoting a Temporary Tab
-
-A Temporary Tab can be converted into a Permanent Tab using either of the following methods:
-
-1. **Double-click its Tab Header.**
-2. **Modify its displayed content.** Making any change to the content automatically promotes the Temporary Tab to a Permanent Tab.
-
-Once promoted, the Tab remains open and is no longer replaced when another Card Script is selected.
-
 #### Tab Organization
 
 Script Support supports drag-and-drop Tab operations, allowing users to:
@@ -155,7 +129,8 @@ Provides text-based search functionality for Cards.
 
 Searchable fields include:
 
-- Card ID / Alias.
+- Card ID
+- Card Alias
 - Card Name.
 - Card Description.
 - Card String.
@@ -185,7 +160,7 @@ Depending on the available data, this section may include:
 
 ---
 
-Next: [Card Reference →](../Reference/CardReference.md)
+Next: [Card →](../Reference/CardReference.md)
 
 Previous:
 

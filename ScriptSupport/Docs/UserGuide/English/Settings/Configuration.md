@@ -6,7 +6,6 @@ To open the Configuration window, select **Settings** → **Configuration** from
 
 Configuration settings are organized into several sections based on their purpose. Changes made in the Settings window are applied to the corresponding application components.
 
-
 <details>
 <summary><strong><big>&nbsp;&nbsp;User Settings</big></strong></summary>
 
@@ -29,6 +28,7 @@ The selected directory should be the root folder of your data source. In most ca
 The Application can still run without a configured Data Source. However, most features that rely on data lookup, search, or resource discovery will not work correctly.
 
 To set the path, you can use one of the following methods:
+
 - Click the "Browse" button (at the top-right of the input field) and navigate to the target folder.
 - Use the "Copy as path" option for the target folder and press Ctrl + V in the input field.
 - Drag and drop the target folder directly into the input field to obtain the path.
@@ -40,6 +40,7 @@ Note: Avoid selecting a data source folder that is excessively large or contains
 The Language setting determines the language used to display the App interface and content.
 
 To change the language:
+
 1. Open User Settings
 2. Select the desired Language from the Language dropdown list
 3. Click the Save button
@@ -47,6 +48,7 @@ To change the language:
 Available languages: English, Vietnamese, Japanese.
 
 To add a new language:
+
 1. Copy the English folder located at `ScriptSupport/data/CardData/Language/`
 2. Paste the copied folder into the same Language directory
 3. Rename the copied folder to the name of the new language
@@ -61,7 +63,6 @@ This setting only determines the display Source for Data Realization from the Ca
 It does not affect the underlying data-processing logic or database operations.
 
 If this setting is not configured, CardEditorX can still perform its normal database operations, but features that rely on Data Realization may not display the expected game-related information.
-
 
 </details>
 
@@ -116,7 +117,6 @@ If Maximum Items is set to 500, the application returns only the first 500 match
 
 This limitation helps reduce processing time and improve application performance, especially when searching through large Data Sources.
 
-
 ### 2. Advanced Filter
 
 Advanced Filter provides additional options for controlling how search queries are matched against the target text.
@@ -147,21 +147,25 @@ These options allow users to customize search behavior according to their requir
 
 Filter Mode determines how multiple filter conditions are combined during filtering.
 
-|Mode|Description|
-|:---|:---|
-|Pure AND|A card must satisfy all filter conditions|
-|Pure OR|A card only needs to satisfy one or more filter conditions|
-|Mixed AND-OR|Applies AND between groups and OR within each group|
-|Mixed OR-AND|Applies OR between groups and AND within each group|
+| Mode          | Description      |
+|---------------|------------------|
+| Pure AND      | A card must satisfy all filter conditions|
+| Pure OR       | A card only needs to satisfy one or more filter conditions|
+| Mixed AND-OR  | Applies AND between groups and OR within each group|
+| Mixed OR-AND  | Applies OR between groups and AND within each group|
 
-For example, given two filter groups:
+For example, consider the following two Filter Groups:
 
 - Group A: Condition 1 + Condition 2
 - Group B: Condition 3 + Condition 4
 
-With Mixed AND-OR, a card must satisfy => (Condition 1 OR Condition 2) AND (Condition 3 OR Condition 4)
+With AND-OR Combination, a Card must satisfy the following expression:
 
-With Mixed OR-AND, the groups are combined => (Condition 1 AND Condition 2) OR (Condition 3 AND Condition 4)
+`(Condition 1 OR Condition 2) AND (Condition 3 OR Condition 4)`
+
+With OR-AND Combination, the Groups are combined using the following expression:
+
+`(Condition 1 AND Condition 2) OR (Condition 3 AND Condition 4)`
 
 ### Auto Search
 
