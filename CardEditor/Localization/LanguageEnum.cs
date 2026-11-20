@@ -250,6 +250,8 @@ namespace CardEditor.Localization
         IncludeLanguage = 0x317,    //Include Language
         ExcludeLanguage = 0x318,    //Exclude Language
 
+        Group = 0x319,              //Group
+
         #endregion
 
         #region Create Image

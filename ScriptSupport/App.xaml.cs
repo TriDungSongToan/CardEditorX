@@ -68,6 +68,7 @@ namespace ScriptSupport
                 builder.Services.AddSingleton<IScrapiyardInterface, ScrapiyardService>();
                 builder.Services.AddSingleton<IImageCardInterface, ImageCardService>();
                 builder.Services.AddSingleton<IKonamiIDInterface, KonamiIDService>();
+                builder.Services.AddSingleton<IHelpInterface, HelpService>();
                 builder.Services.AddSingleton<ISpecialCharInterface, SpecialCharService>();
                 builder.Services.AddSingleton<ILauncherInterface, LauncherService>();
                 builder.Services.AddSingleton<IItemsSourceInterface, ItemsSourceService>();

@@ -220,6 +220,8 @@
 0x317	Include Language
 0x318	Exclude Language
 
+0x319	Group
+
 #=======Create Image=======#
 0x321	Create Image
 0x322	Create a Card Image, using data from the Card list. Right click to open settings dialog.

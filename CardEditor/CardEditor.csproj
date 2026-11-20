@@ -1012,6 +1012,9 @@
     <None Include="Docs\Structure\English\GenesysCardStructure.md" />
     <None Include="Docs\Structure\English\RarityCardStructure.md" />
     <None Include="Docs\Structure\English\RarityListStructure.md" />
+    <None Include="Docs\UserGuide\English\Concepts\ItemList.md" />
+    <None Include="Docs\UserGuide\English\Concepts\Scope.md" />
+    <None Include="Docs\UserGuide\English\Data\ItemEditor\ItemEditor.md" />
     <None Include="Docs\UserGuide\English\GettingStarted.md" />
     <None Include="Docs\UserGuide\English\Manager\GenesysManager.md" />
     <None Include="Docs\UserGuide\English\Manager\RarityManager.md" />
@@ -1144,6 +1147,24 @@
     <None Include="Docs\Images\English\Windows\ScriptSupport\ScriptSupport.png" />
     <None Include="Docs\Images\Japanese\Windows\ScriptSupport\ScriptSupport.png" />
     <None Include="Docs\Images\Vietnamese\Windows\ScriptSupport\ScriptSupport.png" />
+    <None Include="Docs\Images\English\Data\ItemEditor\CreditTeam.png" />
+    <None Include="Docs\Images\English\Data\ItemEditor\FilterSettings.png" />
+    <None Include="Docs\Images\English\Data\ItemEditor\ImportData.png" />
+    <None Include="Docs\Images\English\Data\ItemEditor\PendulumLanguage.png" />
+    <None Include="Docs\Images\English\Data\ItemEditor\ReplaceField.png" />
+    <None Include="Docs\Images\English\Data\ItemEditor\ReplaceText.png" />
+    <None Include="Docs\Images\Japanese\Data\ItemEditor\CreditTeam.png" />
+    <None Include="Docs\Images\Japanese\Data\ItemEditor\FilterSettings.png" />
+    <None Include="Docs\Images\Japanese\Data\ItemEditor\ImportData.png" />
+    <None Include="Docs\Images\Japanese\Data\ItemEditor\PendulumLanguage.png" />
+    <None Include="Docs\Images\Japanese\Data\ItemEditor\ReplaceField.png" />
+    <None Include="Docs\Images\Japanese\Data\ItemEditor\ReplaceText.png" />
+    <None Include="Docs\Images\Vietnamese\Data\ItemEditor\CreditTeam.png" />
+    <None Include="Docs\Images\Vietnamese\Data\ItemEditor\FilterSettings.png" />
+    <None Include="Docs\Images\Vietnamese\Data\ItemEditor\ImportData.png" />
+    <None Include="Docs\Images\Vietnamese\Data\ItemEditor\PendulumLanguage.png" />
+    <None Include="Docs\Images\Vietnamese\Data\ItemEditor\ReplaceField.png" />
+    <None Include="Docs\Images\Vietnamese\Data\ItemEditor\ReplaceText.png" />
     <Content Include="Images\DefaultBg.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

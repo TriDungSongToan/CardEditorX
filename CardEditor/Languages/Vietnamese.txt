@@ -220,6 +220,8 @@
 0x317	Bao gồm ngôn ngữ
 0x318	Loại trừ ngôn ngữ
 
+0x319	Nhóm
+
 #=======Create Image=======#
 0x321	Tạo ảnh
 0x322	Tạo hình ảnh Thẻ, Sử dụng dữ liệu từ danh sách Thẻ. Chuột phải để mở hộp thoại cài đặt.

@@ -391,6 +391,7 @@ namespace CardEditor.Views
                 }
                 AddCreditCommand?.RaiseCanExecuteChanged();
                 ModifyCreditCommand?.RaiseCanExecuteChanged();
+                DeleteCreditCommand?.RaiseCanExecuteChanged();
             }
         }
         private string _idText = string.Empty;

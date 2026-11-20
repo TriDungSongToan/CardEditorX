@@ -2,8 +2,8 @@
 using System.Windows.Media;
 using System.ComponentModel;
 using ScriptSupport.Models;
-using ScriptSupport.Stores;
 using ScriptSupport.States;
+using ScriptSupport.Stores;
 using ScriptSupport.Commands;
 using ScriptSupport.Interfaces;
 using ScriptSupport.Environment;
@@ -19,7 +19,9 @@ namespace ScriptSupport.ViewModels
         private readonly AppEnvironment _appEnvironment;
         private readonly ConfigStore _configStore;
         private readonly IConfigInterface _configInterface;
+        private readonly IHelpInterface _helpInterface;
         private readonly IDialogInterface _dialogService;
+        private readonly ILauncherInterface _launcherService;
         #endregion
 
         #region Propertys
@@ -33,6 +35,7 @@ namespace ScriptSupport.ViewModels
         #endregion
 
         #region Command
+        public RelayCommand? HelpCommand { get; private set; }
         public RelayCommand? BrowseDataSourceCommand { get; private set; }
         public RelayCommand? BrowseWebPathCommand { get; private set; }
         public RelayCommand? ResetSettingCommand { get; private set; }
@@ -42,13 +45,15 @@ namespace ScriptSupport.ViewModels
 
         #region Constructor
         public SettingViewModel(UIConfigState uIConfig, AppEnvironment appEnvironment, ConfigStore configStore,
-            IConfigInterface configInterface, IDialogInterface dialogService)
+            IConfigInterface configInterface, IHelpInterface helpInterface, IDialogInterface dialogService, ILauncherInterface launcherService)
         {
             UIConfig = uIConfig;
             _appEnvironment = appEnvironment;
             _configStore = configStore;
             _configInterface = configInterface;
+            _helpInterface = helpInterface;
             _dialogService = dialogService;
+            _launcherService = launcherService;
 
             InitializeEvent();
             InitializeCommands();
@@ -81,6 +86,7 @@ namespace ScriptSupport.ViewModels
 
         private void InitializeCommands()
         {
+            HelpCommand = new ScriptSupport.Commands.RelayCommand(async _ => await BrowseHelp());
             BrowseDataSourceCommand = new ScriptSupport.Commands.RelayCommand(_ => BrowseDataSourcePath());
             BrowseWebPathCommand = new ScriptSupport.Commands.RelayCommand(_ => BrowseWebPath());
             ResetSettingCommand = new ScriptSupport.Commands.RelayCommand(async _ => await ResetSetting());
@@ -175,6 +181,25 @@ namespace ScriptSupport.ViewModels
         #endregion
 
         #region Command
+        private async Task BrowseHelp()
+        {
+            string url = _helpInterface.BuildConfigHelpUrl();
+            if (string.IsNullOrEmpty(url)) return;
+
+            var (Success, ErrorMessage) = _launcherService.OpenWeb(url);
+            if (!Success)
+            {
+                var request = new MessageBoxRequest
+                {
+                    Title = CMess.error.ToText(),
+                    IconType = MessageBoxIconType.Error,
+                    Message = $"{CMess.errorOcc.ToText()} {ErrorMessage}",
+                    Buttons = new[] { CMess.ok.ToText() },
+                    ResponseSource = null
+                };
+                await _dialogService.ShowMessage(request);
+            }
+        }
         private void BrowseDataSourcePath()
         {
             string path = _dialogService.OpenFolder(CMess.DataSource.ToText());

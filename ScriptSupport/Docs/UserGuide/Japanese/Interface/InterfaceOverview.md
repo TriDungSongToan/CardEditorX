@@ -4,7 +4,7 @@ Script Support のインターフェースは、主に 3 つの領域で構成�
 **ナビゲーションパネル**、**Result Panel**、および **高度な検索パネル** です。
 各領域は、それぞれ異なるリソースや機能へのアクセスを提供します。これにより、ユーザーは同じ作業スペース内で、カード、カードスクリプト、Scrapi Books の情報を検索、閲覧、参照できます。
 
-![Script Support のインターフェース](../../../Images/Vietnamese/OverView/ScriptSupport.png)
+![Script Support のインターフェース](../../../Images/Japanese/OverView/ScriptSupport.png)
 
 ## A. ナビゲーションパネル
 

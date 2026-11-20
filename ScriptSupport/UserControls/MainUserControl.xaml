@@ -204,8 +204,9 @@
                                                Visibility="{Binding ActualWidth, ElementName=HelpMenuItem, Converter={StaticResource WidthToVisibilityMenu}}" />
                                 </Grid>
                             </MenuItem.Header>
-                            <MenuItem Header="{Localization:Lang ChkUpdate}" Command="{Binding CheckUpDateCommand}" />
+                            <MenuItem Header="{Localization:Lang Help}" Command="{Binding HelpCommand}" />
                             <MenuItem Header="{Localization:Lang About}" Command="{Binding AboutCommand}" />
+                            <MenuItem Header="{Localization:Lang ChkUpdate}" Command="{Binding CheckUpDateCommand}" />
                             <MenuItem Header="{Localization:Lang SpecialChar}" Command="{Binding SpecialCharCommand}" />
                         </MenuItem>
                         <Menu.Style>

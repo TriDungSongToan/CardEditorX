@@ -3,13 +3,13 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Scrapiyard.Core.Models;
+using ScriptSupport.Models;
 using ScriptSupport.States;
 using ScriptSupport.Stores;
-using ScriptSupport.Models;
 using ScriptSupport.Helpers;
 using ScriptSupport.Manager;
-using ScriptSupport.Services;
 using ScriptSupport.Commands;
+using ScriptSupport.Services;
 using ScriptSupport.Interfaces;
 using ScriptSupport.Collections;
 using ScriptSupport.Environment;
@@ -28,6 +28,7 @@ namespace ScriptSupport.ViewModels
         private readonly IApplicationInterface _appService;
         private readonly IConfigInterface _configInterface;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IHelpInterface _helpService;
         private readonly IDialogInterface _dialogService;
         private readonly ICardInterface _cardService;
         private readonly IScriptInterface _scriptService;
@@ -36,6 +37,7 @@ namespace ScriptSupport.ViewModels
         private readonly IResultInterface _resultService;
         private readonly IDataFolderInterface _dataFolderInterface;
         private readonly IFloatingPanelInterface _panelService;
+        private readonly ILauncherInterface _launcherService;
         private readonly FilterCardState _filterCardState;
         private readonly ResultState _resultState;
 
@@ -226,6 +228,7 @@ namespace ScriptSupport.ViewModels
         public RelayCommand SaveAsFileCommand { get; set; } = null!;
         public RelayCommand ExitCommand { get; set; } = null!;
         public RelayCommand SettingCommand { get; set; } = null!;
+        public RelayCommand HelpCommand { get; set; } = null!;
         public RelayCommand CheckUpDateCommand { get; set; } = null!;
         public RelayCommand AboutCommand { get; set; } = null!;
         public RelayCommand SpecialCharCommand { get; set; } = null!;
@@ -246,10 +249,11 @@ namespace ScriptSupport.ViewModels
         #region Constructor
         public MainViewModel(UIConfigState uIConfig, EditorCommandsService editorCommands, AppEnvironment appEnvironment, ConfigStore configStore,
             IApplicationInterface appService, IConfigInterface configInterface, IServiceProvider serviceProvider,
-            IDialogInterface dialogInterface, ICardInterface cardInterface, IScriptInterface scriptInterface,
+            IDialogInterface dialogInterface, IHelpInterface helpService,
+            ICardInterface cardInterface, IScriptInterface scriptInterface,
             IScrapiInterface scrapiInterface, IScrapiyardInterface scrapiyardInterface,
             IResultInterface resultService, IDataFolderInterface dataFolderInterface,
-            IFloatingPanelInterface panelService,
+            IFloatingPanelInterface panelService, ILauncherInterface launcherService,
             DocumentManager documents,
             FilterCardState filterCardState, ResultState resultState)
         {
@@ -262,12 +266,14 @@ namespace ScriptSupport.ViewModels
             _serviceProvider = serviceProvider;
             _dialogService = dialogInterface;
             _cardService = cardInterface;
+            _helpService = helpService;
             _scriptService = scriptInterface;
             _scrapiService = scrapiInterface;
             _scrapiyardService = scrapiyardInterface;
             _resultService = resultService;
             _dataFolderInterface = dataFolderInterface;
             _panelService = panelService;
+            _launcherService = launcherService;
             _documentManager = documents;
             _filterCardState = filterCardState;
             _resultState = resultState;
@@ -299,6 +305,7 @@ namespace ScriptSupport.ViewModels
             SaveAsFileCommand = new ScriptSupport.Commands.RelayCommand(_ => SaveAsFileFunction(), _ => CanSaveAsFileFunction());
             ExitCommand = new ScriptSupport.Commands.RelayCommand(_ => ExitFunction(), _ => CanExitFunction());
             SettingCommand = new ScriptSupport.Commands.RelayCommand(async _ => await SettingFunction(), _ => CanSettingFunction());
+            HelpCommand = new ScriptSupport.Commands.RelayCommand(async _ => await BrowseHelp());
             CheckUpDateCommand = new ScriptSupport.Commands.RelayCommand(async _ => await CheckUpdateFunction());
             AboutCommand = new ScriptSupport.Commands.RelayCommand(_ => _dialogService.ShowDialog<AboutViewModel>());
             SpecialCharCommand = new RelayCommand(_ => SpecialCharFunction());
@@ -442,6 +449,25 @@ namespace ScriptSupport.ViewModels
         {
             SaveFileCommand.RaiseCanExecuteChanged();
             SaveAsFileCommand.RaiseCanExecuteChanged();
+        }
+        private async Task BrowseHelp()
+        {
+            string url = _helpService.BuildHelpUrl();
+            if (string.IsNullOrEmpty(url)) return;
+
+            var (Success, ErrorMessage) = _launcherService.OpenWeb(url);
+            if (!Success)
+            {
+                var request = new MessageBoxRequest
+                {
+                    Title = CMess.error.ToText(),
+                    IconType = MessageBoxIconType.Error,
+                    Message = $"{CMess.errorOcc.ToText()} {ErrorMessage}",
+                    Buttons = new[] { CMess.ok.ToText() },
+                    ResponseSource = null
+                };
+                await _dialogService.ShowMessage(request);
+            }
         }
         private async Task CheckUpdateFunction()
         {
